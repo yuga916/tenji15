@@ -1,0 +1,367 @@
+/* ============================================================
+   TENJI15 — Night Water
+   夜の水面(ディープネイビー)×シグナルオレンジ×展示シアン。
+   「直前の歪み」を光らせるデザイン。
+   ============================================================ */
+:root {
+  --bg: #050b12;
+  --bg-2: #091320;
+  --panel: rgba(255, 255, 255, .035);
+  --panel-solid: #0d1826;
+  --line: rgba(77, 216, 255, .12);
+  --line-strong: rgba(77, 216, 255, .3);
+  --text: #e9f2f7;
+  --muted: #8ba3b3;
+  --dim: #5a7383;
+  --cyan: #4dd8ff;
+  --signal: #ff8a3d;
+  --alert: #ff5566;
+  --green: #46e0a3;
+  --grad: linear-gradient(120deg, var(--cyan) 0%, var(--signal) 100%);
+  --grad-signal: linear-gradient(120deg, var(--signal) 0%, #ffc46b 100%);
+  --glow-cyan: 0 0 24px rgba(77, 216, 255, .22);
+  --glow-signal: 0 0 22px rgba(255, 138, 61, .35);
+  --radius: 16px;
+  --maxw: 1120px;
+  --font-display: "Zen Kaku Gothic New", "Hiragino Sans", sans-serif;
+  --font-num: "Space Grotesk", "Helvetica Neue", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+::selection { background: var(--signal); color: #14100a; }
+
+body {
+  background:
+    radial-gradient(1100px 560px at 85% -10%, rgba(77, 216, 255, .07), transparent 60%),
+    radial-gradient(900px 500px at -10% 45%, rgba(255, 138, 61, .05), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-display);
+  line-height: 1.75;
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--cyan); text-decoration: none; transition: color .15s; }
+a:hover { color: var(--signal); }
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+section { padding: 64px 0; position: relative; }
+
+h2 {
+  font-size: 26px; font-weight: 800; letter-spacing: .04em;
+  margin-bottom: 10px; position: relative; display: inline-block;
+}
+h2::before {
+  content: ""; display: block; width: 42px; height: 3px;
+  background: var(--grad); border-radius: 2px; margin-bottom: 14px;
+  box-shadow: var(--glow-cyan);
+}
+.sec-lead { color: var(--muted); margin-bottom: 32px; font-size: 14px; max-width: 680px; }
+
+/* ============ Header ============ */
+header.site {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(5, 11, 18, .84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--line);
+}
+header.site .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.logo { font-family: var(--font-num); font-weight: 700; font-size: 20px; letter-spacing: .1em; color: var(--text); }
+.logo .num { color: var(--signal); text-shadow: 0 0 12px rgba(255, 138, 61, .7); }
+nav.global { display: flex; gap: 4px; }
+nav.global a { color: var(--muted); font-size: 12.5px; font-weight: 500; padding: 7px 13px; border-radius: 20px; transition: all .15s; }
+nav.global a:hover { color: var(--text); background: var(--panel); }
+@media (max-width: 760px) { nav.global { display: none; } }
+
+/* ============ ステータスバッジ ============ */
+.status {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-num); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  border-radius: 20px; padding: 3px 12px;
+}
+.status-pre { border: 1px solid var(--line); color: var(--dim); background: rgba(255,255,255,.03); }
+.status-signal {
+  border: 1px solid rgba(255, 138, 61, .5); color: var(--signal);
+  background: rgba(255, 138, 61, .08); box-shadow: var(--glow-signal);
+}
+.status-signal::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--signal); box-shadow: 0 0 8px var(--signal);
+  animation: pulse 1.4s infinite;
+}
+.status-verified { border: 1px solid rgba(70, 224, 163, .45); color: var(--green); background: rgba(70, 224, 163, .07); }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--font-num); font-size: 11px; font-weight: 600;
+  letter-spacing: .16em; text-transform: uppercase;
+  border: 1px solid var(--line-strong); color: var(--cyan);
+  border-radius: 20px; padding: 4px 14px;
+  background: rgba(77, 216, 255, .05);
+}
+.grade-badge {
+  display: inline-block; font-family: var(--font-num); font-weight: 700; font-size: 11px;
+  padding: 2px 10px; border-radius: 5px; letter-spacing: .06em;
+  background: var(--grad-signal); color: #14100a;
+}
+
+/* ============ Hero ============ */
+.hero { padding: 92px 0 76px; position: relative; overflow: hidden; }
+.hero::before {
+  content: "";
+  position: absolute; inset: auto -10% -30% -10%; height: 60%;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 26px, rgba(77, 216, 255, .05) 26px 27px),
+    linear-gradient(to top, rgba(77, 216, 255, .07), transparent 80%);
+  pointer-events: none;
+}
+.hero .wrap { position: relative; }
+.hero h1 { font-size: clamp(32px, 5.2vw, 54px); font-weight: 900; line-height: 1.25; letter-spacing: .01em; margin: 20px 0; }
+.hero h1 em {
+  font-style: normal; background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 18px rgba(255, 138, 61, .3));
+}
+.hero p.lead { color: var(--muted); max-width: 580px; margin-bottom: 32px; font-size: 15.5px; }
+
+/* ============ Buttons ============ */
+.cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 14px; letter-spacing: .02em;
+  padding: 14px 30px; border-radius: 10px;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary { background: var(--grad); color: #0a1014; box-shadow: 0 4px 20px rgba(77, 216, 255, .3); }
+.btn-primary:hover { box-shadow: 0 8px 30px rgba(77, 216, 255, .45); color: #0a1014; }
+.btn-ghost { border: 1px solid var(--line-strong); color: var(--text); background: var(--panel); }
+.btn-ghost:hover { border-color: var(--cyan); color: var(--signal); }
+
+/* ============ カウントダウン ============ */
+.countdown {
+  font-family: var(--font-num); font-variant-numeric: tabular-nums;
+  font-weight: 700; color: var(--cyan);
+  text-shadow: var(--glow-cyan); letter-spacing: .04em;
+}
+.countdown.urgent { color: var(--signal); text-shadow: 0 0 14px rgba(255, 138, 61, .6); }
+.countdown.closed { color: var(--dim); text-shadow: none; }
+
+.next-race-panel {
+  background: linear-gradient(160deg, rgba(255, 138, 61, .09), rgba(77, 216, 255, .04));
+  border: 1px solid rgba(255, 138, 61, .4);
+  border-radius: var(--radius); padding: 26px 30px;
+  display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+  box-shadow: var(--glow-signal);
+}
+.next-race-panel .label { font-family: var(--font-num); font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--signal); }
+.next-race-panel .race-name { font-size: 19px; font-weight: 800; }
+.next-race-panel .countdown { font-size: 34px; margin-left: auto; }
+@media (max-width: 640px) { .next-race-panel .countdown { margin-left: 0; } }
+
+/* ============ Cards ============ */
+.card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015));
+  border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 24px;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+}
+.grid { display: grid; gap: 20px; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 860px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+/* ============ 艇番バッジ(競艇カラー 1白2黒3赤4青5黄6緑) ============ */
+.boat {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 7px;
+  font-family: var(--font-num); font-weight: 700; font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.boat-1 { background: linear-gradient(160deg, #ffffff, #dcdcdc); color: #111; }
+.boat-2 { background: linear-gradient(160deg, #2b2b2b, #0c0c0c); color: #fff; }
+.boat-3 { background: linear-gradient(160deg, #f0424d, #c21e28); color: #fff; }
+.boat-4 { background: linear-gradient(160deg, #3d7fc4, #1f5c9a); color: #fff; }
+.boat-5 { background: linear-gradient(160deg, #ffdf47, #e3bd14); color: #111; }
+.boat-6 { background: linear-gradient(160deg, #3cb455, #1f8636); color: #fff; }
+
+/* ============ 出走表 ============ */
+table.entries { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.entries th, table.entries td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+table.entries th {
+  color: var(--dim); font-weight: 600; font-size: 10.5px;
+  letter-spacing: .14em; text-transform: uppercase; font-family: var(--font-num);
+}
+table.entries td { font-variant-numeric: tabular-nums; }
+table.entries tbody tr:hover { background: rgba(77, 216, 255, .04); }
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); padding: 6px 18px 12px; background: rgba(0,0,0,.28); }
+.racer-name { font-weight: 700; color: var(--text); }
+table.entries tr.top-pick td { background: linear-gradient(90deg, rgba(255, 138, 61, .1), rgba(77, 216, 255, .05)); }
+table.entries tr.top-pick td:first-child::before {
+  content: "◎"; color: var(--signal); font-weight: 800;
+  margin-right: 6px; text-shadow: 0 0 10px rgba(255, 138, 61, .8);
+}
+
+/* 展示偏差値 */
+.exdev { font-family: var(--font-num); font-weight: 700; font-size: 13px; padding: 2px 9px; border-radius: 6px; }
+.exdev-hot { background: rgba(255, 138, 61, .15); color: var(--signal); border: 1px solid rgba(255, 138, 61, .5); }
+.exdev-mid { background: rgba(77, 216, 255, .09); color: var(--cyan); border: 1px solid rgba(77, 216, 255, .3); }
+.exdev-cold { background: rgba(255, 255, 255, .04); color: var(--dim); border: 1px solid var(--line); }
+.exdev-none { color: var(--dim); }
+
+/* 乖離スコア */
+.gap { font-family: var(--font-num); font-weight: 700; font-size: 14px; }
+.gap-plus { color: var(--signal); text-shadow: 0 0 12px rgba(255, 138, 61, .5); }
+.gap-minus { color: var(--alert); }
+.gap-flat { color: var(--dim); }
+
+/* ============ シグナルカード ============ */
+.signal-card {
+  position: relative;
+  background: linear-gradient(160deg, rgba(255, 138, 61, .1), rgba(77, 216, 255, .04));
+  border: 1px solid rgba(255, 138, 61, .35);
+  border-radius: var(--radius); padding: 24px 28px; margin: 26px 0;
+  box-shadow: var(--glow-signal), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.signal-card::before {
+  content: ""; position: absolute; left: 0; top: 16px; bottom: 16px;
+  width: 3px; background: var(--grad-signal); border-radius: 2px;
+}
+.signal-card h2, .signal-card h3 {
+  font-family: var(--font-num); font-size: 11px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--signal); margin-bottom: 8px;
+}
+.signal-card h2::before { display: none; }
+.signal-card p { font-size: 15.5px; font-weight: 600; line-height: 1.8; }
+
+/* シグナルフィード */
+.diff-feed { display: flex; flex-direction: column; }
+.diff-item { display: flex; gap: 16px; align-items: flex-start; padding: 15px 4px; border-bottom: 1px solid var(--line); }
+.diff-item:last-child { border-bottom: none; }
+.diff-time { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 12px; color: var(--dim); min-width: 48px; padding-top: 3px; }
+.diff-icon {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800;
+}
+.diff-up { background: rgba(255, 138, 61, .13); color: var(--signal); border: 1px solid rgba(255, 138, 61, .45); }
+.diff-down { background: rgba(255, 85, 102, .12); color: var(--alert); border: 1px solid rgba(255, 85, 102, .4); }
+.diff-neutral { background: rgba(77, 216, 255, .1); color: var(--cyan); border: 1px solid rgba(77, 216, 255, .35); }
+.diff-text { font-size: 13.5px; }
+.diff-text strong { color: var(--signal); }
+
+/* シグナル検証(結果後): 当たり/外れマーク */
+.hit-mark { font-family: var(--font-num); font-weight: 800; font-size: 11px; padding: 2px 9px; border-radius: 5px; margin-left: 8px; }
+.hit-yes { background: rgba(70, 224, 163, .14); color: var(--green); border: 1px solid rgba(70, 224, 163, .45); }
+.hit-no { background: rgba(255, 85, 102, .1); color: var(--alert); border: 1px solid rgba(255, 85, 102, .35); }
+
+/* ============ イン逃げ確率ゲージ ============ */
+.in-escape { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.in-escape .big {
+  font-family: var(--font-num); font-size: 46px; font-weight: 700; line-height: 1;
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 16px rgba(77, 216, 255, .3));
+  font-variant-numeric: tabular-nums;
+}
+.in-escape .delta { font-family: var(--font-num); font-size: 14px; font-weight: 700; }
+.in-escape .delta.up { color: var(--signal); }
+.in-escape .delta.down { color: var(--alert); }
+.bias-track { flex: 1; min-width: 180px; height: 10px; border-radius: 5px; background: rgba(255, 255, 255, .06); position: relative; }
+.bias-track .dot {
+  position: absolute; top: -4px; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--grad-signal); box-shadow: 0 0 12px rgba(255, 138, 61, .6);
+  transform: translateX(-50%);
+}
+.bias-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--dim); margin-top: 4px; }
+
+/* 展開確率バー */
+.kimarite-bar { display: flex; height: 26px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.kimarite-bar > span {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-num); font-size: 11px; font-weight: 700; color: #0a1014;
+  min-width: 34px;
+}
+.k-nige { background: #4dd8ff; }
+.k-makuri { background: #ff8a3d; }
+.k-sashi { background: #46e0a3; }
+.k-other { background: #5a7383; color: #dfe9ef; }
+
+/* ============ 結果・検証 ============ */
+.result-box {
+  border: 1px solid rgba(70, 224, 163, .35);
+  background: linear-gradient(160deg, rgba(70, 224, 163, .07), rgba(77, 216, 255, .03));
+  border-radius: var(--radius); padding: 24px 28px; margin: 26px 0;
+}
+.result-box h3 {
+  font-family: var(--font-num); font-size: 11px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--green); margin-bottom: 12px;
+}
+.finish-order { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.finish-order .arrow { color: var(--dim); }
+.payout { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--signal); font-size: 18px; }
+
+/* ============ パンくず・記事 ============ */
+.breadcrumb { font-size: 12px; color: var(--dim); padding: 20px 0 0; }
+.breadcrumb a { color: var(--dim); }
+.breadcrumb a:hover { color: var(--cyan); }
+.breadcrumb span.sep { margin: 0 7px; color: #253746; }
+.article h1 { font-size: clamp(24px, 3.6vw, 36px); font-weight: 900; line-height: 1.35; margin: 12px 0 10px; }
+.race-meta { color: var(--muted); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+.article section { padding: 42px 0 0; }
+.article h2 { font-size: 21px; }
+.article p { margin: 14px 0; color: #cfdde6; }
+.updated { color: var(--dim); font-size: 12px; margin-top: 36px; font-family: var(--font-num); letter-spacing: .02em; }
+
+/* ============ Steps / 実績 ============ */
+.step-num {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--grad); color: #0a1014;
+  font-family: var(--font-num); font-weight: 700; font-size: 17px;
+  margin-bottom: 16px; box-shadow: 0 4px 16px rgba(77, 216, 255, .3);
+}
+.stat { text-align: center; padding: 32px 26px; }
+.stat .num {
+  font-family: var(--font-num); font-size: 44px; font-weight: 700; line-height: 1.1;
+  background: var(--grad);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 16px rgba(77, 216, 255, .3));
+  font-variant-numeric: tabular-nums;
+}
+.stat .label { color: var(--text); font-size: 13px; font-weight: 600; margin-top: 6px; }
+.stat .note { color: var(--dim); font-size: 11px; margin-top: 6px; }
+
+/* ============ レースカード ============ */
+.race-card { display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; }
+.race-card::after { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: var(--grad); opacity: 0; transition: opacity .2s; }
+.race-card:hover { transform: translateY(-4px); border-color: var(--line-strong); box-shadow: 0 14px 44px rgba(0, 0, 0, .5); }
+.race-card:hover::after { opacity: 1; }
+.race-card .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.race-card .venue { font-weight: 800; font-size: 16px; }
+.race-card .picks { display: flex; gap: 9px; align-items: center; }
+.race-card .countdown { font-size: 14px; }
+
+/* ============ 注意喚起・Footer ============ */
+.age-note {
+  border: 1px dashed var(--line-strong); border-radius: var(--radius);
+  color: var(--muted); font-size: 12.5px; padding: 18px 22px; margin-top: 28px;
+  background: rgba(0, 0, 0, .25);
+}
+.age-note strong { color: var(--signal); }
+footer.site { border-top: 1px solid var(--line); background: #030810; padding: 54px 0 34px; margin-top: 60px; }
+footer.site .cols { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px; }
+@media (max-width: 720px) { footer.site .cols { grid-template-columns: 1fr; } }
+footer.site h3 {
+  font-size: 11px; color: var(--cyan); margin-bottom: 14px;
+  font-family: var(--font-num); letter-spacing: .18em; text-transform: uppercase;
+}
+footer.site p, footer.site li { color: var(--muted); font-size: 12.5px; }
+footer.site ul { list-style: none; }
+footer.site li { margin-bottom: 8px; }
+.legal { border-top: 1px solid var(--line); margin-top: 34px; padding-top: 22px; color: var(--dim); font-size: 11.5px; }
+.legal p { margin-bottom: 8px; }

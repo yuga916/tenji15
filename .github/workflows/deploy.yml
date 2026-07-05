@@ -1,0 +1,50 @@
+name: Build & Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # ボートレースはモーニング(8時台)〜ミッドナイト(23時前)まで毎日開催。
+    # 開催時間帯(JST 8:00-23:00 = UTC 23:00-14:00)は15分ごとに直前更新、
+    # それ以外は朝の番組確定にあわせ1日1回。
+    - cron: "*/15 23 * * *"
+    - cron: "*/15 0-14 * * *"
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # OfficialDataSource実装後に 'official' へ(Settings > Variables)
+      DATA_SOURCE_MODE: ${{ vars.DATA_SOURCE_MODE || 'mock' }}
+      SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run pipeline
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TENJI15 | 展示後に、答えは変わる。— 締切前15分の歪み検知AI</title>
+<meta name="description" content="展示航走・進入隊形・直前オッズをAIが即時分析し、「事前予想と市場がどう裏切られたか」を締切前15分に提示。結果ページでは直前サインの答え合わせを全レース公開。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{BASE}}assets/styles.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "TENJI15",
+  "url": "{{SITE_URL}}",
+  "description": "展示航走後の直前情報に特化したボートレース分析メディア"
+}
+</script>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="logo" href="{{BASE}}">TENJI<span class="num">15</span></a>
+    <nav class="global">
+      <a href="#next">次の締切</a>
+      <a href="#signals">歪みレーダー</a>
+      <a href="#races">本日のレース</a>
+      <a href="#review">答え合わせ</a>
+      <a href="#how">仕組み</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <span class="badge">EXHIBITION SIGNAL AI</span>
+    <h1>展示後に、<br>答えは<em>変わる</em>。</h1>
+    <p class="lead">事前予想は誰でも出せる。TENJI15が追うのは、展示航走と直前オッズが生む「歪み」だけ。展示反映のAI評価と市場の評価がズレた瞬間を検知し、締切前15分にお届けします。閲覧はすべて無料。</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#signals">今、歪んでいるレース</a>
+      <a class="btn btn-ghost" href="#how">歪み検知の仕組み</a>
+    </div>
+  </div>
+</section>
+
+<section id="next" style="padding-top: 0;">
+  <div class="wrap">
+    <!--{{NEXT_RACE_PANEL}}-->
+  </div>
+</section>
+
+<section id="signals" style="background: var(--bg-2);">
+  <div class="wrap">
+    <h2>歪みレーダー</h2>
+    <p class="sec-lead">展示反映後のAI評価と直前オッズの乖離が大きいレース。シグナル点灯中=市場がまだ織り込んでいない変化があるレースです。</p>
+    <div class="grid grid-3">
+      <!--{{SIGNAL_RACES}}-->
+    </div>
+  </div>
+</section>
+
+<section id="races">
+  <div class="wrap">
+    <h2>本日のレース</h2>
+    <p class="sec-lead">状態は3段階で進みます: 展示待ち(事前評価) → シグナル点灯(展示反映済み) → 答え合わせ(結果検証)。</p>
+    <div class="grid grid-3">
+      <!--{{TODAY_RACES}}-->
+    </div>
+  </div>
+</section>
+
+<section id="review" style="background: var(--bg-2);">
+  <div class="wrap">
+    <h2>答え合わせアーカイブ</h2>
+    <p class="sec-lead">レース確定後、直前サインが結果にどう効いたかを毎レース検証して蓄積。「展示は嘘をつかなかったか」の記録です。</p>
+    <div class="grid grid-3">
+      <!--{{REVIEW_RACES}}-->
+    </div>
+    <div class="grid grid-3" style="margin-top: 20px;">
+      <a class="card" href="{{BASE}}labs/signals/" style="color:var(--text);">
+        <h3 style="font-size:15px; margin-bottom:8px;">📊 シグナル種類別の成績</h3>
+        <p style="color:var(--muted); font-size:13px;">乖離・前づけ・展示偏差の各シグナルが実際どれだけ当たっているか、算出方法つきで公開。</p>
+      </a>
+      <a class="card" href="{{BASE}}labs/maezuke/" style="color:var(--text);">
+        <h3 style="font-size:15px; margin-bottom:8px;">🔄 前づけレースアーカイブ</h3>
+        <p style="color:var(--muted); font-size:13px;">進入が動いたレースだけを集めた記録集。隊形変化が結果に与えた影響を一覧で。</p>
+      </a>
+      <a class="card" href="{{BASE}}labs/venues/" style="color:var(--text);">
+        <h3 style="font-size:15px; margin-bottom:8px;">🌊 会場別・展示の信頼度</h3>
+        <p style="color:var(--muted); font-size:13px;">展示タイムが結果に直結しやすい会場・条件はどこか。蓄積データから係数化。</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>歪み検知の仕組み</h2>
+    <p class="sec-lead">ブラックボックスにしない。何を見てシグナルを点けているかを公開します。</p>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="step-num">1</div>
+        <h3 style="font-size:15px; margin-bottom:8px;">事前評価(ベースライン)</h3>
+        <p style="color:var(--muted); font-size:13px;">公式配布の番組表・過去成績から機械学習モデルが各艇の勝率とイン逃げ確率を算出。これが「事前の答え」。</p>
+      </div>
+      <div class="card">
+        <div class="step-num">2</div>
+        <h3 style="font-size:15px; margin-bottom:8px;">展示・オッズを即時反映</h3>
+        <p style="color:var(--muted); font-size:13px;">展示タイムは当日分布と節間自己比で偏差値化。進入変化は全艇再計算。展示STからスリット隊形と展開確率を予測。</p>
+      </div>
+      <div class="card">
+        <div class="step-num">3</div>
+        <h3 style="font-size:15px; margin-bottom:8px;">乖離=歪みの検知</h3>
+        <p style="color:var(--muted); font-size:13px;">展示反映後のAI勝率と直前オッズの市場勝率を比較。ズレが閾値を超えた艇に妙味/過剰人気シグナルを点灯します。</p>
+      </div>
+    </div>
+    <div class="grid grid-3" style="margin-top: 20px;">
+      <div class="card stat">
+        <div class="num">—%</div>
+        <div class="label">妙味シグナルの回収率</div>
+        <div class="note">※全シグナルを事前記録し事後照合 / 公開後に確定値掲載</div>
+      </div>
+      <div class="card stat">
+        <div class="num">—%</div>
+        <div class="label">展示反映によるイン逃げ確率の精度向上幅</div>
+        <div class="note">※事前予測と展示反映後予測の的中率差</div>
+      </div>
+      <div class="card stat">
+        <div class="num">—R</div>
+        <div class="label">検証済みレース数</div>
+        <div class="note">※答え合わせアーカイブに全件掲載</div>
+      </div>
+    </div>
+    <p style="color:var(--muted); font-size:12.5px; margin-top:16px;">当サイトは「必勝」「絶対に当たる」等の断定的表現を使用しません。すべての数値は検証可能な算出方法とともに公開します。</p>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <h3>TENJI15 について</h3>
+        <p>展示航走後の直前情報に特化したボートレース分析メディアです。分析情報はすべて無料で公開しています。当サイトは舟券の販売、購入代行、投票の受託は一切行いません。舟券の購入はテレボート等の公式サービスで、ご自身の判断と責任において行ってください。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p>
+      </div>
+      <div>
+        <h3>コンテンツ</h3>
+        <ul>
+          <li><a href="#signals">歪みレーダー</a></li>
+          <li><a href="#review">答え合わせアーカイブ</a></li>
+          <li><a href="{{BASE}}labs/signals/">シグナル成績</a></li>
+          <li><a href="{{BASE}}guide/">用語・見方ガイド</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>サイト情報</h3>
+        <ul>
+          <li><a href="{{BASE}}about/">運営者情報</a></li>
+          <li><a href="{{BASE}}privacy/">プライバシーポリシー</a></li>
+          <li><a href="{{BASE}}contact/">お問い合わせ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="age-note">
+      <strong>20歳未満の方は舟券を購入できません。</strong>舟券の購入は法律で認められた年齢・方法の範囲でお楽しみください。無理のない金額で計画的に。ギャンブル等依存症でお悩みの方やそのご家族は、公的な相談窓口(依存症対策全国センター等)にご相談ください。
+    </div>
+    <div class="legal">
+      <p>【免責事項】当サイトの分析情報は的中を保証するものではありません。分析情報の利用により生じたいかなる損害についても当サイトは責任を負いません。最新の出走情報・オッズは必ず公式情報をご確認ください。</p>
+      <p>© 2026 TENJI15</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  function tick() {
+    document.querySelectorAll("[data-close]").forEach(function (el) {
+      var close = new Date(el.getAttribute("data-close"));
+      var diff = close.getTime() - Date.now();
+      el.classList.remove("urgent", "closed");
+      if (diff <= 0) { el.textContent = "締切済み"; el.classList.add("closed"); return; }
+      var h = Math.floor(diff / 3600000);
+      var m = Math.floor((diff % 3600000) / 60000);
+      var s = Math.floor((diff % 60000) / 1000);
+      el.textContent = (h > 0 ? h + ":" : "") + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+      if (diff <= 15 * 60000) el.classList.add("urgent");
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+
+</body>
+</html>

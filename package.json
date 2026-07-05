@@ -1,0 +1,15 @@
+{
+  "name": "tenji15",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "TENJI15 — 展示後の直前情報に特化したボートレース分析メディア",
+  "scripts": {
+    "pipeline": "node --experimental-strip-types src/pipeline.ts",
+    "build": "node --experimental-strip-types src/build.ts",
+    "site": "npm run pipeline && npm run build",
+    "preview": "npx serve dist -l 4200",
+    "typecheck": "npx -y typescript@5.6 tsc --noEmit -p tsconfig.json"
+  },
+  "engines": { "node": ">=22.6" }
+}

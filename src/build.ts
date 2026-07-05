@@ -173,8 +173,10 @@ function raceCardForIndex(r: Race, base: string): string {
 }
 
 function nextRacePanel(races: Race[], base: string): string {
-  const upcoming = races.filter((r) => r.status !== "verified").sort((a, b) => closeIso(a).localeCompare(closeIso(b)));
-  const next = upcoming[0];
+  const now = Date.now();
+  const candidates = races.filter((r) => r.status !== "verified").sort((a, b) => closeIso(a).localeCompare(closeIso(b)));
+  // 締切が未来のレースを優先し、なければ直近のもの
+  const next = candidates.find((r) => new Date(closeIso(r)).getTime() > now) ?? candidates[0];
   if (!next) return "";
   const best = topPick(next);
   return `<a class="next-race-panel" href="${base}${racePath(next)}" style="color:var(--text);">

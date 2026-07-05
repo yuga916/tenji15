@@ -56,16 +56,31 @@ npm run preview   # http://localhost:4200
 2. Settings > Pages > Source を「GitHub Actions」に
 3. 以降、開催時間帯は15分ごとに自動ビルド&デプロイ
 
-## 本番データへの切り替え(フェーズ2: OfficialDataSource実装)
+## 実データ稼働(OfficialDataSource・実装済み)
 
-データ源と規約状況(2026/7/4確認済み):
+公式配布の番組表(Bファイル)から全24場の実データを生成する。
 
-- **番組表・競走成績**: 公式配布ファイル(www1.mbrace.or.jp、月別、2005年〜、利用条件の明示なし) → 1日1回取得しパース
-- **展示・進入・直前オッズ**: boatrace.jp直前情報ページ(robots.txt全許可を確認済み) → **締切前のレースのみ**低頻度取得
-- 遵守事項: サイトポリシーの大量アクセス禁止条項(頻度・間隔に配慮)、「営利目的リンクお断り」文言に留意し公式への直リンクは張らない
-- 推奨: 公開前にBOATRACE振興会へ商用利用の確認を送付(任意だが安全)
+```
+src/officialFetcher.ts  ダウンロード(1日1リクエスト)+LZH解凍(lhasa/lha/7z)+Shift_JISデコード
+src/officialParser.ts   寛容パース(固定バイト位置に依存しない正規表現ベース)
+src/venues.ts           全24場マスタ(場コード→名称・イン逃げ基準値)
+src/model.ts            ベースライン評価(コース×級別×勝率×モーターでpreProb/イン逃げ確率)
+fixtures/b-sample.txt   パーサのテストフィクスチャ
+npm run test:parser     23項目のスモークテスト(CIでも毎回実行)
+```
 
-実装箇所は `src/dataSource.ts` の `OfficialDataSource` のみ。切替は Actions Variables の `DATA_SOURCE_MODE=official`。
+**有効化手順**: リポジトリの Settings > Secrets and variables > Actions > **Variables** に
+`DATA_SOURCE_MODE` = `official` を追加 → 次のビルドから実データで生成。
+
+**フォールバック設計**: 取得失敗時(未配布時刻・障害)は 前回データ維持 → mock の順で退避し、サイトは壊れない。
+
+**初回実データ投入時の注意**: パーサは実ファイル形式との微差があり得る(フィクスチャは公知の形式に基づく)。
+Actionsのログで `[official] N場 Mレースをパースしました` と警告件数を確認し、
+形式差異があれば `DEBUG_PARSER=1` で未マッチ行を出して `officialParser.ts` の正規表現を調整する。
+
+**次フェーズ(未実装)**: 展示・直前オッズの反映(シグナル点灯)、結果Kファイルの取り込み(答え合わせ自動生成)。
+
+規約状況(2026/7/4確認済み): 配布ファイルに利用条件の明示なし・robots.txt全許可。取得は1日1リクエストの低負荷設計。公式への直リンクは張らない(「営利目的リンクお断り」文言に留意)。公開運用前にBOATRACE振興会への確認送付を推奨。
 
 ## 公開前チェックリスト
 

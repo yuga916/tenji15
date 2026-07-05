@@ -9,6 +9,7 @@
     "build": "node --experimental-strip-types src/build.ts",
     "site": "npm run pipeline && npm run build",
     "preview": "npx serve dist -l 4200",
+    "test:parser": "node --experimental-strip-types src/testParser.ts",
     "typecheck": "npx -y typescript@5.6 tsc --noEmit -p tsconfig.json"
   },
   "engines": { "node": ">=22.6" }

@@ -21,7 +21,7 @@ export function bFileUrl(dateISO: string): string {
 
 async function download(url: string): Promise<Buffer> {
   const res = await fetch(url, {
-    headers: { "User-Agent": "TENJI15/0.1 (personal analysis; low-frequency; contact via site)" },
+    headers: { "User-Agent": "kyotei-chokuzen/0.1 (personal analysis; low-frequency; contact via site)" },
   });
   if (!res.ok) throw new Error(`ダウンロード失敗 ${res.status}: ${url}`);
   return Buffer.from(await res.arrayBuffer());

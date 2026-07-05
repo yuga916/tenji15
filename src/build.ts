@@ -18,7 +18,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const DIST = path.join(ROOT, "dist");
 
-const SITE_URL = (process.env.SITE_URL ?? "https://example.github.io/tenji15").replace(/\/$/, "");
+const SITE_URL = (process.env.SITE_URL ?? "https://kyotei-chokuzen.com").replace(/\/$/, "");
+const GA_ID = process.env.GA_MEASUREMENT_ID ?? "";
+
+/** GA4スニペット(測定ID未設定なら空=タグを出さない) */
+function gaSnippet(): string {
+  if (!/^G-[A-Z0-9]+$/.test(GA_ID)) return "";
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${GA_ID}');
+</script>`;
+}
 
 /* ---------- helpers ---------- */
 const esc = (s: string) =>
@@ -221,7 +234,7 @@ function breadcrumbJsonLd(r: Race): string {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "ホーム", item: `${SITE_URL}/` },
-      { "@type": "ListItem", position: 2, name: r.venue, item: `${SITE_URL}/races/${r.venueSlug}/` },
+      { "@type": "ListItem", position: 2, name: `${r.venue}競艇`, item: `${SITE_URL}/races/${r.venueSlug}/` },
       { "@type": "ListItem", position: 3, name: dateLabel(r.dateISO), item: `${SITE_URL}/races/${r.venueSlug}/${r.dateISO}/` },
       { "@type": "ListItem", position: 4, name: `第${r.raceNo}R`, item: `${SITE_URL}/${racePath(r)}` },
     ],
@@ -252,16 +265,17 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
   const inDelta = r.inEscapeProb - r.inEscapeProbPre;
   const title =
     r.status === "verified"
-      ? `${r.venue}${r.raceNo}R 結果と答え合わせ ${dateLabel(r.dateISO)}｜直前サイン検証 - TENJI15`
-      : `${r.venue}${r.raceNo}R 直前予想・展示分析 ${dateLabel(r.dateISO)}｜締切${r.closeTime} - TENJI15`;
+      ? `${r.venue}競艇 ${r.raceNo}R 結果・払戻と答え合わせ ${dateLabel(r.dateISO)}｜競艇チョクゼン`
+      : `${r.venue}競艇 ${r.raceNo}R 直前予想【締切15分前に最終更新】${dateLabel(r.dateISO)}｜競艇チョクゼン`;
   const metaDesc =
     r.status === "verified"
-      ? `${r.venue}第${r.raceNo}R(${dateLabel(r.dateISO)})の結果と答え合わせ。展示・オッズの直前サインがレースにどう効いたかを検証。3連単¥${r.result?.payout3t.toLocaleString() ?? "—"}。`
-      : `${r.venue}第${r.raceNo}R(${dateLabel(r.dateISO)} 締切${r.closeTime})の直前AI分析。展示反映のイン逃げ確率${r.inEscapeProb}%、乖離スコア、スリット予測を無料公開。`;
+      ? `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)})のレース結果・払戻と答え合わせ。展示・オッズの直前サインがどう効いたかを検証。3連単¥${r.result?.payout3t.toLocaleString() ?? "—"}。`
+      : `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)} 締切${r.closeTime})の直前予想。展示航走反映のイン逃げ確率${r.inEscapeProb}%、AI勝率とオッズの乖離、スリット予測を無料公開。`;
 
   const html = fill(template, {
     BASE: base,
     SITE_URL,
+    GA_SNIPPET: gaSnippet(),
     TITLE: esc(title),
     META_DESC: esc(metaDesc),
     CANONICAL: `${SITE_URL}/${racePath(r)}`,
@@ -306,14 +320,15 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
 
 function stubPage(title: string, body: string, base: string): string {
   return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${title} - TENJI15</title>
+<title>${title} - 競艇チョクゼン</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="${base}assets/styles.css"></head><body>
-<header class="site"><div class="wrap"><a class="logo" href="${base}">TENJI<span class="num">15</span></a></div></header>
+<link rel="stylesheet" href="${base}assets/styles.css">
+${gaSnippet()}</head><body>
+<header class="site"><div class="wrap"><a class="logo" href="${base}">競艇<span class="num">チョクゼン</span></a></div></header>
 <main class="wrap article"><h1>${title}</h1><p style="color:var(--muted);">${body}</p>
 <p><a href="${base}">← トップへ戻る</a></p></main>
-<footer class="site"><div class="wrap"><div class="legal"><p>© 2026 TENJI15</p></div></div></footer></body></html>`;
+<footer class="site"><div class="wrap"><div class="legal"><p>© 2026 競艇チョクゼン</p></div></div></footer></body></html>`;
 }
 
 /* ---------- sitemap / robots ---------- */
@@ -348,7 +363,7 @@ async function main() {
     .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(races, indexBase))
     .replace("<!--{{TODAY_RACES}}-->", races.map((r) => raceCardForIndex(r, indexBase)).join("\n"))
     .replace("<!--{{REVIEW_RACES}}-->", reviewRaces(races, indexBase));
-  indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL });
+  indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });
   await writeFile(path.join(DIST, "index.html"), indexHtml, "utf-8");
 
   // レース詳細(1レース=1URL・事前→シグナル→答え合わせを同一URLで)
@@ -359,7 +374,7 @@ async function main() {
   const stubs: [string, string, string][] = [
     ["guide", "用語・見方ガイド", "展示偏差・乖離スコア・スリット予測の見方を解説するコンテンツを準備中です。"],
     ["about", "運営者情報", "運営者情報を掲載予定です。公開前に必ず記載してください。"],
-    ["privacy", "プライバシーポリシー", "プライバシーポリシーを掲載予定です。アクセス解析利用時は必須です。"],
+    ["privacy", "プライバシーポリシー", "当サイトはアクセス解析のためGoogle Analyticsを使用しています。Google AnalyticsはCookieを使用してトラフィックデータを収集しますが、これは匿名で収集されており個人を特定するものではありません。Cookieの無効化はブラウザ設定から可能です。正式なプライバシーポリシー全文は準備中です。"],
     ["contact", "お問い合わせ", "お問い合わせ窓口を準備中です。"],
   ];
   for (const [slug, title, body] of stubs) {
@@ -393,7 +408,7 @@ async function main() {
     const links = list
       .map((r) => `<li style="margin-bottom:8px;"><a href="${venueBase}${racePath(r)}">${dateLabel(r.dateISO)} 第${r.raceNo}R ${esc(r.name)} の直前分析・答え合わせ</a></li>`)
       .join("\n");
-    const html = stubPage(`ボートレース${venue} 分析一覧`, "", venueBase).replace(
+    const html = stubPage(`${venue}競艇の直前予想・結果一覧`, "", venueBase).replace(
       "<p><a",
       `<ul style="list-style:none;">${links}</ul><p><a`
     );
@@ -412,7 +427,7 @@ async function main() {
       const dayLinks = dl
         .map((r) => `<li style="margin-bottom:8px;"><a href="${dayBase}${racePath(r)}">第${r.raceNo}R ${esc(r.name)} 締切${r.closeTime}</a></li>`)
         .join("\n");
-      const dayHtml = stubPage(`ボートレース${venue} ${dateLabel(dateISO)} のレース一覧`, "", dayBase).replace(
+      const dayHtml = stubPage(`${venue}競艇 ${dateLabel(dateISO)} 全レースの直前予想・結果`, "", dayBase).replace(
         "<p><a",
         `<ul style="list-style:none;">${dayLinks}</ul><p><a`
       );

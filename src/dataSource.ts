@@ -41,6 +41,16 @@ export class MockDataSource implements BoatDataSource {
 
 /* ---------------- Official (公式配布・実装済み) ---------------- */
 
+/** 節タイトルからグレードを判定(SG/G1/G2/G3。一般・女子戦等はundefined) */
+export function gradeOf(title?: string): string | undefined {
+  if (!title) return undefined;
+  if (/SG|グランプリ|クラシック|オールスター|メモリアル|ダービー|チャレンジカップ|グランドチャンピオン/.test(title)) return "SG";
+  if (/PG[1Ⅰ]|G[Ⅰ1](?![ⅠⅡⅢ0-9])|周年記念/.test(title)) return "G1";
+  if (/G[Ⅱ2]/.test(title)) return "G2";
+  if (/G[Ⅲ3]/.test(title)) return "G3";
+  return undefined;
+}
+
 /** 番組表テキスト→Race[] 変換(テスト可能な純関数) */
 export function convertBText(text: string, dateISO: string): Race[] {
   const { venues, warnings } = parseBFile(text);
@@ -69,7 +79,8 @@ export function convertBText(text: string, dateISO: string): Race[] {
           dateISO,
           raceNo: pr.raceNo,
           name: pr.raceName,
-          grade: undefined, // グレードは節タイトルから将来付与
+          grade: gradeOf(vd.seriesTitle),
+          seriesTitle: vd.seriesTitle,
           status: "pre",
           closeTime: pr.closeTime,
           windDir: "—",

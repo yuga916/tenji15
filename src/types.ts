@@ -43,6 +43,7 @@ export interface RaceResult {
   kimarite: string;        // 決まり手
   payout3t: number;        // 3連単払戻(円)
   popularity: number;      // 3連単人気
+  payoutWin?: number;      // 単勝払戻(円)。AI本命の仮想回収率算出に使用
   review: string;          // 答え合わせ本文(直前サインがどう効いたか)
 }
 
@@ -53,7 +54,8 @@ export interface Race {
   dateISO: string;
   raceNo: number;
   name: string;            // 例: "一般戦" "G1◯◯記念"
-  grade?: string;          // G1/G2/G3(一般はundefined)
+  grade?: string;          // SG/G1/G2/G3(一般はundefined)
+  seriesTitle?: string;    // 節タイトル(例: "SG第36回グランドチャンピオン決定戦競走")
   status: RaceStatus;
   closeTime: string;       // 締切 HH:mm (JST)
   windDir: string;         // 風向

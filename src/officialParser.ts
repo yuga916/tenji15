@@ -48,6 +48,7 @@ export interface ParsedRace {
 
 export interface ParsedVenueDay {
   jcd: string;          // 場コード "01"〜"24"
+  seriesTitle?: string; // 節タイトル(例: "SG第36回グランドチャンピオン決定戦競走")
   races: ParsedRace[];
 }
 
@@ -106,6 +107,18 @@ export function parseBFile(text: string): ParseResult {
       continue;
     }
     if (!currentVenue) continue;
+
+    // 節タイトル(最初のレースヘッダより前の行から検出。SG/G1〜G3/記念等を含む行)
+    if (!currentVenue.seriesTitle && currentVenue.races.length === 0 && !currentRace) {
+      const t = line.trim().replace(/\s+/g, " ");
+      if (
+        t.length >= 6 &&
+        !/番組表|電話投票|ボートレース場|BGN|BEND/.test(t) &&
+        /(SG|PG[1Ⅰ]|G[ⅠⅡⅢ123]|グランプリ|ダービー|クラシック|メモリアル|オールスター|チャンピオン|周年|記念|カップ|杯|女王|クイーン)/.test(t)
+      ) {
+        currentVenue.seriesTitle = t;
+      }
+    }
 
     // レースヘッダ
     const rh = line.match(RACE_HEADER_RE);

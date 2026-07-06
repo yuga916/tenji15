@@ -38,13 +38,21 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq lhasa
       - run: npm run test:parser
       - run: npm run pipeline
+      # X自動ポスト(Secrets未設定なら自動スキップ・失敗してもデプロイ継続)
+      - name: X auto post
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+        run: node --experimental-strip-types src/xPost.ts || echo "::warning::Xポスト失敗(継続)"
       # 日別データ(答え合わせアーカイブ)をリポジトリへコミットして蓄積。
       # [skip ci]でこのpushによる再実行ループを防ぐ。失敗してもデプロイは継続。
       - name: Commit data archive
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/days 2>/dev/null || true
+          git add -A data 2>/dev/null || true
           if ! git diff --cached --quiet; then
             git commit -m "data: 自動更新 $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
             git pull --rebase origin main || true

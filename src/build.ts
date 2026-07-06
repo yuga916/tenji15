@@ -286,6 +286,7 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
     TITLE: esc(title),
     META_DESC: esc(metaDesc),
     CANONICAL: `${SITE_URL}/${racePath(r)}`,
+    OG_TAGS: ogTags(title, metaDesc, racePath(r)),
     VENUE: esc(r.venue),
     VENUE_SLUG: r.venueSlug,
     DATE_ISO: r.dateISO,
@@ -325,6 +326,17 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
   await writeFile(path.join(dir, "index.html"), html, "utf-8");
 }
 
+/** OGP/Twitterカードのメタタグ */
+function ogTags(title: string, desc: string, urlPath: string): string {
+  return `<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="${SITE_URL}/${urlPath}">
+<meta property="og:image" content="${SITE_URL}/assets/og-image.png">
+<meta property="og:site_name" content="競艇チョクゼン">
+<meta name="twitter:card" content="summary_large_image">`;
+}
+
 /** 実コンテンツ用のページシェル(canonical・meta description・パンくず付き) */
 function articlePage(opts: {
   title: string;
@@ -341,6 +353,7 @@ function articlePage(opts: {
 <title>${esc(opts.title)}</title>
 <meta name="description" content="${esc(opts.metaDesc)}">
 <link rel="canonical" href="${SITE_URL}/${opts.path}">
+${ogTags(opts.title, opts.metaDesc, opts.path)}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${opts.base}assets/styles.css">
@@ -537,8 +550,70 @@ ${gaSnippet()}</head><body>
 <footer class="site"><div class="wrap"><div class="legal"><p>© 2026 競艇チョクゼン</p></div></div></footer></body></html>`;
 }
 
+/* ---------- グレードレース特設(SG/G1等) ---------- */
+interface Feature {
+  path: string;        // features/sg-omura-2026-07-10/
+  title: string;       // 節タイトル
+  grade: string;       // SG/G1/G2/G3
+  venue: string;
+  venueSlug: string;
+  dates: string[];
+  races: Race[];
+}
+
+function collectFeatures(races: Race[]): Feature[] {
+  const map = new Map<string, Feature>();
+  for (const r of races) {
+    if (!r.grade || !r.seriesTitle) continue;
+    const k = `${r.venueSlug}::${r.seriesTitle}`;
+    let f = map.get(k);
+    if (!f) {
+      f = { path: "", title: r.seriesTitle, grade: r.grade, venue: r.venue, venueSlug: r.venueSlug, dates: [], races: [] };
+      map.set(k, f);
+    }
+    f.races.push(r);
+  }
+  for (const f of map.values()) {
+    f.dates = [...new Set(f.races.map((r) => r.dateISO))].sort();
+    f.path = `features/${f.grade.toLowerCase()}-${f.venueSlug}-${f.dates[0]}/`;
+  }
+  return [...map.values()].sort((a, b) => b.dates[b.dates.length - 1].localeCompare(a.dates[a.dates.length - 1]));
+}
+
+function featurePageHtml(f: Feature): string {
+  const base = baseFor(2);
+  const done = f.races.filter((r) => r.status === "verified" && r.result);
+  const topPay = [...done].sort((a, b) => b.result!.payout3t - a.result!.payout3t).slice(0, 3);
+  const daySections = f.dates
+    .map((d, i) => {
+      const dayRaces = f.races.filter((r) => r.dateISO === d).sort((a, b) => a.raceNo - b.raceNo);
+      return `<section><h2>${i + 1}日目 ${dateLabel(d)}</h2><div class="grid grid-3">${dayRaces
+        .map((r) => raceCardForIndex(r, base))
+        .join("\n")}</div></section>`;
+    })
+    .join("\n");
+  const topPayHtml =
+    topPay.length > 0
+      ? `<section><h2>ここまでの高配当</h2><div class="card"><p>${topPay
+          .map((r) => `${dateLabel(r.dateISO)} ${r.raceNo}R ¥${r.result!.payout3t.toLocaleString()}(${esc(r.result!.kimarite)})`)
+          .join(" / ")}</p></div></section>`
+      : "";
+  const title = `${f.title}(${f.venue})の直前予想・結果まとめ｜競艇チョクゼン`;
+  return articlePage({
+    title,
+    metaDesc: `${f.grade}「${f.title}」(ボートレース${f.venue})の全レース直前予想と結果・答え合わせ。AI事前評価と展示反映のシグナル、払戻・決まり手を毎日自動更新。`,
+    path: f.path,
+    base,
+    crumbs: [["ホーム", base], ["特設一覧", `${base}features/`], [`${f.grade} ${f.venue}`]],
+    bodyHtml: `<h1>${esc(f.title)} — ${esc(f.venue)}競艇の直前予想・答え合わせ</h1>
+<p style="color:var(--muted);"><span class="grade-badge">${esc(f.grade)}</span> 開催期間: ${dateLabel(f.dates[0])}〜${dateLabel(f.dates[f.dates.length - 1])}・検証済み${done.length}レース。締切15分前の直前更新と結果検証を全レース掲載します。</p>
+${topPayHtml}
+${daySections}`,
+  });
+}
+
 /** 本日のレースを会場ごとにグルーピングして表示(締切が早い場から) */
-function todayRacesGrouped(races: Race[], base: string): string {
+function todayRacesGrouped(races: Race[], base: string, features: Feature[] = []): string {
   if (races.length === 0) return `<p style="color:var(--muted); font-size:13px;">本日のレースデータはありません。</p>`;
   const byVenue = new Map<string, Race[]>();
   for (const r of races) {
@@ -562,9 +637,15 @@ function todayRacesGrouped(races: Race[], base: string): string {
         doneCount === sorted.length
           ? `全${sorted.length}R終了・答え合わせ公開中`
           : `次の締切 ${next.raceNo}R ${next.closeTime}`;
+      const feature = v.grade ? features.find((f) => f.venueSlug === v.venueSlug && f.title === v.seriesTitle) : undefined;
+      const gradeHtml = feature
+        ? ` <a href="${base}${feature.path}" class="grade-badge" title="${esc(feature.title)}">${esc(feature.grade)} 特設 →</a>`
+        : v.grade
+          ? ` <span class="grade-badge">${esc(v.grade)}</span>`
+          : "";
       return `<div style="margin-bottom:30px;">
   <h3 style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px; font-size:17px;">
-    <a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="color:var(--text);">${esc(v.venue)}</a>
+    <a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="color:var(--text);">${esc(v.venue)}</a>${gradeHtml}
     <span style="color:var(--muted); font-size:12.5px; font-weight:400;">${status}</span>
     <a href="${base}races/${v.venueSlug}/" style="margin-left:auto; color:var(--cyan); font-size:12px;">会場データ →</a>
   </h3>
@@ -572,6 +653,69 @@ function todayRacesGrouped(races: Race[], base: string): string {
 </div>`;
     });
   return blocks.join("\n");
+}
+
+/* ---------- 精度ダッシュボード(labs/signals) ---------- */
+function dashboardHtml(races: Race[]): string {
+  const base = baseFor(2);
+  const done = races.filter((r) => r.status === "verified" && r.result);
+  const n = done.length;
+
+  let win = 0, top2 = 0, top3 = 0, recovSum = 0, recovN = 0, inWin = 0, inPreSum = 0;
+  const byVenue = new Map<string, { venue: string; slug: string; n: number; aiWin: number; inWin: number }>();
+  for (const r of done) {
+    const pick = topPick(r);
+    const pos = r.result!.finish.indexOf(pick.lane);
+    if (pos === 0) win++;
+    if (pos === 0 || pos === 1) top2++;
+    if (pos >= 0) top3++;
+    if (r.result!.payoutWin !== undefined) {
+      recovN++;
+      if (pos === 0) recovSum += r.result!.payoutWin;
+    }
+    inPreSum += r.inEscapeProbPre;
+    if (r.result!.finish[0] === 1) inWin++;
+    let v = byVenue.get(r.venueSlug);
+    if (!v) { v = { venue: r.venue, slug: r.venueSlug, n: 0, aiWin: 0, inWin: 0 }; byVenue.set(r.venueSlug, v); }
+    v.n++;
+    if (pos === 0) v.aiWin++;
+    if (r.result!.finish[0] === 1) v.inWin++;
+  }
+  const pctOf = (a: number, b: number) => (b > 0 ? Math.round((a / b) * 100) : 0);
+  const recovery = recovN > 0 ? Math.round((recovSum / (recovN * 100)) * 100) : 0;
+
+  const statCards = n === 0
+    ? `<div class="card"><p style="color:var(--muted);">検証データを蓄積中です。レース確定後、ここに全件の成績が自動集計されます。</p></div>`
+    : `<div class="grid grid-3">
+<div class="card"><h3>AI本命の1着率</h3><p style="font-size:28px; font-weight:900;">${pctOf(win, n)}%</p><p style="color:var(--dim); font-size:12px;">2連対率${pctOf(top2, n)}% / 3連対率${pctOf(top3, n)}%(${n}レース)</p></div>
+<div class="card"><h3>AI本命の単勝仮想回収率</h3><p style="font-size:28px; font-weight:900;">${recovN > 0 ? `${recovery}%` : "—"}</p><p style="color:var(--dim); font-size:12px;">全対象レースの単勝に100円ずつ賭けた場合(${recovN}レース)</p></div>
+<div class="card"><h3>イン評価の実測差</h3><p style="font-size:28px; font-weight:900;">${pctOf(inWin, n)}%</p><p style="color:var(--dim); font-size:12px;">1号艇1着の実測率。事前想定平均は${n > 0 ? Math.round(inPreSum / n) : 0}%</p></div>
+</div>`;
+
+  const venueRows = [...byVenue.values()]
+    .sort((a, b) => b.n - a.n)
+    .map((v) => `<tr><td><a href="${base}races/${v.slug}/">${esc(v.venue)}</a></td><td>${v.n}</td><td>${pctOf(v.aiWin, v.n)}%</td><td>${pctOf(v.inWin, v.n)}%</td></tr>`)
+    .join("\n");
+  const venueTable = n === 0 ? "" : `<section><h2>会場別の成績</h2><div class="table-scroll"><table class="entries">
+<thead><tr><th>会場</th><th>検証R数</th><th>AI本命1着率</th><th>イン1着率</th></tr></thead><tbody>${venueRows}</tbody></table></div></section>`;
+
+  return articlePage({
+    title: "AI予想の成績公開(的中率・回収率を全件検証)｜競艇チョクゼン",
+    metaDesc: `競艇チョクゼンのAI事前評価の成績を全件公開。AI本命1着率${pctOf(win, n)}%、単勝仮想回収率${recovN > 0 ? recovery + "%" : "集計中"}(検証${n}レース)。外れも含めた全レースの検証記録つき。`,
+    path: "labs/signals/",
+    base,
+    crumbs: [["ホーム", base], ["AI予想の成績"]],
+    bodyHtml: `<h1>AI予想の成績 — 的中も外れも、全件公開</h1>
+<p style="color:var(--muted);">当サイトの事前評価(AI本命・イン逃げ確率)を確定結果と自動照合した成績です。都合の良いレースだけを切り取らず、全${n}レースを集計対象にしています。毎日自動更新。</p>
+<section><h2>全体成績</h2>${statCards}</section>
+${venueTable}
+<section><h2>算出方法</h2><div class="card"><p style="font-size:13.5px; color:#cfdde6;">
+・AI本命 = 各レースの事前AI勝率が最大の艇。レース締切前に公開したものをそのまま照合(後出しなし)。<br>
+・単勝仮想回収率 = 全対象レースのAI本命に単勝100円ずつ賭けたと仮定した回収額÷投資額。<br>
+・展示反映後のシグナル(乖離・前づけ・展示偏差)の種類別成績は、シグナル点灯フェーズの稼働後にここへ追加されます。<br>
+・データソースは公式配布の番組表・競走成績ファイルです。</p></div></section>
+<section><h2>検証記録を見る</h2><p><a href="${base}results/">日別の結果まとめ</a> / <a href="${base}racers/">選手別の成績</a></p></section>`,
+  });
 }
 
 /* ---------- 明日のレース(A4: 前夜先行公開の導線) ---------- */
@@ -623,6 +767,7 @@ async function main() {
   const dates = [...new Set(races.map((r) => r.dateISO))].sort();
   const currentDate = dates.includes(jstToday) ? jstToday : dates[dates.length - 1];
   const todayRaces = races.filter((r) => r.dateISO === currentDate);
+  const features = collectFeatures(races);
 
   await mkdir(DIST, { recursive: true });
   const assetsSrc = path.join(ROOT, "site", "assets");
@@ -638,7 +783,7 @@ async function main() {
   indexHtml = indexHtml
     .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(todayRaces, indexBase))
     .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(todayRaces, indexBase))
-    .replace("<!--{{TODAY_RACES}}-->", todayRacesGrouped(todayRaces, indexBase))
+    .replace("<!--{{TODAY_RACES}}-->", todayRacesGrouped(todayRaces, indexBase, features))
     .replace("<!--{{TOMORROW_RACES}}-->", tomorrowSection(races, currentDate, indexBase))
     .replace("<!--{{REVIEW_RACES}}-->", reviewRaces(races, indexBase));
   indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });
@@ -660,9 +805,36 @@ async function main() {
     await writeFile(path.join(dir, "index.html"), stubPage(title, body, baseFor(1)), "utf-8");
   }
 
+  // 精度ダッシュボード(labs/signals: 実コンテンツ)
+  const sigDir = path.join(DIST, "labs", "signals");
+  await mkdir(sigDir, { recursive: true });
+  await writeFile(path.join(sigDir, "index.html"), dashboardHtml(races), "utf-8");
+
+  // グレードレース特設(SG/G1等)
+  for (const f of features) {
+    const dir = path.join(DIST, f.path);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, "index.html"), featurePageHtml(f), "utf-8");
+  }
+  const featBase = baseFor(1);
+  const featLinks = features
+    .map((f) => `<li style="margin-bottom:6px;"><a href="${featBase}${f.path}"><span class="grade-badge">${esc(f.grade)}</span> ${esc(f.title)}(${esc(f.venue)})</a> <span style="color:var(--dim); font-size:12px;">${dateLabel(f.dates[0])}〜</span></li>`)
+    .join("\n");
+  const featIndex = articlePage({
+    title: "SG・G1などグレードレース特設一覧｜競艇チョクゼン",
+    metaDesc: "競艇のSG・G1・G2・G3グレードレースの特設ページ一覧。開催節ごとに全レースの直前予想・結果・答え合わせを自動集約。",
+    path: "features/",
+    base: featBase,
+    crumbs: [["ホーム", featBase], ["特設一覧"]],
+    bodyHtml: `<h1>グレードレース特設一覧</h1>
+<p style="color:var(--muted);">SG・G1等の開催節を検出すると、特設ページがここに自動追加されます。</p>
+${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p style="color:var(--muted);">現在アーカイブ内にグレードレースはありません。開催が始まると自動で追加されます。</p>`}`,
+  });
+  await mkdir(path.join(DIST, "features"), { recursive: true });
+  await writeFile(path.join(DIST, "features", "index.html"), featIndex, "utf-8");
+
   // ラボ(ストックページ・深度2)
   const labs: [string, string, string][] = [
-    ["signals", "シグナル種類別の成績", "乖離・前づけ・展示偏差の各シグナルの的中率・回収率を、検証済みレースの蓄積から算出して公開します。現在蓄積中です。算出方法: 全シグナルをレース締切前に記録し、確定結果と自動照合。"],
     ["maezuke", "前づけレースアーカイブ", "進入が動いたレースだけを集めた記録集です。隊形変化の内容・イン逃げ確率の変動・実際の結果を蓄積します。現在蓄積中です。"],
     ["venues", "会場別・展示の信頼度", "展示タイムが結果に直結しやすい会場・条件を、検証済みレースの蓄積から係数化して公開します。現在蓄積中です。"],
   ];
@@ -813,6 +985,8 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
     `${SITE_URL}/racers/`,
     ...[...racers.keys()].map((reg) => `${SITE_URL}/racers/${reg}/`),
     `${SITE_URL}/guide/`,
+    `${SITE_URL}/features/`,
+    ...features.map((f) => `${SITE_URL}/${f.path}`),
     `${SITE_URL}/labs/signals/`,
     `${SITE_URL}/labs/maezuke/`,
     `${SITE_URL}/labs/venues/`,

@@ -40,11 +40,13 @@ export function applyResults(races: Race[], parsed: ParseKResult): { updated: nu
       }
 
       const p3t = pr.payouts.find((p) => p.bet === "3連単");
+      const pWin = pr.payouts.find((p) => p.bet === "単勝" && Number(p.combo) === finish[0]);
       const result: RaceResult = {
         finish,
         kimarite: pr.kimarite,
         payout3t: p3t?.amount ?? 0,
         popularity: p3t?.popularity ?? 0,
+        payoutWin: pWin?.amount,
         review: buildReview(race, pr, finish, p3t?.amount, p3t?.popularity),
       };
 

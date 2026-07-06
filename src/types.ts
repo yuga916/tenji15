@@ -8,6 +8,7 @@ export type SignalImpact = "up" | "down" | "neutral";
 
 export interface Entry {
   lane: number;            // 艇番 1-6
+  regNo?: string;          // 登録番号(選手ページの生成キー。旧データはundefined)
   name: string;
   racerClass: string;      // A1/A2/B1/B2
   stAvg: number;           // 平均ST

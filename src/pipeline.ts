@@ -21,7 +21,36 @@ export async function runPipelineOnce(dateISO?: string): Promise<void> {
   await migrateLegacy();
 
   await updateRacecards(today);
-  if (OFFICIAL) await updateResults(today);
+  if (OFFICIAL) {
+    await prefetchTomorrow(today);
+    await updateResults(today);
+  }
+}
+
+/**
+ * 翌日番組の先行取得(SEO: 前夜からページを公開してインデックスの時間を稼ぐ)。
+ * 翌日分Bファイルは夕方〜夜に配布されるため17時以降のみ、かつ未取得の間だけ試行。
+ */
+async function prefetchTomorrow(today: string): Promise<void> {
+  if (jstHour() < 17) return;
+  const tomorrow = addDays(today, 1);
+  const existing = await loadDay(tomorrow);
+  if (existing && existing.length > 0) return; // 取得済み(当日になれば通常フローで再取得される)
+
+  try {
+    const { fetchBFileText } = await import("./officialFetcher.ts");
+    const { convertBText } = await import("./dataSource.ts");
+    const text = await fetchBFileText(tomorrow);
+    const races = convertBText(text, tomorrow);
+    await saveDay(tomorrow, races);
+    console.log(`[pipeline] 翌日(${tomorrow})の番組を先行公開: ${races.length}レース`);
+  } catch (e) {
+    if (e instanceof NotPublishedError) {
+      console.log(`[pipeline] 翌日(${tomorrow})の番組は未配布(正常スキップ)`);
+    } else {
+      console.warn(`[pipeline] 翌日番組の取得失敗(致命的でない): ${(e as Error).message}`);
+    }
+  }
 }
 
 /* ---------- 1) 番組表 ---------- */

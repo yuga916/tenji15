@@ -75,6 +75,7 @@ export function buildPreVerdict(race: ParsedRace, venueName: string, probs: numb
 export function toEntries(race: ParsedRace, probs: number[]): Entry[] {
   return race.racers.map((r, i) => ({
     lane: r.lane,
+    regNo: r.regNo,
     name: r.name,
     racerClass: r.racerClass,
     stAvg: 0, // BファイルにSTはないため0(展示フェーズ・選手マスタで補完予定)

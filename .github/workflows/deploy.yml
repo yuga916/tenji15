@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write   # data/days(答え合わせアーカイブ)をコミットして蓄積するため
   pages: write
   id-token: write
 
@@ -38,6 +38,18 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq lhasa
       - run: npm run test:parser
       - run: npm run pipeline
+      # 日別データ(答え合わせアーカイブ)をリポジトリへコミットして蓄積。
+      # [skip ci]でこのpushによる再実行ループを防ぐ。失敗してもデプロイは継続。
+      - name: Commit data archive
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/days 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "data: 自動更新 $(date -u +%Y-%m-%dT%H:%MZ) [skip ci]"
+            git pull --rebase origin main || true
+            git push origin main || echo "::warning::データのpushに失敗(次回リトライ)"
+          fi
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:

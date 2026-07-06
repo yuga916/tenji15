@@ -12,7 +12,7 @@ import { mkdir, writeFile, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Race, Entry, Signal, RaceStatus } from "./types.ts";
-import { loadRaces } from "./store.ts";
+import { loadAllRaces } from "./store.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -209,9 +209,13 @@ function signalRaces(races: Race[], base: string): string {
 }
 
 function reviewRaces(races: Race[], base: string): string {
-  const done = races.filter((r) => r.status === "verified");
-  if (done.length === 0) return `<p style="color:var(--muted); font-size:13px;">本日の検証済みレースはまだありません。</p>`;
-  return done.map((r) => raceCardForIndex(r, base)).join("\n");
+  // 全日付のverifiedから新しい順に(高配当を優先的に上へ)
+  const done = races
+    .filter((r) => r.status === "verified")
+    .sort((a, b) => b.dateISO.localeCompare(a.dateISO) || (b.result?.payout3t ?? 0) - (a.result?.payout3t ?? 0));
+  if (done.length === 0)
+    return `<p style="color:var(--muted); font-size:13px;">検証済みレースはまだありません。レース確定後、結果と答え合わせが順次ここに蓄積されます。</p>`;
+  return done.slice(0, 18).map((r) => raceCardForIndex(r, base)).join("\n");
 }
 
 function otherRacesHtml(all: Race[], current: Race, base: string): string {
@@ -344,8 +348,14 @@ ${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${new Date().toISOString().sli
 
 /* ---------- main ---------- */
 async function main() {
-  const races = await loadRaces();
+  const races = await loadAllRaces();
   console.log(`[build] ${races.length}レース分のページを生成します`);
+
+  // 「本日」= JSTの今日。今日のデータが無ければ最新日を代表日とする
+  const jstToday = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  const dates = [...new Set(races.map((r) => r.dateISO))].sort();
+  const currentDate = dates.includes(jstToday) ? jstToday : dates[dates.length - 1];
+  const todayRaces = races.filter((r) => r.dateISO === currentDate);
 
   await mkdir(DIST, { recursive: true });
   const assetsSrc = path.join(ROOT, "site", "assets");
@@ -359,9 +369,9 @@ async function main() {
   const indexBase = baseFor(0);
   let indexHtml = await readFile(path.join(ROOT, "site", "index.html"), "utf-8");
   indexHtml = indexHtml
-    .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(races, indexBase))
-    .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(races, indexBase))
-    .replace("<!--{{TODAY_RACES}}-->", races.map((r) => raceCardForIndex(r, indexBase)).join("\n"))
+    .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(todayRaces, indexBase))
+    .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(todayRaces, indexBase))
+    .replace("<!--{{TODAY_RACES}}-->", todayRaces.map((r) => raceCardForIndex(r, indexBase)).join("\n"))
     .replace("<!--{{REVIEW_RACES}}-->", reviewRaces(races, indexBase));
   indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });
   await writeFile(path.join(DIST, "index.html"), indexHtml, "utf-8");
@@ -405,7 +415,8 @@ async function main() {
   for (const [slug, list] of byVenue) {
     const venue = list[0].venue;
     const venueBase = baseFor(2);
-    const links = list
+    const links = [...list]
+      .sort((a, b) => b.dateISO.localeCompare(a.dateISO) || a.raceNo - b.raceNo)
       .map((r) => `<li style="margin-bottom:8px;"><a href="${venueBase}${racePath(r)}">${dateLabel(r.dateISO)} 第${r.raceNo}R ${esc(r.name)} の直前分析・答え合わせ</a></li>`)
       .join("\n");
     const html = stubPage(`${venue}競艇の直前予想・結果一覧`, "", venueBase).replace(

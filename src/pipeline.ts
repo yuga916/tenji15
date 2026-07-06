@@ -1,43 +1,129 @@
 /**
  * データ取得を1回実行して保存する(GitHub Actions / cron から呼ぶ入口)。
- * officialモードで取得に失敗した場合(未配布時刻・ネットワーク等)は、
- * サイトを壊さないため前回データ→mockの順でフォールバックする。
+ *
+ * 1) 番組表(B): 当日分を取得して日別ファイルへ保存。
+ *    既存データとマージし、verified済みレースは上書きしない。
+ *    取得失敗時は既存データ維持→(データが全く無い場合のみ)mockへフォールバック。
+ * 2) 競走成績(K)=答え合わせ: 当日(22時以降)と過去2日分のうち、
+ *    未verifiedレースが残る日だけ取得を試みる。未配布(404)は正常スキップ。
  */
 import { createDataSource, MockDataSource } from "./dataSource.ts";
-import { saveRaces, loadRaces } from "./store.ts";
+import { fetchKFileText, NotPublishedError } from "./officialFetcher.ts";
+import { parseKFile } from "./resultsParser.ts";
+import { applyResults } from "./verify.ts";
+import { saveDay, loadDay, migrateLegacy, listDays } from "./store.ts";
+import type { Race } from "./types.ts";
+
+const OFFICIAL = (process.env.DATA_SOURCE_MODE ?? "mock") === "official";
 
 export async function runPipelineOnce(dateISO?: string): Promise<void> {
-  const date = dateISO ?? jstToday();
-  const source = createDataSource();
-  console.log(`[pipeline] データ取得: ${date} / ソース: ${source.label}`);
+  const today = dateISO ?? jstToday();
+  await migrateLegacy();
 
-  try {
-    const races = await source.fetchRaces(date);
-    const file = await saveRaces(races);
-    console.log(`[pipeline] ${races.length}レースを保存: ${file}`);
-    return;
-  } catch (e) {
-    console.error(`[pipeline] 取得失敗: ${(e as Error).message}`);
-  }
-
-  // フォールバック1: 前回データがあればそのまま使う(ビルドを継続)
-  try {
-    const prev = await loadRaces();
-    console.warn(`[pipeline] フォールバック: 前回データ${prev.length}レースを維持します`);
-    return;
-  } catch {
-    /* 前回データなし */
-  }
-
-  // フォールバック2: mock
-  console.warn("[pipeline] フォールバック: mockデータを使用します");
-  const races = await new MockDataSource().fetchRaces(date);
-  await saveRaces(races);
+  await updateRacecards(today);
+  if (OFFICIAL) await updateResults(today);
 }
 
+/* ---------- 1) 番組表 ---------- */
+async function updateRacecards(today: string): Promise<void> {
+  const source = createDataSource();
+  console.log(`[pipeline] 番組表取得: ${today} / ソース: ${source.label}`);
+
+  try {
+    const fresh = await source.fetchRaces(today);
+    const existing = await loadDay(today);
+    const merged = mergeDay(existing, fresh);
+    const file = await saveDay(today, merged);
+    console.log(`[pipeline] ${merged.length}レースを保存: ${file}`);
+    return;
+  } catch (e) {
+    console.error(`[pipeline] 番組表取得失敗: ${(e as Error).message}`);
+  }
+
+  // フォールバック1: 既存データがあればそのまま維持(ビルドを継続)
+  const days = await listDays();
+  if (days.length > 0) {
+    console.warn(`[pipeline] フォールバック: 既存${days.length}日分のデータを維持します`);
+    return;
+  }
+
+  // フォールバック2(mockモードのみ): mockデータを使用。
+  // officialモードではダミーデータが答え合わせアーカイブに混入しないよう空で保存し、
+  // 次回の取得成功を待つ(サイトは空の状態でビルドされる)。
+  if (!OFFICIAL) {
+    console.warn("[pipeline] フォールバック: mockデータを使用します");
+    const races = await new MockDataSource().fetchRaces(today);
+    await saveDay(today, races);
+    return;
+  }
+  console.warn("[pipeline] officialモードでデータなし: 空データで継続します(mock混入を防止)");
+  await saveDay(today, []);
+}
+
+/** 既存データとのマージ: verified済みは残し、それ以外は新データで更新 */
+function mergeDay(existing: Race[] | null, fresh: Race[]): Race[] {
+  if (!existing || existing.length === 0) return fresh;
+  const byId = new Map(existing.map((r) => [r.raceId, r]));
+  const merged = fresh.map((f) => {
+    const old = byId.get(f.raceId);
+    return old && old.status === "verified" ? old : f;
+  });
+  // 新データに存在しない既存レース(番組変更等)もverifiedなら残す
+  const freshIds = new Set(fresh.map((r) => r.raceId));
+  for (const old of existing) {
+    if (!freshIds.has(old.raceId) && old.status === "verified") merged.push(old);
+  }
+  return merged;
+}
+
+/* ---------- 2) 答え合わせ(K) ---------- */
+async function updateResults(today: string): Promise<void> {
+  const targets = [addDays(today, -2), addDays(today, -1)];
+  // 当日分のKファイルは全レース確定後(夜)に配布されるため22時以降のみ試行
+  if (jstHour() >= 22) targets.push(today);
+
+  for (const date of targets) {
+    const races = await loadDay(date);
+    if (!races || races.length === 0) continue;
+    const pending = races.filter((r) => r.status !== "verified");
+    if (pending.length === 0) continue;
+
+    try {
+      const text = await fetchKFileText(date);
+      const parsed = parseKFile(text);
+      const { updated, warnings } = applyResults(races, parsed);
+      for (const w of warnings.slice(0, 10)) console.warn(`[verify] 警告: ${w}`);
+      if (warnings.length > 10) console.warn(`[verify] 警告 他${warnings.length - 10}件`);
+      if (updated > 0) {
+        await saveDay(date, races);
+        console.log(`[verify] ${date}: ${updated}レースを答え合わせ済み(verified)にしました`);
+      } else {
+        console.log(`[verify] ${date}: 更新対象なし(パース${parsed.venues.length}場)`);
+      }
+    } catch (e) {
+      if (e instanceof NotPublishedError) {
+        console.log(`[verify] ${date}: 成績ファイルは未配布(正常スキップ)`);
+      } else {
+        console.error(`[verify] ${date}: 取得失敗: ${(e as Error).message}`);
+      }
+    }
+  }
+}
+
+/* ---------- helpers ---------- */
 /** JSTの今日(YYYY-MM-DD)。Actionsのランナー(UTC)でも日付がズレないように */
 function jstToday(): string {
   return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+}
+
+function jstHour(): number {
+  return new Date(Date.now() + 9 * 3600 * 1000).getUTCHours();
+}
+
+function addDays(dateISO: string, delta: number): string {
+  const d = new Date(`${dateISO}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toISOString().slice(0, 10);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

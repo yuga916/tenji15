@@ -1,8 +1,10 @@
 /**
  * 公式配布ファイルのダウンロード+LZH解凍。
  *
- * 対象: 番組表Bファイル https://www1.mbrace.or.jp/od2/B/{YYYYMM}/b{YYMMDD}.lzh
- * - 1日1ファイル(全24場分)。取得は1リクエストのみ(低負荷)
+ * 対象:
+ * - 番組表Bファイル   https://www1.mbrace.or.jp/od2/B/{YYYYMM}/b{YYMMDD}.lzh
+ * - 競走成績Kファイル https://www1.mbrace.or.jp/od2/K/{YYYYMM}/k{YYMMDD}.lzh
+ * - 1日1ファイル(全24場分)。取得は各1リクエストのみ(低負荷)
  * - LZH解凍は外部コマンド(lhasa / lha / 7z)に委譲。
  *   GitHub Actionsでは `sudo apt-get install -y lhasa` を事前実行する
  * - 中身はShift_JISテキスト。Node(full-ICU)のTextDecoderでデコード
@@ -19,10 +21,24 @@ export function bFileUrl(dateISO: string): string {
   return `${BASE_URL}/B/${y}${m}/b${y.slice(2)}${m}${d}.lzh`;
 }
 
+export function kFileUrl(dateISO: string): string {
+  const [y, m, d] = dateISO.split("-");
+  return `${BASE_URL}/K/${y}${m}/k${y.slice(2)}${m}${d}.lzh`;
+}
+
+/** 配布ファイルがまだ公開されていない(404)ことを表すエラー */
+export class NotPublishedError extends Error {
+  constructor(url: string) {
+    super(`未配布(404): ${url}`);
+    this.name = "NotPublishedError";
+  }
+}
+
 async function download(url: string): Promise<Buffer> {
   const res = await fetch(url, {
     headers: { "User-Agent": "kyotei-chokuzen/0.1 (personal analysis; low-frequency; contact via site)" },
   });
+  if (res.status === 404) throw new NotPublishedError(url);
   if (!res.ok) throw new Error(`ダウンロード失敗 ${res.status}: ${url}`);
   return Buffer.from(await res.arrayBuffer());
 }
@@ -54,14 +70,13 @@ function decodeShiftJis(buf: Buffer): string {
   }
 }
 
-/** 指定日の番組表テキスト(デコード済み)を取得 */
-export async function fetchBFileText(dateISO: string): Promise<string> {
-  const url = bFileUrl(dateISO);
-  console.log(`[official] 番組表取得: ${url}`);
+/** LZH配布ファイルをダウンロード→解凍→Shift_JISデコードして返す共通処理 */
+async function fetchLzhText(url: string, label: string): Promise<string> {
+  console.log(`[official] ${label}取得: ${url}`);
   const lzh = await download(url);
 
   const dir = await mkdtemp(path.join(tmpdir(), "tenji15-"));
-  const archivePath = path.join(dir, "b.lzh");
+  const archivePath = path.join(dir, "archive.lzh");
   await writeFile(archivePath, lzh);
   extractLzh(archivePath, dir);
 
@@ -69,4 +84,14 @@ export async function fetchBFileText(dateISO: string): Promise<string> {
   if (files.length === 0) throw new Error(`解凍後にTXTが見つかりません: ${dir}`);
   const buf = await readFile(path.join(dir, files[0]));
   return decodeShiftJis(buf);
+}
+
+/** 指定日の番組表テキスト(デコード済み)を取得 */
+export async function fetchBFileText(dateISO: string): Promise<string> {
+  return fetchLzhText(bFileUrl(dateISO), "番組表");
+}
+
+/** 指定日の競走成績テキスト(デコード済み)を取得。全レース確定後の夜〜翌日に配布される */
+export async function fetchKFileText(dateISO: string): Promise<string> {
+  return fetchLzhText(kFileUrl(dateISO), "競走成績");
 }

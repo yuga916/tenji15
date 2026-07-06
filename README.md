@@ -32,9 +32,11 @@ site/assets/styles.css              Night Waterテーマ・艇色バッジ(1白2
 src/
   types.ts      スキーマ(Race/Entry/Signal/RaceResult、status: pre|signal|verified)
   dataSource.ts mock / official 切替(officialは公式配布ファイル+直前情報の統合箱)
-  store.ts      保存層
-  pipeline.ts   データ取得を1回実行
-  build.ts      静的サイト生成(状態別レンダリング・labs/ストックページ)
+  store.ts      保存層(日別JSON data/days/YYYY-MM-DD.json で蓄積)
+  pipeline.ts   データ取得を1回実行(番組表B+競走成績K=答え合わせ)
+  resultsParser.ts 競走成績(Kファイル)パーサ(着順・決まり手・払戻・気象)
+  verify.ts     答え合わせエンジン(結果マージ・verified遷移・review文生成)
+  build.ts      静的サイト生成(状態別レンダリング・全日付・labs/ストックページ)
 .github/workflows/deploy.yml        開催時間帯(JST8-23時)は15分ごとに自動更新
 ```
 
@@ -78,7 +80,19 @@ npm run test:parser     23項目のスモークテスト(CIでも毎回実行)
 Actionsのログで `[official] N場 Mレースをパースしました` と警告件数を確認し、
 形式差異があれば `DEBUG_PARSER=1` で未マッチ行を出して `officialParser.ts` の正規表現を調整する。
 
-**次フェーズ(未実装)**: 展示・直前オッズの反映(シグナル点灯)、結果Kファイルの取り込み(答え合わせ自動生成)。
+## 答え合わせ(Kファイル)自動生成【実装済み】
+
+公式配布の競走成績(Kファイル)から、レース確定後に同一URLへ結果・払戻・決まり手と検証文を追記する。
+
+- 対象日: 当日(JST22時以降のみ試行)+過去2日。未verifiedレースが残る日だけ取得(低負荷)
+- 未配布(404)は正常スキップ。配布され次第、次の15分間隔の実行で反映される
+- 日別データ(`data/days/*.json`)はActionsがリポジトリへコミットして蓄積(=ストックコンテンツの実体)。
+  コミットメッセージの`[skip ci]`で再実行ループを防止
+- verified済みレースは番組表の再取得で上書きされない(mergeDay)
+- review文は事前評価(AI本命・イン逃げ確率)と結果の照合を断定表現なしで記録
+- `fixtures/k-sample.txt` + `npm run test:parser` でK系も毎CIテスト
+
+**次フェーズ(未実装)**: 展示・直前オッズの反映(シグナル点灯)、labsストックページの自動集計。
 
 規約状況(2026/7/4確認済み): 配布ファイルに利用条件の明示なし・robots.txt全許可。取得は1日1リクエストの低負荷設計。公式への直リンクは張らない(「営利目的リンクお断り」文言に留意)。公開運用前にBOATRACE振興会への確認送付を推奨。
 

@@ -87,14 +87,17 @@ function gapCell(e: Entry): string {
   return `<span class="gap ${cls}">${sign}${(g * 100).toFixed(0)}pt</span>`;
 }
 
-function entriesRows(r: Race): string {
+function entriesRows(r: Race, base: string): string {
   const best = topPick(r);
   return r.entries
     .map((e) => {
       const topClass = e.lane === best.lane ? ` class="top-pick"` : "";
+      const nameCell = e.regNo
+        ? `<a href="${base}racers/${e.regNo}/" style="color:inherit; border-bottom:1px dotted var(--dim);" title="${esc(e.name)}選手の成績・AI評価">${esc(e.name)}</a>`
+        : esc(e.name);
       return `<tr${topClass}>
         <td><span class="boat boat-${e.lane}">${e.lane}</span></td>
-        <td class="racer-name">${esc(e.name)}</td>
+        <td class="racer-name">${nameCell}</td>
         <td>${esc(e.racerClass)}</td>
         <td>${e.natWinRate.toFixed(2)}</td>
         <td>${e.motorRate.toFixed(1)}%</td>
@@ -309,7 +312,7 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
     SIGNAL_FEED: signalFeed(r),
     KIMARITE_BAR: kimariteBar(r),
     KIMARITE_NOTE: esc(r.kimariteNote),
-    ENTRIES_ROWS: entriesRows(r),
+    ENTRIES_ROWS: entriesRows(r, base),
     OTHER_RACES_HTML: otherRacesHtml(all, r, base),
     UPDATED_AT: new Date(r.updatedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }),
     MODEL_VERSION: esc(r.modelVersion),
@@ -534,6 +537,43 @@ ${gaSnippet()}</head><body>
 <footer class="site"><div class="wrap"><div class="legal"><p>© 2026 競艇チョクゼン</p></div></div></footer></body></html>`;
 }
 
+/** 本日のレースを会場ごとにグルーピングして表示(締切が早い場から) */
+function todayRacesGrouped(races: Race[], base: string): string {
+  if (races.length === 0) return `<p style="color:var(--muted); font-size:13px;">本日のレースデータはありません。</p>`;
+  const byVenue = new Map<string, Race[]>();
+  for (const r of races) {
+    const l = byVenue.get(r.venueSlug) ?? [];
+    l.push(r);
+    byVenue.set(r.venueSlug, l);
+  }
+  const now = Date.now();
+  const blocks = [...byVenue.values()]
+    .map((list) => {
+      const sorted = [...list].sort((a, b) => a.raceNo - b.raceNo);
+      // 未締切の最初のレース(=その場の「次」)。全部終わっていれば最終R
+      const next = sorted.find((r) => new Date(closeIso(r)).getTime() > now) ?? sorted[sorted.length - 1];
+      return { sorted, next, nextClose: closeIso(next) };
+    })
+    .sort((a, b) => a.nextClose.localeCompare(b.nextClose))
+    .map(({ sorted, next }) => {
+      const v = sorted[0];
+      const doneCount = sorted.filter((r) => r.status === "verified").length;
+      const status =
+        doneCount === sorted.length
+          ? `全${sorted.length}R終了・答え合わせ公開中`
+          : `次の締切 ${next.raceNo}R ${next.closeTime}`;
+      return `<div style="margin-bottom:30px;">
+  <h3 style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px; font-size:17px;">
+    <a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="color:var(--text);">${esc(v.venue)}</a>
+    <span style="color:var(--muted); font-size:12.5px; font-weight:400;">${status}</span>
+    <a href="${base}races/${v.venueSlug}/" style="margin-left:auto; color:var(--cyan); font-size:12px;">会場データ →</a>
+  </h3>
+  <div class="grid grid-3">${sorted.map((r) => raceCardForIndex(r, base)).join("\n")}</div>
+</div>`;
+    });
+  return blocks.join("\n");
+}
+
 /* ---------- 明日のレース(A4: 前夜先行公開の導線) ---------- */
 function addDaysISO(dateISO: string, delta: number): string {
   const d = new Date(`${dateISO}T00:00:00Z`);
@@ -598,7 +638,7 @@ async function main() {
   indexHtml = indexHtml
     .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(todayRaces, indexBase))
     .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(todayRaces, indexBase))
-    .replace("<!--{{TODAY_RACES}}-->", todayRaces.map((r) => raceCardForIndex(r, indexBase)).join("\n"))
+    .replace("<!--{{TODAY_RACES}}-->", todayRacesGrouped(todayRaces, indexBase))
     .replace("<!--{{TOMORROW_RACES}}-->", tomorrowSection(races, currentDate, indexBase))
     .replace("<!--{{REVIEW_RACES}}-->", reviewRaces(races, indexBase));
   indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });

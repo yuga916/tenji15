@@ -222,16 +222,51 @@ function reviewRaces(races: Race[], base: string): string {
 }
 
 function otherRacesHtml(all: Race[], current: Race, base: string): string {
-  const others = all.filter((r) => r.raceId !== current.raceId && r.dateISO === current.dateISO);
-  if (others.length === 0) return `<p style="color:var(--muted); font-size:13px;">同日の他レースはありません。</p>`;
-  return others
-    .map(
-      (r) => `<a class="card race-card" href="${base}${racePath(r)}" style="color:var(--text);">
-        <div class="head"><span class="venue">${esc(r.venue)} ${r.raceNo}R</span><span class="countdown" data-close="${closeIso(r)}">--:--</span></div>
-        <div>${statusBadge(r)}</div>
-      </a>`
-    )
+  const sameDay = all.filter((r) => r.dateISO === current.dateISO);
+  if (sameDay.length <= 1) return `<p style="color:var(--muted); font-size:13px;">同日の他レースはありません。</p>`;
+
+  // 同じ場の他レース: レース番号のカードを並べる(現在のレースは強調表示)
+  const sameVenue = sameDay
+    .filter((r) => r.venueSlug === current.venueSlug)
+    .sort((a, b) => a.raceNo - b.raceNo);
+  const sameCards = sameVenue
+    .map((r) => {
+      const isCurrent = r.raceId === current.raceId;
+      const label = r.status === "verified" ? "済" : r.closeTime;
+      return isCurrent
+        ? `<span style="display:inline-block; padding:8px 12px; border-radius:8px; background:var(--cyan); color:#05131c; font-weight:700; font-size:13px;">${r.raceNo}R</span>`
+        : `<a href="${base}${racePath(r)}" style="display:inline-block; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); color:var(--text); font-size:13px;">${r.raceNo}R <span style="color:var(--dim); font-size:11px;">${label}</span></a>`;
+    })
     .join("\n");
+
+  // 他の開催場: 場単位のリンクカード(全レースを並べない)
+  const byVenue = new Map<string, Race[]>();
+  for (const r of sameDay) {
+    if (r.venueSlug === current.venueSlug) continue;
+    const l = byVenue.get(r.venueSlug) ?? [];
+    l.push(r);
+    byVenue.set(r.venueSlug, l);
+  }
+  const now = Date.now();
+  const venueCards = [...byVenue.values()]
+    .map((list) => {
+      const sorted = [...list].sort((a, b) => a.closeTime.localeCompare(b.closeTime));
+      const next = sorted.find((r) => new Date(closeIso(r)).getTime() > now && r.status !== "verified");
+      const v = sorted[0];
+      const note = next ? `次の締切 ${next.raceNo}R ${next.closeTime}` : "全レース終了・答え合わせ公開中";
+      return { html: `<a class="card race-card" href="${base}races/${v.venueSlug}/${v.dateISO}/" style="color:var(--text);">
+        <div class="head"><span class="venue">${esc(v.venue)}</span></div>
+        <div style="color:var(--muted); font-size:12.5px;">${note}</div>
+      </a>`, done: !next, key: next ? next.closeTime : "99:99" };
+    })
+    .sort((a, b) => Number(a.done) - Number(b.done) || a.key.localeCompare(b.key))
+    .map((x) => x.html)
+    .join("\n");
+
+  return `<h3 style="font-size:14px; margin-bottom:10px;">${esc(current.venue)}の全レース</h3>
+<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;">${sameCards}</div>
+<h3 style="font-size:14px; margin-bottom:10px;">他の開催場</h3>
+<div class="grid grid-3">${venueCards}</div>`;
 }
 
 /* ---------- JSON-LD ---------- */
@@ -428,6 +463,14 @@ function collectRacers(races: Race[]): Map<string, RacerAgg> {
   return map;
 }
 
+/** 選手アバター(級別カラー+名前の頭文字)。公式写真は著作物のため使わない */
+const CLASS_COLOR: Record<string, string> = { A1: "#e8b04b", A2: "#b8c4cf", B1: "#4dd8ff", B2: "#7a8a96" };
+function racerAvatar(name: string, racerClass: string, size = 64): string {
+  const color = CLASS_COLOR[racerClass] ?? "#4dd8ff";
+  const initial = esc(name.slice(0, 1));
+  return `<span style="display:inline-flex; align-items:center; justify-content:center; width:${size}px; height:${size}px; border-radius:50%; background:linear-gradient(145deg, ${color}33, ${color}18); border:2px solid ${color}; color:${color}; font-size:${Math.round(size * 0.45)}px; font-weight:900; flex-shrink:0;">${initial}</span>`;
+}
+
 function racerPageHtml(agg: RacerAgg): string {
   const base = baseFor(2);
   const top3Rate = agg.starts > 0 ? Math.round(((agg.wins + agg.seconds + agg.thirds) / agg.starts) * 100) : 0;
@@ -454,8 +497,13 @@ function racerPageHtml(agg: RacerAgg): string {
       ? `当サイトのAIが本命(◎)に指名したのは${agg.aiPicks}回、うち2着以内${agg.aiPickTop2}回。`
       : `当サイトのAI本命への指名はまだありません。`;
   const body = `
-<h1>${esc(agg.name)}(登番${agg.regNo})の成績・出走予定・AI評価</h1>
-<p style="color:var(--muted);">級別 ${esc(agg.racerClass)}・全国勝率 ${agg.natWinRate.toFixed(2)}。当サイトのアーカイブ(公式配布データ)に基づく記録です。</p>
+<div style="display:flex; align-items:center; gap:18px; margin-bottom:6px;">
+  ${racerAvatar(agg.name, agg.racerClass, 72)}
+  <div>
+    <h1 style="margin:0;">${esc(agg.name)}(登番${agg.regNo})の成績・出走予定・AI評価</h1>
+    <p style="color:var(--muted); margin:6px 0 0;">級別 <span style="color:${CLASS_COLOR[agg.racerClass] ?? "var(--cyan)"}; font-weight:700;">${esc(agg.racerClass)}</span>・全国勝率 ${agg.natWinRate.toFixed(2)}。当サイトのアーカイブ(公式配布データ)に基づく記録です。</p>
+  </div>
+</div>
 <section><h2>当サイト集計の成績</h2><div class="card">
 <p>結果確定済み ${agg.starts}走: <strong>1着${agg.wins}回・2着${agg.seconds}回・3着${agg.thirds}回</strong>(3連対率${top3Rate}%)。${aiNote}</p>
 <p style="color:var(--dim); font-size:12px;">※当サイトが答え合わせを開始した2026年7月以降の出走のみを集計した参考値です。通算成績は公式をご確認ください。</p>
@@ -958,7 +1006,7 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
     (a, b) => b.appearances.length - a.appearances.length || a.regNo.localeCompare(b.regNo)
   );
   const racerLinks = racerList
-    .map((a) => `<li style="margin-bottom:6px;"><a href="${racersBase}racers/${a.regNo}/">${esc(a.name)}(登番${a.regNo})</a> <span style="color:var(--dim); font-size:12px;">${esc(a.racerClass)}・掲載${a.appearances.length}走</span></li>`)
+    .map((a) => `<li style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">${racerAvatar(a.name, a.racerClass, 32)}<a href="${racersBase}racers/${a.regNo}/">${esc(a.name)}(登番${a.regNo})</a> <span style="color:var(--dim); font-size:12px;">${esc(a.racerClass)}・掲載${a.appearances.length}走</span></li>`)
     .join("\n");
   const racersIndex = articlePage({
     title: "ボートレーサー選手データ一覧(成績・AI評価)｜競艇チョクゼン",

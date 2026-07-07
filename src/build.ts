@@ -747,6 +747,55 @@ function tomorrowSection(races: Race[], currentDate: string, base: string): stri
   <div class="grid grid-3" style="margin-top:12px;">${cards}</div>`;
 }
 
+/* ---------- RSSフィード(ブログ村等の外部サービス連携・更新通知用) ---------- */
+function rssXml(races: Race[], resultDates: string[]): string {
+  const items: string[] = [];
+  const rfc822 = (dateISO: string, hh: number) =>
+    new Date(`${dateISO}T${String(hh).padStart(2, "0")}:00:00+09:00`).toUTCString();
+
+  // 日別の結果まとめ(確定した日ごとに1記事)
+  for (const d of [...resultDates].sort().reverse().slice(0, 20)) {
+    const done = races.filter((r) => r.dateISO === d && r.status === "verified" && r.result);
+    const max = Math.max(...done.map((r) => r.result!.payout3t));
+    const manshu = done.filter((r) => r.result!.payout3t >= 10000).length;
+    items.push(`  <item>
+    <title>${esc(`${dateLabel(d)}の競艇結果まとめ — 検証${done.length}レース・最高配当¥${max.toLocaleString()}・万舟${manshu}本`)}</title>
+    <link>${SITE_URL}/results/${d}/</link>
+    <guid isPermaLink="true">${SITE_URL}/results/${d}/</guid>
+    <pubDate>${rfc822(d, 22)}</pubDate>
+    <description>${esc(`${dateLabel(d)}の競艇(ボートレース)全場の結果・払戻・答え合わせの自動集計。高配当ランキング、万舟券、イン逃げ崩れ、決まり手内訳。`)}</description>
+  </item>`);
+  }
+
+  // 本日の予想一覧(毎日1記事)
+  const dates = [...new Set(races.map((r) => r.dateISO))].sort().reverse().slice(0, 3);
+  for (const d of dates) {
+    const dayRaces = races.filter((r) => r.dateISO === d);
+    const venues = new Set(dayRaces.map((r) => r.venueSlug)).size;
+    const first = dayRaces[0];
+    if (!first) continue;
+    items.push(`  <item>
+    <title>${esc(`${dateLabel(d)}の競艇 直前予想 — 全${venues}場${dayRaces.length}レースのAI事前評価を公開`)}</title>
+    <link>${SITE_URL}/races/${first.venueSlug}/${d}/</link>
+    <guid isPermaLink="true">${SITE_URL}/races/${first.venueSlug}/${d}/</guid>
+    <pubDate>${rfc822(d, 8)}</pubDate>
+    <description>${esc(`${dateLabel(d)}開催の全レースについて、AI事前評価とイン逃げ確率を無料公開。締切15分前の直前更新つき。`)}</description>
+  </item>`);
+  }
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>競艇チョクゼン — 締切15分前の直前予想と答え合わせ</title>
+  <link>${SITE_URL}/</link>
+  <description>競艇(ボートレース)全24場の直前予想をAIが自動分析。締切15分前の更新と、全レースの結果検証(答え合わせ)を毎日配信。</description>
+  <language>ja</language>
+  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+${items.join("\n")}
+</channel>
+</rss>`;
+}
+
 /* ---------- sitemap / robots ---------- */
 function sitemaps(urls: string[]): { xml: string; robots: string } {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -991,6 +1040,8 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
     `${SITE_URL}/labs/maezuke/`,
     `${SITE_URL}/labs/venues/`,
   ];
+  await writeFile(path.join(DIST, "feed.xml"), rssXml(races, resultDates), "utf-8");
+
   const { xml, robots } = sitemaps(urls);
   await writeFile(path.join(DIST, "sitemap.xml"), xml, "utf-8");
   await writeFile(path.join(DIST, "robots.txt"), robots, "utf-8");

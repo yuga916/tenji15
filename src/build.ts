@@ -284,14 +284,40 @@ function breadcrumbJsonLd(r: Race): string {
   });
 }
 
+/** 会場→都道府県(構造化データのaddress用) */
+const VENUE_PREF: Record<string, string> = {
+  桐生: "群馬県", 戸田: "埼玉県", 江戸川: "東京都", 平和島: "東京都", 多摩川: "東京都",
+  浜名湖: "静岡県", 蒲郡: "愛知県", 常滑: "愛知県", 津: "三重県", 三国: "福井県",
+  びわこ: "滋賀県", 住之江: "大阪府", 尼崎: "兵庫県", 鳴門: "徳島県", 丸亀: "香川県",
+  児島: "岡山県", 宮島: "広島県", 徳山: "山口県", 下関: "山口県", 若松: "福岡県",
+  芦屋: "福岡県", 福岡: "福岡県", 唐津: "佐賀県", 大村: "長崎県",
+};
+
 function sportsEventJsonLd(r: Race): string {
+  const start = closeIso(r);
+  // レースは締切の約5分後に発走し数分で終了するため、終了は締切+15分とする
+  const end = new Date(new Date(start).getTime() + 15 * 60000).toISOString();
   return JSON.stringify({
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${r.venue} 第${r.raceNo}R ${r.name}`,
+    description: `${r.venue}競艇(ボートレース${r.venue})第${r.raceNo}R「${r.name}」。締切予定${r.closeTime}。AI直前予想と結果・答え合わせを掲載。`,
     sport: "Motorboat racing",
-    startDate: closeIso(r),
-    location: { "@type": "Place", name: `ボートレース${r.venue}` },
+    startDate: start,
+    endDate: end,
+    eventStatus: "https://schema.org/EventScheduled",
+    image: `${SITE_URL}/assets/og-image.png`,
+    location: {
+      "@type": "Place",
+      name: `ボートレース${r.venue}`,
+      address: {
+        "@type": "PostalAddress",
+        ...(VENUE_PREF[r.venue] ? { addressRegion: VENUE_PREF[r.venue] } : {}),
+        addressCountry: "JP",
+      },
+    },
+    organizer: { "@type": "Organization", name: `ボートレース${r.venue}` },
+    performer: r.entries.map((e) => ({ "@type": "Person", name: e.name })),
   });
 }
 

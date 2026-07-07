@@ -350,6 +350,7 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
     KIMARITE_BAR: kimariteBar(r),
     KIMARITE_NOTE: esc(r.kimariteNote),
     ENTRIES_ROWS: entriesRows(r, base),
+    AVATAR_LEGEND: avatarLegend(),
     OTHER_RACES_HTML: otherRacesHtml(all, r, base),
     UPDATED_AT: new Date(r.updatedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }),
     MODEL_VERSION: esc(r.modelVersion),
@@ -472,6 +473,13 @@ function racerAvatar(name: string, racerClass: string, size = 64): string {
   return `<span style="display:inline-flex; align-items:center; justify-content:center; width:${size}px; height:${size}px; border-radius:50%; background:linear-gradient(145deg, ${color}33, ${color}18); border:2px solid ${color}; color:${color}; font-size:${Math.round(size * 0.45)}px; font-weight:900; flex-shrink:0;">${initial}</span>`;
 }
 
+/** アイコン色の凡例(控えめな小さい表示) */
+function avatarLegend(): string {
+  const dot = (c: string, label: string) =>
+    `<span style="display:inline-flex; align-items:center; gap:4px; margin-right:10px; white-space:nowrap;"><span style="width:9px; height:9px; border-radius:50%; border:2px solid ${c}; display:inline-block;"></span>${label}</span>`;
+  return `<p style="color:var(--dim); font-size:11px; margin-top:6px;">選手アイコンの色=級別: ${dot("#e8b04b", "A1")}${dot("#b8c4cf", "A2")}${dot("#4dd8ff", "B1")}${dot("#7a8a96", "B2")}</p>`;
+}
+
 function racerPageHtml(agg: RacerAgg): string {
   const base = baseFor(2);
   const top3Rate = agg.starts > 0 ? Math.round(((agg.wins + agg.seconds + agg.thirds) / agg.starts) * 100) : 0;
@@ -503,6 +511,7 @@ function racerPageHtml(agg: RacerAgg): string {
   <div>
     <h1 style="margin:0;">${esc(agg.name)}(登番${agg.regNo})の成績・出走予定・AI評価</h1>
     <p style="color:var(--muted); margin:6px 0 0;">級別 <span style="color:${CLASS_COLOR[agg.racerClass] ?? "var(--cyan)"}; font-weight:700;">${esc(agg.racerClass)}</span>・全国勝率 ${agg.natWinRate.toFixed(2)}。当サイトのアーカイブ(公式配布データ)に基づく記録です。</p>
+    ${avatarLegend()}
   </div>
 </div>
 <section><h2>当サイト集計の成績</h2><div class="card">

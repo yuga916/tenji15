@@ -92,9 +92,10 @@ function entriesRows(r: Race, base: string): string {
   return r.entries
     .map((e) => {
       const topClass = e.lane === best.lane ? ` class="top-pick"` : "";
-      const nameCell = e.regNo
+      const nameLink = e.regNo
         ? `<a href="${base}racers/${e.regNo}/" style="color:inherit; border-bottom:1px dotted var(--dim);" title="${esc(e.name)}選手の成績・AI評価">${esc(e.name)}</a>`
         : esc(e.name);
+      const nameCell = `<span style="display:flex; align-items:center; gap:8px;">${racerAvatar(e.name, e.racerClass, 26)}${nameLink}</span>`;
       return `<tr${topClass}>
         <td><span class="boat boat-${e.lane}">${e.lane}</span></td>
         <td class="racer-name">${nameCell}</td>

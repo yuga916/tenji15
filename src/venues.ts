@@ -35,3 +35,5 @@ export const VENUES: VenueInfo[] = [
 ];
 
 export const venueByJcd = new Map(VENUES.map((v) => [v.jcd, v]));
+
+export const venueBySlug = new Map(VENUES.map((v) => [v.slug, v]));

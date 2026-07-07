@@ -622,21 +622,23 @@ function todayRacesGrouped(races: Race[], base: string, features: Feature[] = []
     byVenue.set(r.venueSlug, l);
   }
   const now = Date.now();
+  const isOpen = (r: Race) => new Date(closeIso(r)).getTime() > now && r.status !== "verified";
   const blocks = [...byVenue.values()]
     .map((list) => {
-      const sorted = [...list].sort((a, b) => a.raceNo - b.raceNo);
-      // 未締切の最初のレース(=その場の「次」)。全部終わっていれば最終R
-      const next = sorted.find((r) => new Date(closeIso(r)).getTime() > now) ?? sorted[sorted.length - 1];
-      return { sorted, next, nextClose: closeIso(next) };
+      // 締切前のレースを上に(締切順)、締切済み・検証済みは下に
+      const upcoming = list.filter(isOpen).sort((a, b) => a.closeTime.localeCompare(b.closeTime));
+      const finished = list.filter((r) => !isOpen(r)).sort((a, b) => a.raceNo - b.raceNo);
+      const sorted = [...upcoming, ...finished];
+      const next = upcoming[0] ?? finished[finished.length - 1];
+      return { sorted, next, allDone: upcoming.length === 0, nextClose: closeIso(next) };
     })
-    .sort((a, b) => a.nextClose.localeCompare(b.nextClose))
-    .map(({ sorted, next }) => {
+    // 開催中の場を締切が近い順に上へ、全R終了の場は最下部へ
+    .sort((a, b) => Number(a.allDone) - Number(b.allDone) || a.nextClose.localeCompare(b.nextClose))
+    .map(({ sorted, next, allDone }) => {
       const v = sorted[0];
-      const doneCount = sorted.filter((r) => r.status === "verified").length;
-      const status =
-        doneCount === sorted.length
-          ? `全${sorted.length}R終了・答え合わせ公開中`
-          : `次の締切 ${next.raceNo}R ${next.closeTime}`;
+      const status = allDone
+        ? `全${sorted.length}R終了・答え合わせ公開中`
+        : `次の締切 ${next.raceNo}R ${next.closeTime}`;
       const feature = v.grade ? features.find((f) => f.venueSlug === v.venueSlug && f.title === v.seriesTitle) : undefined;
       const gradeHtml = feature
         ? ` <a href="${base}${feature.path}" class="grade-badge" title="${esc(feature.title)}">${esc(feature.grade)} 特設 →</a>`

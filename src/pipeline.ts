@@ -22,10 +22,70 @@ export async function runPipelineOnce(dateISO?: string): Promise<void> {
 
   await updateRacecards(today);
   if (OFFICIAL) {
+    await updateSignals(today);
     await prefetchTomorrow(today);
     await updateResults(today);
   }
 }
+
+/**
+ * シグナルフェーズ: 締切が近いレースの直前情報(展示・進入・単勝オッズ)を反映。
+ * SIGNALS_MODE=official-live のときのみ稼働(デフォルトOFF)。
+ * - 対象: 締切まで25分以内の未確定レース(1回の実行で最大6レース)
+ * - 1レース=2リクエスト、逐次+1.5秒間隔の低負荷設計
+ */
+async function updateSignals(today: string): Promise<void> {
+  if ((process.env.SIGNALS_MODE ?? "off") !== "official-live") return;
+
+  const races = await loadDay(today);
+  if (!races || races.length === 0) return;
+
+  const { venueBySlug } = await import("./venues.ts");
+  const { fetchHtml, beforeInfoUrl, winOddsUrl, parseBeforeInfo, parseWinOdds } = await import("./liveFetcher.ts");
+  const { applyLiveInfo } = await import("./signals.ts");
+
+  const now = Date.now();
+  const targets = races
+    .filter((r) => r.status !== "verified")
+    .filter((r) => {
+      const close = new Date(`${r.dateISO}T${r.closeTime}:00+09:00`).getTime();
+      const diffMin = (close - now) / 60000;
+      return diffMin > 0 && diffMin <= 25;
+    })
+    .sort((a, b) => a.closeTime.localeCompare(b.closeTime))
+    .slice(0, 6);
+  if (targets.length === 0) return;
+
+  let updated = 0;
+  for (const race of targets) {
+    const venue = venueBySlug.get(race.venueSlug);
+    if (!venue) continue;
+    try {
+      const beforeHtml = await fetchHtml(beforeInfoUrl(venue.jcd, race.raceNo, race.dateISO));
+      await sleep(1500);
+      let oddsInfo = null;
+      try {
+        const oddsHtml = await fetchHtml(winOddsUrl(venue.jcd, race.raceNo, race.dateISO));
+        oddsInfo = parseWinOdds(oddsHtml);
+        for (const w of oddsInfo.warnings) console.warn(`[live] ${race.venue}${race.raceNo}R: ${w}`);
+      } catch (e) {
+        console.warn(`[live] ${race.venue}${race.raceNo}R: オッズ取得失敗(展示のみ反映): ${(e as Error).message}`);
+      }
+      const before = parseBeforeInfo(beforeHtml);
+      for (const w of before.warnings) console.warn(`[live] ${race.venue}${race.raceNo}R: ${w}`);
+      if (applyLiveInfo(race, before, oddsInfo)) updated++;
+      await sleep(1500);
+    } catch (e) {
+      console.warn(`[live] ${race.venue}${race.raceNo}R: 直前情報取得失敗(事前評価のまま): ${(e as Error).message}`);
+    }
+  }
+  if (updated > 0) {
+    await saveDay(today, races);
+    console.log(`[live] ${updated}レースにシグナルを反映しました`);
+  }
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * 翌日番組の先行取得(SEO: 前夜からページを公開してインデックスの時間を稼ぐ)。

@@ -27,6 +27,8 @@ jobs:
     env:
       # OfficialDataSource実装後に 'official' へ(Settings > Variables)
       DATA_SOURCE_MODE: ${{ vars.DATA_SOURCE_MODE || 'mock' }}
+      # 直前シグナル(展示・オッズ反映)。'official-live' で有効化(Settings > Variables)
+      SIGNALS_MODE: ${{ vars.SIGNALS_MODE || 'off' }}
       GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
       SITE_URL: ${{ vars.SITE_URL || format('https://{0}.github.io/{1}', github.repository_owner, github.event.repository.name) }}
     steps:

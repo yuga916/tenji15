@@ -13,6 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Race, Entry, Signal, RaceStatus } from "./types.ts";
 import { loadAllRaces } from "./store.ts";
+import { GUIDE_TERMS } from "./guideTerms.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -995,7 +996,7 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
       .map((r) => `<li style="margin-bottom:8px;"><a href="${venueBase}${racePath(r)}">${dateLabel(r.dateISO)} 第${r.raceNo}R ${esc(r.name)} の直前分析・答え合わせ</a></li>`)
       .join("\n");
     const html = articlePage({
-      title: `${venue}競艇場の特徴データと直前予想・結果一覧｜競艇チョクゼン`,
+      title: `${venue}競艇の予想と特徴データ(イン逃げ実測率・決まり手・平均配当)｜競艇チョクゼン`,
       metaDesc: `${venue}競艇(ボートレース${venue})のイン逃げ実測率・決まり手分布・平均払戻を答え合わせ済みレースから自動集計。全レースの直前予想と結果検証の一覧つき。`,
       path: `races/${slug}/`,
       base: venueBase,
@@ -1075,7 +1076,7 @@ ${racerList.length > 0 ? `<ul style="list-style:none;">${racerLinks}</ul>` : `<p
     })
     .join("\n");
   const resultsIndex = articlePage({
-    title: "競艇の結果まとめ一覧(日別の高配当・万舟・イン逃げ崩れ)｜競艇チョクゼン",
+    title: "今日の競艇結果まとめ｜万舟・高配当・イン逃げ崩れの日別一覧｜競艇チョクゼン",
     metaDesc: "競艇(ボートレース)の日別結果まとめ。高配当ランキング・万舟券・イン逃げ崩れ・決まり手内訳を毎日自動集計し、各レースの答え合わせにリンク。",
     path: "results/",
     base: resultsBase,
@@ -1096,6 +1097,9 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
     base: guideBase,
     crumbs: [["ホーム", guideBase], ["用語・見方ガイド"]],
     bodyHtml: `<h1>用語・見方ガイド — 直前予想に必要な知識と当サイト指標の読み方</h1>
+<section><h2>用語別の詳しい解説</h2><div class="grid grid-3">${GUIDE_TERMS.map(
+      (t) => `<a class="card" href="${guideBase}guide/${t.slug}/" style="color:var(--text);"><h3 style="font-size:14.5px; margin-bottom:6px;">${esc(t.term)}とは</h3><p style="color:var(--muted); font-size:12px;">${esc(t.metaDesc.slice(0, 55))}…</p></a>`
+    ).join("\n")}</div></section>
 <section><h2>展示航走とは</h2><p>本番レースの約15分前に行われるリハーサル走行のこと。スタート練習(スタート展示)と、全速の周回(周回展示)の2部構成で、ここで初めて「当日のモーターの実際の出足・伸び」「進入隊形」が可視化されます。番組表(前日確定)には存在しない情報のため、<strong>展示後にしか作れない予想がある</strong>——これが当サイトの出発点です。</p></section>
 <section><h2>展示タイムと展示偏差</h2><p>展示タイムは周回展示で計測されるラップ。ただし水面・風・計測条件が場ごとに異なるため、絶対値の比較には意味が薄く、当サイトでは<strong>「当日のその水面の分布の中でどれだけ速いか」を偏差値(σ)化</strong>して表示します。+1σ以上は当日水準で明確に速い、-1σ以下は明確に遅い、が目安です。</p></section>
 <section><h2>進入と前づけ</h2><p>競艇は枠なり進入(1号艇がイン)が基本ですが、スタート展示で外の艇が内のコースを取りにいく「前づけ」が起きると、全艇の勝率前提が崩れます。当サイトは進入変化を検知すると全艇の評価を再計算します(フォーメーションシグナル)。</p></section>
@@ -1109,6 +1113,29 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
   await mkdir(guideDir, { recursive: true });
   await writeFile(path.join(guideDir, "index.html"), guideHtml, "utf-8");
 
+  // 用語の個別記事ページ(/guide/{slug}/)
+  const termBase = baseFor(2);
+  for (const t of GUIDE_TERMS) {
+    const related = GUIDE_TERMS.filter((x) => x.slug !== t.slug)
+      .slice(0, 6)
+      .map((x) => `<li style="margin-bottom:6px;"><a href="${termBase}guide/${x.slug}/">${esc(x.term)}とは</a></li>`)
+      .join("\n");
+    const html = articlePage({
+      title: `${t.title}｜競艇チョクゼン`,
+      metaDesc: t.metaDesc,
+      path: `guide/${t.slug}/`,
+      base: termBase,
+      crumbs: [["ホーム", termBase], ["用語・見方ガイド", `${termBase}guide/`], [t.term]],
+      bodyHtml: `<h1>${esc(t.title)}</h1>
+${t.bodyHtml.replaceAll("{{BASE}}", termBase)}
+<section><h2>あわせて読みたい用語</h2><ul style="list-style:none;">${related}</ul>
+<p><a href="${termBase}guide/">用語・見方ガイド一覧へ</a> / <a href="${termBase}">今日の直前予想を見る</a></p></section>`,
+    });
+    const dir = path.join(guideDir, t.slug);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, "index.html"), html, "utf-8");
+  }
+
   // sitemap: 全ページを登録
   const urls = [
     `${SITE_URL}/`,
@@ -1120,6 +1147,7 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
     `${SITE_URL}/racers/`,
     ...[...racers.keys()].map((reg) => `${SITE_URL}/racers/${reg}/`),
     `${SITE_URL}/guide/`,
+    ...GUIDE_TERMS.map((t) => `${SITE_URL}/guide/${t.slug}/`),
     `${SITE_URL}/features/`,
     ...features.map((f) => `${SITE_URL}/${f.path}`),
     `${SITE_URL}/labs/signals/`,

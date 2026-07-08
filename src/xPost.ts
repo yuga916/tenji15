@@ -105,11 +105,16 @@ function resultsText(dateISO: string, races: Race[]): string | null {
     if (r.result!.finish[0] === pick?.lane) aiWin++;
   }
   const rate = Math.round((aiWin / done.length) * 100);
+  const manshu = done.filter((r) => r.result!.payout3t >= 10000).length;
   const [, m, d] = dateISO.split("-").map(Number);
+  const topLabel =
+    top.result!.payout3t >= 10000
+      ? `万舟${manshu}本、最高は¥${top.result!.payout3t.toLocaleString()}(${top.venue}${top.raceNo}R・${top.result!.kimarite})`
+      : `3連単最高は¥${top.result!.payout3t.toLocaleString()}(${top.venue}${top.raceNo}R)`;
   return (
-    `【答え合わせ】${m}/${d}は全国${done.length}レースを自動検証。` +
-    `3連単最高は¥${top.result!.payout3t.toLocaleString()}(${top.venue}${top.raceNo}R・${top.result!.kimarite})。` +
-    `AI事前本命の1着率は${rate}%でした。外れも含む全検証記録↓\n${SITE}/results/${dateISO}/`
+    `【答え合わせ】${m}/${d}の競艇 全${done.length}レースをAIが自動検証。` +
+    `${topLabel}。AI事前本命の1着率${rate}%。外れも含む全記録↓\n${SITE}/results/${dateISO}/\n` +
+    `#競艇 #競艇予想 #ボートレース`
   );
 }
 
@@ -126,9 +131,10 @@ function previewText(dateISO: string, races: Race[]): string | null {
   const [, m, d] = dateISO.split("-").map(Number);
   const gradeNote = grade ? `${grade.grade}「${grade.seriesTitle}」開催中の${grade.venue}に注目。` : "";
   return (
-    `【明日の注目】${m}/${d}は${venues}場で開催。${gradeNote}` +
+    `【明日の競艇】${m}/${d}は${venues}場で開催。${gradeNote}` +
     `AI事前評価の最有力は${best.r.venue}${best.r.raceNo}R・${best.pick.lane}号艇${best.pick.name}(想定勝率${Math.round(best.pick.preProb * 100)}%)。` +
-    `全レースの事前評価を前夜から公開中↓\n${SITE}/races/${best.r.venueSlug}/${dateISO}/`
+    `全レースの無料AI予想を前夜から公開中↓\n${SITE}/races/${best.r.venueSlug}/${dateISO}/\n` +
+    `#競艇 #競艇予想 #${best.r.venue}競艇`
   );
 }
 

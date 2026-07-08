@@ -146,6 +146,63 @@ function kimariteBar(r: Race): string {
   );
 }
 
+/** AIの結論(買い目候補)。断定表現を避け、評価順+根拠を簡潔に提示する */
+function betSuggestion(r: Race): string {
+  const sorted = [...r.entries].sort((a, b) => b.aiProb - a.aiProb);
+  const [a, b, c, d] = sorted;
+  if (!a || !b || !c) return "";
+
+  const line = (lanes: number[]) =>
+    lanes.map((l) => `<span class="boat boat-${l}" style="width:26px; height:26px; font-size:13px;">${l}</span>`).join(`<span style="color:var(--dim);">-</span>`);
+
+  // 歪み艇(市場が織り込んでいない妙味)があれば3着候補として提示
+  const gapBoat = r.entries
+    .filter((e) => e.marketProb !== undefined && e.aiProb - e.marketProb! >= 0.07 && e.lane !== a.lane && e.lane !== b.lane)
+    .sort((x, y) => (y.aiProb - (y.marketProb ?? 0)) - (x.aiProb - (x.marketProb ?? 0)))[0];
+
+  const subs: string[] = [];
+  if (d) subs.push(`3連単 ${a.lane}-${b.lane}-${d.lane}`);
+  subs.push(`3連単 ${a.lane}-${c.lane}-${b.lane}`);
+  if (r.inEscapeProb < 50 && b) subs.push(`波乱押さえ ${b.lane}-${a.lane}-${c.lane}`);
+
+  const reasons: string[] = [];
+  reasons.push(`◎${a.lane}号艇・${esc(a.name)}のAI勝率${Math.round(a.aiProb * 100)}%(2位${b.lane}号艇と${Math.round((a.aiProb - b.aiProb) * 100)}pt差)`);
+  reasons.push(
+    r.inEscapeProb >= 65
+      ? `イン逃げ確率${r.inEscapeProb}%でイン信頼のレース`
+      : r.inEscapeProb >= 50
+        ? `イン逃げ確率${r.inEscapeProb}%で本線はイン、対抗の頭も一考`
+        : `イン逃げ確率${r.inEscapeProb}%と低く波乱含み`
+  );
+  const hotEx = r.entries.filter((e) => e.exDev !== undefined && e.exDev >= 1.3).sort((x, y) => (y.exDev ?? 0) - (x.exDev ?? 0))[0];
+  if (hotEx) reasons.push(`${hotEx.lane}号艇の展示偏差+${hotEx.exDev}σ(当日気配が上向き)`);
+  if (gapBoat) reasons.push(`${gapBoat.lane}号艇に+${Math.round((gapBoat.aiProb - gapBoat.marketProb!) * 100)}ptの歪み(市場が過小評価)→3着候補に`);
+
+  const statusNote =
+    r.status === "signal"
+      ? `<span class="status status-signal" style="font-size:11px;">展示反映済み</span>`
+      : r.status === "pre"
+        ? `<span class="status status-pre" style="font-size:11px;">展示前の暫定</span>`
+        : `<span class="status status-verified" style="font-size:11px;">締切時点の最終評価</span>`;
+
+  return `<section>
+    <h2>シンプル結論 — AI評価の高い組み合わせ</h2>
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+        <span style="color:var(--muted); font-size:12.5px;">本線</span>
+        <span style="display:inline-flex; align-items:center; gap:4px; font-size:18px; font-weight:900;">3連単 ${line([a.lane, b.lane, c.lane])}</span>
+        ${statusNote}
+      </div>
+      <p style="color:var(--muted); font-size:12.5px; margin-bottom:10px;">押さえ: ${subs.map(esc).join(" / ")}${gapBoat ? ` / 歪み狙い: ${a.lane}-${b.lane}-${gapBoat.lane}` : ""}</p>
+      <p style="font-size:13px; color:#cfdde6; margin-bottom:4px;">根拠:</p>
+      <ul style="font-size:13px; color:#cfdde6; padding-left:18px; line-height:1.9;">
+        ${reasons.map((x) => `<li>${x}</li>`).join("\n")}
+      </ul>
+      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。オッズは締切まで変動します。</p>
+    </div>
+  </section>`;
+}
+
 function resultSection(r: Race): string {
   if (r.status !== "verified" || !r.result) return "";
   const res = r.result;
@@ -374,6 +431,7 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
         : `事前 ${r.inEscapeProbPre}% → ${inDelta > 0 ? "+" : ""}${inDelta}pt`,
     IN_NOTE: esc(r.inNote),
     SIGNAL_FEED: signalFeed(r),
+    BET_SECTION: betSuggestion(r),
     KIMARITE_BAR: kimariteBar(r),
     KIMARITE_NOTE: esc(r.kimariteNote),
     ENTRIES_ROWS: entriesRows(r, base),

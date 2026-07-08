@@ -409,15 +409,33 @@ function articlePage(opts: {
   base: string;
   crumbs: [string, string?][]; // [ラベル, href?]
   bodyHtml: string;
+  jsonLd?: object[];   // 追加の構造化データ(Article/FAQ等)
 }): string {
   const crumbHtml = opts.crumbs
     .map(([label, href]) => (href ? `<a href="${href}">${esc(label)}</a>` : esc(label)))
     .join(`<span class="sep">›</span>`);
+  // パンくずの構造化データ(相対hrefを絶対URLへ変換)
+  const toAbs = (href?: string) =>
+    href === undefined ? `${SITE_URL}/${opts.path}` : `${SITE_URL}/${href.startsWith(opts.base) ? href.slice(opts.base.length) : href}`;
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: opts.crumbs.map(([label, href], i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: label,
+      item: toAbs(href),
+    })),
+  };
+  const ldScripts = [breadcrumbLd, ...(opts.jsonLd ?? [])]
+    .map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`)
+    .join("\n");
   return `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(opts.title)}</title>
 <meta name="description" content="${esc(opts.metaDesc)}">
 <link rel="canonical" href="${SITE_URL}/${opts.path}">
 ${ogTags(opts.title, opts.metaDesc, opts.path)}
+${ldScripts}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="${opts.base}assets/styles.css">
@@ -884,10 +902,11 @@ ${items.join("\n")}
 }
 
 /* ---------- sitemap / robots ---------- */
-function sitemaps(urls: string[]): { xml: string; robots: string } {
+interface SitemapEntry { loc: string; lastmod: string }
+function sitemaps(entries: SitemapEntry[]): { xml: string; robots: string } {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url><loc>${u}</loc><lastmod>${new Date().toISOString().slice(0, 10)}</lastmod></url>`).join("\n")}
+${entries.map((e) => `  <url><loc>${e.loc}</loc><lastmod>${e.lastmod}</lastmod></url>`).join("\n")}
 </urlset>`;
   const robots = `User-agent: *\nAllow: /\nSitemap: ${SITE_URL}/sitemap.xml\n`;
   return { xml, robots };
@@ -1113,6 +1132,51 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
   await mkdir(guideDir, { recursive: true });
   await writeFile(path.join(guideDir, "index.html"), guideHtml, "utf-8");
 
+  // 用語ページのFAQ(リッチリザルト用)。回答は本文の要約
+  const GUIDE_FAQ: Record<string, { q: string; a: string }[]> = {
+    tenji: [
+      { q: "展示航走とは何ですか?", a: "本番レースの約15分前に全6艇が行うリハーサル走行です。スタート展示と周回展示の2部構成で、当日のモーターの仕上がりや進入隊形が分かります。" },
+      { q: "展示航走はどこを見ればいいですか?", a: "スタート展示では進入コースと展示ST、周回展示では展示タイム(伸び足)を見ます。番組表にない当日情報が出揃うのが展示後です。" },
+    ],
+    "tenji-time": [
+      { q: "展示タイムとは何ですか?", a: "周回展示で計測される走行タイムで、当日のモーターの伸び足を数値で確認できる直前情報です。" },
+      { q: "展示タイムはあてになりますか?", a: "絶対値ではなくレース内6艇の比較で使えば有効です。特に極端に良い・悪い艇の検出に役立ち、会場によって結果への直結度が異なります。" },
+    ],
+    maezuke: [
+      { q: "前づけとは何ですか?", a: "スタート前の進入で外枠の艇が内側のコースを取りにいく行為です。枠なり進入が崩れ、レースの前提が変わります。" },
+      { q: "前づけが起きると予想はどう変わりますか?", a: "競艇はコースが勝率に直結するため、イン(1コース)を取った艇の評価が大きく上がり、番組表ベースの事前予想は作り直しになります。" },
+    ],
+    slit: [
+      { q: "競艇のスリットとは何ですか?", a: "スタートライン通過時の6艇を横一線に見た隊形のことです。スリットで前に出た艇が展開の主導権を握ります。" },
+      { q: "STとは何ですか?", a: "スタートタイミングの略で、大時計0秒からスタートライン通過までの時間です。小さいほど速く、0秒より早いとフライング(F)になります。" },
+    ],
+    kimarite: [
+      { q: "競艇の決まり手は何種類ありますか?", a: "逃げ・差し・まくり・まくり差し・抜き・恵まれの6種類です。最多は1コースがそのまま押し切る「逃げ」です。" },
+      { q: "まくりとまくり差しの違いは?", a: "まくりは外側から全速で先行艇を抑えて抜く技、まくり差しはまくりに行きながら内側へ切り込んで差す複合技です。" },
+    ],
+    innige: [
+      { q: "イン逃げとは何ですか?", a: "1コース(イン)の艇が第1ターンマークを先に回り、そのまま1着でゴールすることです。1コースの1着率は全国平均で約55%です。" },
+      { q: "イン逃げしやすい競艇場はどこですか?", a: "大村や徳山は60%を超える「イン天国」、戸田・平和島・江戸川などは40%台の難水面とされます。当サイトでは会場別の実測値を毎日更新しています。" },
+    ],
+    manshu: [
+      { q: "万舟券とは何ですか?", a: "3連単の払戻金が10,000円以上になった高配当のことです。100円の舟券が1万円以上になるケースを指します。" },
+      { q: "万舟券はどのくらいの頻度で出ますか?", a: "発生率は15〜17%程度で、全国で1日あたりおおよそ20レース前後発生すると言われます。" },
+    ],
+    sanrentan: [
+      { q: "競艇の3連単とは何ですか?", a: "1着・2着・3着を着順どおりに当てる舟券です。組み合わせは120通りで、競艇の売上の大半を占める主力の券種です。" },
+      { q: "3連単の人気とは何ですか?", a: "120通りの組み合わせの中で何番目に票を集めたかを示す指標です。1〜3番人気の決着は順当、10番人気台は中穴、それ以上は波乱と呼ばれます。" },
+    ],
+    "odds-yugami": [
+      { q: "オッズの歪みとは何ですか?", a: "オッズから逆算した市場の想定確率と、データ分析上の実際の確率のズレのことです。過小評価されている艇には期待値のプラスが生まれます。" },
+      { q: "なぜ締切直前に歪みが生まれるのですか?", a: "展示航走の情報が投票に反映される速度は人によって違うため、直前はオッズがまだ当日情報を織り込みきれていない時間帯だからです。" },
+    ],
+    "ai-yosou": [
+      { q: "競艇のAI予想とは何ですか?", a: "選手成績・モーター・コース・展示情報などのデータから、機械的に各艇の勝率や買い目を算出する予想手法です。" },
+      { q: "AI予想の精度はどう確かめればいいですか?", a: "全レースを対象にしているか、予想を締切前に公開しているか(後出しでないか)、回収率まで公開しているかの3点を確認するのが基本です。" },
+    ],
+  };
+  const GUIDE_PUBLISHED = "2026-07-08";
+
   // 用語の個別記事ページ(/guide/{slug}/)
   const termBase = baseFor(2);
   for (const t of GUIDE_TERMS) {
@@ -1120,14 +1184,47 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
       .slice(0, 6)
       .map((x) => `<li style="margin-bottom:6px;"><a href="${termBase}guide/${x.slug}/">${esc(x.term)}とは</a></li>`)
       .join("\n");
+    const faq = GUIDE_FAQ[t.slug];
+    const jsonLd: object[] = [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: t.title,
+        description: t.metaDesc,
+        datePublished: GUIDE_PUBLISHED,
+        dateModified: GUIDE_PUBLISHED,
+        image: `${SITE_URL}/assets/og-image.png`,
+        author: { "@type": "Organization", name: "競艇チョクゼン", url: `${SITE_URL}/` },
+        publisher: { "@type": "Organization", name: "競艇チョクゼン" },
+        mainEntityOfPage: `${SITE_URL}/guide/${t.slug}/`,
+      },
+      ...(faq
+        ? [{
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: faq.map((x) => ({
+              "@type": "Question",
+              name: x.q,
+              acceptedAnswer: { "@type": "Answer", text: x.a },
+            })),
+          }]
+        : []),
+    ];
+    const faqHtml = faq
+      ? `<section><h2>よくある質問</h2>${faq
+          .map((x) => `<div class="card" style="margin-bottom:10px;"><p style="font-weight:700;">Q. ${esc(x.q)}</p><p style="color:#cfdde6; font-size:13.5px;">A. ${esc(x.a)}</p></div>`)
+          .join("\n")}</section>`
+      : "";
     const html = articlePage({
       title: `${t.title}｜競艇チョクゼン`,
       metaDesc: t.metaDesc,
       path: `guide/${t.slug}/`,
       base: termBase,
       crumbs: [["ホーム", termBase], ["用語・見方ガイド", `${termBase}guide/`], [t.term]],
+      jsonLd,
       bodyHtml: `<h1>${esc(t.title)}</h1>
 ${t.bodyHtml.replaceAll("{{BASE}}", termBase)}
+${faqHtml}
 <section><h2>あわせて読みたい用語</h2><ul style="list-style:none;">${related}</ul>
 <p><a href="${termBase}guide/">用語・見方ガイド一覧へ</a> / <a href="${termBase}">今日の直前予想を見る</a></p></section>`,
     });
@@ -1136,27 +1233,42 @@ ${t.bodyHtml.replaceAll("{{BASE}}", termBase)}
     await writeFile(path.join(dir, "index.html"), html, "utf-8");
   }
 
-  // sitemap: 全ページを登録
-  const urls = [
-    `${SITE_URL}/`,
-    ...races.map((r) => `${SITE_URL}/${racePath(r)}`),
-    ...[...byVenue.keys()].map((s) => `${SITE_URL}/races/${s}/`),
-    ...[...new Set(races.map((r) => `races/${r.venueSlug}/${r.dateISO}/`))].map((p) => `${SITE_URL}/${p}`),
-    `${SITE_URL}/results/`,
-    ...resultDates.map((d) => `${SITE_URL}/results/${d}/`),
-    `${SITE_URL}/racers/`,
-    ...[...racers.keys()].map((reg) => `${SITE_URL}/racers/${reg}/`),
-    `${SITE_URL}/guide/`,
-    ...GUIDE_TERMS.map((t) => `${SITE_URL}/guide/${t.slug}/`),
-    `${SITE_URL}/features/`,
-    ...features.map((f) => `${SITE_URL}/${f.path}`),
-    `${SITE_URL}/labs/signals/`,
-    `${SITE_URL}/labs/maezuke/`,
-    `${SITE_URL}/labs/venues/`,
-  ];
   await writeFile(path.join(DIST, "feed.xml"), rssXml(races, resultDates), "utf-8");
 
-  const { xml, robots } = sitemaps(urls);
+  // sitemap: 全ページを登録(lastmodは実際の更新日)
+  const dateOf = (iso: string) => iso.slice(0, 10);
+  const dayLastmod = new Map<string, string>();
+  for (const r of races) {
+    const key = `${r.venueSlug}/${r.dateISO}`;
+    const d = dateOf(r.updatedAt);
+    if ((dayLastmod.get(key) ?? "") < d) dayLastmod.set(key, d);
+  }
+  // 選手ページ: 掲載3走未満はコンテンツが薄いためsitemapから除外(ページ自体は存在)
+  const solidRacers = [...racers.values()].filter((a) => a.appearances.length >= 3);
+  const racerLastmod = (a: RacerAgg) =>
+    dateOf([...a.appearances].sort((x, y) => y.race.updatedAt.localeCompare(x.race.updatedAt))[0].race.updatedAt);
+
+  const entries: SitemapEntry[] = [
+    { loc: `${SITE_URL}/`, lastmod: jstToday },
+    ...races.map((r) => ({ loc: `${SITE_URL}/${racePath(r)}`, lastmod: dateOf(r.updatedAt) })),
+    ...[...byVenue.keys()].map((s) => ({ loc: `${SITE_URL}/races/${s}/`, lastmod: jstToday })),
+    ...[...dayLastmod.entries()].map(([p, d]) => ({ loc: `${SITE_URL}/races/${p}/`, lastmod: d })),
+    { loc: `${SITE_URL}/results/`, lastmod: jstToday },
+    ...resultDates.map((d) => ({ loc: `${SITE_URL}/results/${d}/`, lastmod: d })),
+    { loc: `${SITE_URL}/racers/`, lastmod: jstToday },
+    ...solidRacers.map((a) => ({ loc: `${SITE_URL}/racers/${a.regNo}/`, lastmod: racerLastmod(a) })),
+    { loc: `${SITE_URL}/guide/`, lastmod: GUIDE_PUBLISHED },
+    ...GUIDE_TERMS.map((t) => ({ loc: `${SITE_URL}/guide/${t.slug}/`, lastmod: GUIDE_PUBLISHED })),
+    { loc: `${SITE_URL}/features/`, lastmod: jstToday },
+    ...features.map((f) => ({
+      loc: `${SITE_URL}/${f.path}`,
+      lastmod: dateOf([...f.races].sort((x, y) => y.updatedAt.localeCompare(x.updatedAt))[0].updatedAt),
+    })),
+    { loc: `${SITE_URL}/labs/signals/`, lastmod: jstToday },
+    { loc: `${SITE_URL}/labs/maezuke/`, lastmod: GUIDE_PUBLISHED },
+    { loc: `${SITE_URL}/labs/venues/`, lastmod: GUIDE_PUBLISHED },
+  ];
+  const { xml, robots } = sitemaps(entries);
   await writeFile(path.join(DIST, "sitemap.xml"), xml, "utf-8");
   await writeFile(path.join(DIST, "robots.txt"), robots, "utf-8");
   await writeFile(path.join(DIST, ".nojekyll"), "", "utf-8");

@@ -185,6 +185,66 @@ function betSuggestion(r: Race): string {
         ? `<span class="status status-pre" style="font-size:11px;">展示前の暫定</span>`
         : `<span class="status status-verified" style="font-size:11px;">締切時点の最終評価</span>`;
 
+  // ---- 答え合わせ済み: 買い目の的中判定+段階別検証に切り替える ----
+  if (r.status === "verified" && r.result) {
+    const fin = r.result.finish;
+    const combos: { label: string; lanes: number[] }[] = [
+      { label: "本線", lanes: [a.lane, b.lane, c.lane] },
+      ...(d ? [{ label: "押さえ", lanes: [a.lane, b.lane, d.lane] }] : []),
+      { label: "押さえ", lanes: [a.lane, c.lane, b.lane] },
+      ...(r.inEscapeProb < 50 && b ? [{ label: "波乱押さえ", lanes: [b.lane, a.lane, c.lane] }] : []),
+      ...(gapBoat ? [{ label: "歪み狙い", lanes: [a.lane, b.lane, gapBoat.lane] }] : []),
+    ];
+    const comboRows = combos
+      .map((cb) => {
+        const hit = cb.lanes[0] === fin[0] && cb.lanes[1] === fin[1] && cb.lanes[2] === fin[2];
+        const mark = hit
+          ? `<span class="hit-mark hit-yes">✓ 的中 ¥${r.result!.payout3t.toLocaleString()}</span>`
+          : `<span class="hit-mark hit-no">✗</span>`;
+        return `<div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+          <span style="color:var(--muted); font-size:12px; width:70px;">${cb.label}</span>
+          <span style="display:inline-flex; align-items:center; gap:4px; font-weight:700;">${line(cb.lanes)}</span>${mark}</div>`;
+      })
+      .join("\n");
+
+    // 段階別の検証(3連単が外れても「どこまで機能したか」を示す)
+    const aPos = fin.indexOf(a.lane) + 1; // 0=圏外
+    const topIn3 = [a, b, c].filter((e) => fin.includes(e.lane)).length;
+    const stages = [
+      { label: `◎${a.lane}号艇が1着(軸として的中)`, ok: aPos === 1 },
+      { label: `◎${a.lane}号艇が3着以内`, ok: aPos >= 1 },
+      { label: `上位評価3艇のうち2艇以上が3着以内(実際: ${topIn3}艇)`, ok: topIn3 >= 2 },
+    ];
+    const stageRows = stages
+      .map((s) => `<li style="list-style:none; margin-bottom:4px;"><span class="hit-mark ${s.ok ? "hit-yes" : "hit-no"}">${s.ok ? "○" : "—"}</span> ${esc(s.label)}</li>`)
+      .join("\n");
+
+    const anyHit = combos.some((cb) => cb.lanes[0] === fin[0] && cb.lanes[1] === fin[1] && cb.lanes[2] === fin[2]);
+    let summary: string;
+    if (anyHit) {
+      summary = `買い目が的中(3連単¥${r.result.payout3t.toLocaleString()}・${r.result.popularity}番人気)。`;
+    } else if (aPos === 1) {
+      summary = `本線は不的中だが、◎${a.lane}号艇は1着で軸としては機能。相手選びが課題だった一戦。`;
+    } else if (aPos >= 2) {
+      summary = `本線は不的中。◎${a.lane}号艇は${aPos}着で3連対したが、頭までは届かなかった。`;
+    } else if (topIn3 >= 2) {
+      summary = `◎は3着圏外も、上位評価3艇のうち${topIn3}艇が3着以内。評価の方向性は概ね結果と一致した。`;
+    } else {
+      summary = `AI評価と結果が噛み合わなかった一戦。こうした外れも含めて全レースを記録し、モデル改善に使います。`;
+    }
+
+    return `<section>
+    <h2>シンプル結論の答え合わせ</h2>
+    <div class="card">
+      ${comboRows}
+      <p style="font-size:13.5px; color:#cfdde6; margin:12px 0;">${summary}</p>
+      <p style="font-size:12.5px; color:var(--muted); margin-bottom:4px;">段階別の検証(3連単1点は120通り中の1点。軸・評価上位の精度も併記します):</p>
+      <ul style="padding-left:2px;">${stageRows}</ul>
+      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">AI本命の1着率・回収率の通算成績は<a href="${baseFor(4)}labs/signals/">AI予想の成績</a>で全件公開しています。</p>
+    </div>
+  </section>`;
+  }
+
   return `<section>
     <h2>シンプル結論 — AI評価の高い組み合わせ</h2>
     <div class="card">

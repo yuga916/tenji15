@@ -74,7 +74,13 @@ async function postTweet(text: string): Promise<boolean> {
     body: JSON.stringify({ text }),
   });
   if (!res.ok) {
-    console.error(`[x] 投稿失敗 ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const body = (await res.text()).slice(0, 200);
+    // 重複コンテンツ拒否 = 同内容が投稿済み。成功扱いにして再試行(=無駄な課金)を止める
+    if (res.status === 403 && /duplicate/i.test(body)) {
+      console.log("[x] 同内容が投稿済みのためスキップ(投稿済みとして記録)");
+      return true;
+    }
+    console.error(`[x] 投稿失敗 ${res.status}: ${body}`);
     return false;
   }
   console.log("[x] 投稿しました");
@@ -111,11 +117,10 @@ function resultsText(dateISO: string, races: Race[]): string | null {
     top.result!.payout3t >= 10000
       ? `万舟${manshu}本、最高は¥${top.result!.payout3t.toLocaleString()}(${top.venue}${top.raceNo}R・${top.result!.kimarite})`
       : `3連単最高は¥${top.result!.payout3t.toLocaleString()}(${top.venue}${top.raceNo}R)`;
-  // 注: URLを含む投稿はX APIの課金単価が大幅に上がるため、リンクは本文に入れない
-  // (サイトへの導線はプロフィールのURL欄)
+  // 注: URLを含む投稿は$0.20/件(テキストのみは$0.015/件)。流入検証を優先しURL入りで運用
   return (
     `【答え合わせ】${m}/${d}の競艇 全${done.length}レースをAIが自動検証。` +
-    `${topLabel}。AI事前本命の1着率${rate}%。外れも含む全レースの検証記録はプロフィールのサイトで公開中です。\n` +
+    `${topLabel}。AI事前本命の1着率${rate}%。外れも含む全記録↓\n${SITE}/results/${dateISO}/\n` +
     `#競艇 #競艇予想 #ボートレース`
   );
 }
@@ -135,7 +140,7 @@ function previewText(dateISO: string, races: Race[]): string | null {
   return (
     `【明日の競艇】${m}/${d}は${venues}場で開催。${gradeNote}` +
     `AI事前評価の最有力は${best.r.venue}${best.r.raceNo}R・${best.pick.lane}号艇${best.pick.name}(想定勝率${Math.round(best.pick.preProb * 100)}%)。` +
-    `全レースの無料AI予想はプロフィールのサイトで前夜から公開中です。\n` +
+    `全レースの無料AI予想を前夜から公開中↓\n${SITE}/races/${best.r.venueSlug}/${dateISO}/\n` +
     `#競艇 #競艇予想 #${best.r.venue}競艇`
   );
 }

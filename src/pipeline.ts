@@ -11,7 +11,7 @@ import { createDataSource, MockDataSource } from "./dataSource.ts";
 import { fetchKFileText, NotPublishedError } from "./officialFetcher.ts";
 import { parseKFile } from "./resultsParser.ts";
 import { applyResults } from "./verify.ts";
-import { saveDay, loadDay, migrateLegacy, listDays } from "./store.ts";
+import { saveDay, loadDay, migrateLegacy, listDays, getMeta, setMeta } from "./store.ts";
 import type { Race } from "./types.ts";
 
 const OFFICIAL = (process.env.DATA_SOURCE_MODE ?? "mock") === "official";
@@ -114,7 +114,23 @@ async function prefetchTomorrow(today: string): Promise<void> {
 }
 
 /* ---------- 1) 番組表 ---------- */
+const RACECARD_REFRESH_MIN = 20; // 番組表の再取得間隔(公式への負荷を抑える)
+
 async function updateRacecards(today: string): Promise<void> {
+  // 前回取得から20分以内なら番組表の再取得をスキップ(5分間隔cronでも負荷は従来水準)
+  if (OFFICIAL) {
+    const meta = await getMeta();
+    const last = meta[`bfetch-${today}`];
+    const existing = await loadDay(today);
+    if (last && existing && existing.length > 0) {
+      const ageMin = (Date.now() - new Date(last).getTime()) / 60000;
+      if (ageMin < RACECARD_REFRESH_MIN) {
+        console.log(`[pipeline] 番組表は${Math.round(ageMin)}分前に取得済みのためスキップ`);
+        return;
+      }
+    }
+  }
+
   const source = createDataSource();
   console.log(`[pipeline] 番組表取得: ${today} / ソース: ${source.label}`);
 
@@ -123,6 +139,7 @@ async function updateRacecards(today: string): Promise<void> {
     const existing = await loadDay(today);
     const merged = mergeDay(existing, fresh);
     const file = await saveDay(today, merged);
+    if (OFFICIAL) await setMeta(`bfetch-${today}`, new Date().toISOString());
     console.log(`[pipeline] ${merged.length}レースを保存: ${file}`);
     return;
   } catch (e) {

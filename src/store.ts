@@ -75,6 +75,24 @@ export async function migrateLegacy(): Promise<void> {
   }
 }
 
+/* ---- 取得メタ情報(番組表の再取得間隔制御などに使用) ---- */
+const META_FILE = path.join(DATA_DIR, "fetch-meta.json");
+
+export async function getMeta(): Promise<Record<string, string>> {
+  try {
+    return JSON.parse(await readFile(META_FILE, "utf-8"));
+  } catch {
+    return {};
+  }
+}
+
+export async function setMeta(key: string, value: string): Promise<void> {
+  const meta = await getMeta();
+  meta[key] = value;
+  await mkdir(DATA_DIR, { recursive: true });
+  await writeFile(META_FILE, JSON.stringify(meta, null, 2), "utf-8");
+}
+
 /* ---- 旧形式(互換のため残置) ---- */
 export async function saveRaces(races: Race[]): Promise<string> {
   await mkdir(DATA_DIR, { recursive: true });

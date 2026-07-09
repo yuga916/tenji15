@@ -411,7 +411,7 @@ function sportsEventJsonLd(r: Race): string {
         addressCountry: "JP",
       },
     },
-    organizer: { "@type": "Organization", name: `ボートレース${r.venue}` },
+    organizer: { "@type": "Organization", name: `ボートレース${r.venue}`, url: `${SITE_URL}/races/${r.venueSlug}/` },
     performer: r.entries.map((e) => ({ "@type": "Person", name: e.name })),
   });
 }

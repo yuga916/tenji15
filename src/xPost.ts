@@ -3,7 +3,7 @@
  * GitHub Actionsのパイプライン後に実行し、状態(data/x-posted.json)で重複を防ぐ。
  *
  * ポストの種類(1日各1回まで):
- * - 答え合わせ(前日分の検証が済んだ朝): 検証数・最高配当・AI本命1着率+結果まとめへのリンク
+ * - 結果まとめ(前日分の確定後の朝): 検証数・最高配当・AI本命1着率+結果まとめへのリンク
  * - 明日の注目(翌日番組の先行取得後の夜): AI事前評価の最有力+リンク
  *
  * 必要Secrets: X_API_KEY / X_API_SECRET / X_ACCESS_TOKEN / X_ACCESS_SECRET
@@ -119,8 +119,8 @@ function resultsText(dateISO: string, races: Race[]): string | null {
       : `3連単最高は¥${top.result!.payout3t.toLocaleString()}(${top.venue}${top.raceNo}R)`;
   // 注: URLを含む投稿は$0.20/件(テキストのみは$0.015/件)。流入検証を優先しURL入りで運用
   return (
-    `【答え合わせ】${m}/${d}の競艇 全${done.length}レースをAIが自動検証。` +
-    `${topLabel}。AI事前本命の1着率${rate}%。外れも含む全記録↓\n${SITE}/results/${dateISO}/\n` +
+    `【結果まとめ】${m}/${d}の競艇 全${done.length}レースをAIが自動検証。` +
+    `${topLabel}。AI事前本命の1着率${rate}%。全レースの結果・払戻はこちら↓\n${SITE}/results/${dateISO}/\n` +
     `#競艇 #競艇予想 #ボートレース`
   );
 }
@@ -165,7 +165,7 @@ async function main() {
     return dt.toISOString().slice(0, 10);
   };
 
-  // 1) 前日(または当日夜)の答え合わせポスト
+  // 1) 前日(または当日夜)の結果まとめポスト
   for (const date of [addDays(today, -1), today]) {
     const key = `results-${date}`;
     if (posted.includes(key)) continue;

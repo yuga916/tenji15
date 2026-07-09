@@ -3,7 +3,7 @@
  * data/latest-races.json + テンプレート → dist/ (GitHub Pages 配信物) を生成。
  * リンクはページ深度に応じた相対パス(ローカルで直接開いても表示可能)。
  *
- * レースページは同一URLで 事前(pre) → シグナル(signal) → 答え合わせ(verified) と進化する。
+ * レースページは同一URLで 事前(pre) → シグナル(signal) → 結果確定(verified) と進化する。
  *
  * 環境変数:
  * - SITE_URL: 本番URL (canonical / sitemap / JSON-LD 用)
@@ -55,7 +55,7 @@ function fill(template: string, vars: Record<string, string>): string {
 const STATUS_META: Record<RaceStatus, { cls: string; label: string }> = {
   pre: { cls: "status-pre", label: "展示待ち・事前評価" },
   signal: { cls: "status-signal", label: "シグナル点灯中" },
-  verified: { cls: "status-verified", label: "答え合わせ済み" },
+  verified: { cls: "status-verified", label: "結果確定" },
 };
 
 function gapOf(e: Entry): number | undefined {
@@ -121,14 +121,10 @@ function signalFeed(r: Race): string {
   return r.signals
     .map((s: Signal) => {
       const [cls, mark] = icon[s.impact];
-      const hit =
-        r.status === "verified" && s.hit !== undefined
-          ? `<span class="hit-mark ${s.hit ? "hit-yes" : "hit-no"}">${s.hit ? "的中" : "不発"}</span>`
-          : "";
       return `<div class="diff-item">
         <span class="diff-time">${s.time}</span>
         <span class="diff-icon ${cls}">${mark}</span>
-        <span class="diff-text">${esc(s.text)}${hit}</span>
+        <span class="diff-text">${esc(s.text)}</span>
       </div>`;
     })
     .join("\n");
@@ -185,65 +181,8 @@ function betSuggestion(r: Race): string {
         ? `<span class="status status-pre" style="font-size:11px;">展示前の暫定</span>`
         : `<span class="status status-verified" style="font-size:11px;">締切時点の最終評価</span>`;
 
-  // ---- 答え合わせ済み: 買い目の的中判定+段階別検証に切り替える ----
-  if (r.status === "verified" && r.result) {
-    const fin = r.result.finish;
-    const combos: { label: string; lanes: number[] }[] = [
-      { label: "本線", lanes: [a.lane, b.lane, c.lane] },
-      ...(d ? [{ label: "押さえ", lanes: [a.lane, b.lane, d.lane] }] : []),
-      { label: "押さえ", lanes: [a.lane, c.lane, b.lane] },
-      ...(r.inEscapeProb < 50 && b ? [{ label: "波乱押さえ", lanes: [b.lane, a.lane, c.lane] }] : []),
-      ...(gapBoat ? [{ label: "歪み狙い", lanes: [a.lane, b.lane, gapBoat.lane] }] : []),
-    ];
-    const comboRows = combos
-      .map((cb) => {
-        const hit = cb.lanes[0] === fin[0] && cb.lanes[1] === fin[1] && cb.lanes[2] === fin[2];
-        const mark = hit
-          ? `<span class="hit-mark hit-yes">✓ 的中 ¥${r.result!.payout3t.toLocaleString()}</span>`
-          : `<span class="hit-mark hit-no">✗</span>`;
-        return `<div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-          <span style="color:var(--muted); font-size:12px; width:70px;">${cb.label}</span>
-          <span style="display:inline-flex; align-items:center; gap:4px; font-weight:700;">${line(cb.lanes)}</span>${mark}</div>`;
-      })
-      .join("\n");
-
-    // 段階別の検証(3連単が外れても「どこまで機能したか」を示す)
-    const aPos = fin.indexOf(a.lane) + 1; // 0=圏外
-    const topIn3 = [a, b, c].filter((e) => fin.includes(e.lane)).length;
-    const stages = [
-      { label: `◎${a.lane}号艇が1着(軸として的中)`, ok: aPos === 1 },
-      { label: `◎${a.lane}号艇が3着以内`, ok: aPos >= 1 },
-      { label: `上位評価3艇のうち2艇以上が3着以内(実際: ${topIn3}艇)`, ok: topIn3 >= 2 },
-    ];
-    const stageRows = stages
-      .map((s) => `<li style="list-style:none; margin-bottom:4px;"><span class="hit-mark ${s.ok ? "hit-yes" : "hit-no"}">${s.ok ? "○" : "—"}</span> ${esc(s.label)}</li>`)
-      .join("\n");
-
-    const anyHit = combos.some((cb) => cb.lanes[0] === fin[0] && cb.lanes[1] === fin[1] && cb.lanes[2] === fin[2]);
-    let summary: string;
-    if (anyHit) {
-      summary = `買い目が的中(3連単¥${r.result.payout3t.toLocaleString()}・${r.result.popularity}番人気)。`;
-    } else if (aPos === 1) {
-      summary = `本線は不的中だが、◎${a.lane}号艇は1着で軸としては機能。相手選びが課題だった一戦。`;
-    } else if (aPos >= 2) {
-      summary = `本線は不的中。◎${a.lane}号艇は${aPos}着で3連対したが、頭までは届かなかった。`;
-    } else if (topIn3 >= 2) {
-      summary = `◎は3着圏外も、上位評価3艇のうち${topIn3}艇が3着以内。評価の方向性は概ね結果と一致した。`;
-    } else {
-      summary = `AI評価と結果が噛み合わなかった一戦。こうした外れも含めて全レースを記録し、モデル改善に使います。`;
-    }
-
-    return `<section>
-    <h2>シンプル結論の答え合わせ</h2>
-    <div class="card">
-      ${comboRows}
-      <p style="font-size:13.5px; color:#cfdde6; margin:12px 0;">${summary}</p>
-      <p style="font-size:12.5px; color:var(--muted); margin-bottom:4px;">段階別の検証(3連単1点は120通り中の1点。軸・評価上位の精度も併記します):</p>
-      <ul style="padding-left:2px;">${stageRows}</ul>
-      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">AI本命の1着率・回収率の通算成績は<a href="${baseFor(4)}labs/signals/">AI予想の成績</a>で全件公開しています。</p>
-    </div>
-  </section>`;
-  }
+  // 結果確定後は買い目セクションを表示しない(結果データページとして中立に保つ)
+  if (r.status === "verified") return "";
 
   return `<section>
     <h2>シンプル結論 — AI評価の高い組み合わせ</h2>
@@ -263,6 +202,29 @@ function betSuggestion(r: Race): string {
   </section>`;
 }
 
+/** 結果の振り返り文(中立的な事実のみ。保存済みの旧文言は使わずビルド時に生成) */
+function neutralRecap(r: Race): string {
+  const res = r.result!;
+  const parts: string[] = [];
+  parts.push(`結果は${res.finish.join("-")}、決まり手は${esc(res.kimarite)}。3連単は¥${res.payout3t.toLocaleString()}(${res.popularity}番人気)。`);
+  const winner = r.entries.find((e) => e.lane === res.finish[0]);
+  const wName = winner ? `・${esc(winner.name)}` : "";
+  if (res.finish[0] === 1 && res.kimarite === "逃げ") {
+    parts.push(`1号艇${wName}が逃げ切る決着。`);
+  } else if (res.finish[0] === 1) {
+    parts.push(`1号艇${wName}が${esc(res.kimarite)}で1着。`);
+  } else {
+    const lane1pos = res.finish.indexOf(1);
+    parts.push(
+      `インは${lane1pos >= 0 ? `${lane1pos + 1}着` : "3着以内に入れず"}、${res.finish[0]}号艇${wName}が${esc(res.kimarite)}で制した。`
+    );
+  }
+  if (res.popularity <= 3) parts.push("人気サイドの順当な決着。");
+  else if (res.popularity <= 10) parts.push("中穴の決着。");
+  else parts.push("波乱の決着となった。");
+  return parts.join("");
+}
+
 function resultSection(r: Race): string {
   if (r.status !== "verified" || !r.result) return "";
   const res = r.result;
@@ -270,14 +232,14 @@ function resultSection(r: Race): string {
     .map((lane, i) => `<span class="boat boat-${lane}">${lane}</span>${i < res.finish.length - 1 ? `<span class="arrow">→</span>` : ""}`)
     .join("");
   return `<section>
-    <h2>結果と答え合わせ — 直前サインはどう効いたか</h2>
+    <h2>レース結果</h2>
     <div class="result-box">
       <h3>RESULT</h3>
       <div class="finish-order">${order}
         <span style="color:var(--muted); font-size:13px; margin-left:8px;">決まり手: ${esc(res.kimarite)}</span>
         <span class="payout" style="margin-left:auto;">3連単 ¥${res.payout3t.toLocaleString()} (${res.popularity}番人気)</span>
       </div>
-      <p style="color:#cfdde6; font-size:14.5px;">${esc(res.review)}</p>
+      <p style="color:#cfdde6; font-size:14.5px;">${neutralRecap(r)}</p>
     </div>
   </section>`;
 }
@@ -293,7 +255,7 @@ function raceCardForIndex(r: Race, base: string): string {
   const grade = r.grade ? `<span class="grade-badge">${esc(r.grade)}</span> ` : "";
   const foot =
     r.status === "verified" && r.result
-      ? `<span style="color:var(--green); font-size:12.5px;">結果検証を読む → 3連単 ¥${r.result.payout3t.toLocaleString()}</span>`
+      ? `<span style="color:var(--green); font-size:12.5px;">結果・払戻を見る → 3連単 ¥${r.result.payout3t.toLocaleString()}</span>`
       : `<span style="color:var(--signal); font-size:12.5px;">直前分析を見る →</span>`;
   return `<a class="card race-card" href="${base}${racePath(r)}" style="color:var(--text);">
     <div class="head"><span class="venue">${esc(r.venue)} ${r.raceNo}R</span><span class="countdown" data-close="${closeIso(r)}">--:--</span></div>
@@ -336,7 +298,7 @@ function reviewRaces(races: Race[], base: string): string {
     .filter((r) => r.status === "verified")
     .sort((a, b) => b.dateISO.localeCompare(a.dateISO) || (b.result?.payout3t ?? 0) - (a.result?.payout3t ?? 0));
   if (done.length === 0)
-    return `<p style="color:var(--muted); font-size:13px;">検証済みレースはまだありません。レース確定後、結果と答え合わせが順次ここに蓄積されます。</p>`;
+    return `<p style="color:var(--muted); font-size:13px;">確定した結果はまだありません。レース確定後、結果・払戻が順次ここに蓄積されます。</p>`;
   return done.slice(0, 18).map((r) => raceCardForIndex(r, base)).join("\n");
 }
 
@@ -372,7 +334,7 @@ function otherRacesHtml(all: Race[], current: Race, base: string): string {
       const sorted = [...list].sort((a, b) => a.closeTime.localeCompare(b.closeTime));
       const next = sorted.find((r) => new Date(closeIso(r)).getTime() > now && r.status !== "verified");
       const v = sorted[0];
-      const note = next ? `次の締切 ${next.raceNo}R ${next.closeTime}` : "全レース終了・答え合わせ公開中";
+      const note = next ? `次の締切 ${next.raceNo}R ${next.closeTime}` : "全レース終了・結果公開中";
       return { html: `<a class="card race-card" href="${base}races/${v.venueSlug}/${v.dateISO}/" style="color:var(--text);">
         <div class="head"><span class="venue">${esc(v.venue)}</span></div>
         <div style="color:var(--muted); font-size:12.5px;">${note}</div>
@@ -419,7 +381,7 @@ function sportsEventJsonLd(r: Race): string {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${r.venue} 第${r.raceNo}R ${r.name}`,
-    description: `${r.venue}競艇(ボートレース${r.venue})第${r.raceNo}R「${r.name}」。締切予定${r.closeTime}。AI直前予想と結果・答え合わせを掲載。`,
+    description: `${r.venue}競艇(ボートレース${r.venue})第${r.raceNo}R「${r.name}」。締切予定${r.closeTime}。AI直前予想とレース結果・払戻を掲載。`,
     sport: "Motorboat racing",
     startDate: start,
     endDate: end,
@@ -452,11 +414,11 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
   const inDelta = r.inEscapeProb - r.inEscapeProbPre;
   const title =
     r.status === "verified"
-      ? `${r.venue}競艇 ${r.raceNo}R 結果・払戻と答え合わせ ${dateLabel(r.dateISO)}｜競艇チョクゼン`
+      ? `${r.venue}競艇 ${r.raceNo}R 結果・払戻 ${dateLabel(r.dateISO)}｜競艇チョクゼン`
       : `${r.venue}競艇 ${r.raceNo}R 直前予想【締切15分前に最終更新】${dateLabel(r.dateISO)}｜競艇チョクゼン`;
   const metaDesc =
     r.status === "verified"
-      ? `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)})のレース結果・払戻と答え合わせ。展示・オッズの直前サインがどう効いたかを検証。3連単¥${r.result?.payout3t.toLocaleString() ?? "—"}。`
+      ? `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)})のレース結果・払戻。着順・決まり手・3連単配当¥${r.result?.payout3t.toLocaleString() ?? "—"}・人気を掲載。`
       : `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)} 締切${r.closeTime})の直前予想。展示航走反映のイン逃げ確率${r.inEscapeProb}%、AI勝率とオッズの乖離、スリット予測を無料公開。`;
 
   const html = fill(template, {
@@ -661,7 +623,7 @@ function racerPageHtml(agg: RacerAgg): string {
         <td><span class="boat boat-${a.entry.lane}">${a.entry.lane}</span></td>
         <td>${pct(a.entry.preProb)}${a.isAiPick ? " ◎" : ""}</td>
         <td>${resLabel}</td>
-        <td><a href="${base}${racePath(r)}">${r.status === "verified" ? "答え合わせ" : "直前分析"}</a></td></tr>`;
+        <td><a href="${base}${racePath(r)}">${r.status === "verified" ? "結果" : "直前分析"}</a></td></tr>`;
     })
     .join("\n");
   const aiNote =
@@ -679,14 +641,14 @@ function racerPageHtml(agg: RacerAgg): string {
 </div>
 <section><h2>当サイト集計の成績</h2><div class="card">
 <p>結果確定済み ${agg.starts}走: <strong>1着${agg.wins}回・2着${agg.seconds}回・3着${agg.thirds}回</strong>(3連対率${top3Rate}%)。${aiNote}</p>
-<p style="color:var(--dim); font-size:12px;">※当サイトが答え合わせを開始した2026年7月以降の出走のみを集計した参考値です。通算成績は公式をご確認ください。</p>
+<p style="color:var(--dim); font-size:12px;">※当サイトが記録を開始した2026年7月以降の出走のみを集計した参考値です。通算成績は公式をご確認ください。</p>
 </div></section>
-<section><h2>出走履歴と答え合わせ</h2><div class="table-scroll"><table class="entries">
+<section><h2>出走履歴と結果</h2><div class="table-scroll"><table class="entries">
 <thead><tr><th>日付</th><th>場</th><th>R</th><th>枠</th><th>AI事前勝率</th><th>結果</th><th>分析</th></tr></thead>
 <tbody>${rows}</tbody></table></div></section>`;
   return articlePage({
     title: `${agg.name}(登番${agg.regNo})の成績・出走予定・AI評価｜競艇チョクゼン`,
-    metaDesc: `ボートレーサー${agg.name}(登番${agg.regNo}・${agg.racerClass})の出走予定・直近成績・AI事前評価と答え合わせ記録。1着${agg.wins}回/3連対率${top3Rate}%(当サイト集計)。`,
+    metaDesc: `ボートレーサー${agg.name}(登番${agg.regNo}・${agg.racerClass})の出走予定・直近成績・AI事前評価と結果記録。1着${agg.wins}回/3連対率${top3Rate}%(当サイト集計)。`,
     path: `racers/${agg.regNo}/`,
     base,
     crumbs: [["ホーム", base], ["選手一覧", `${base}racers/`], [`${agg.name}`]],
@@ -707,7 +669,7 @@ function dailyPageHtml(dateISO: string, dayRaces: Race[]): string {
   const rowOf = (r: Race) => `<tr><td>${esc(r.venue)}</td><td>${r.raceNo}R</td>
     <td>${r.result!.finish.join("-")}</td><td>${esc(r.result!.kimarite)}</td>
     <td>¥${r.result!.payout3t.toLocaleString()}</td><td>${r.result!.popularity}番人気</td>
-    <td><a href="${base}${racePath(r)}">答え合わせ</a></td></tr>`;
+    <td><a href="${base}${racePath(r)}">結果詳細</a></td></tr>`;
 
   const table = (rs: Race[]) => `<div class="table-scroll"><table class="entries">
 <thead><tr><th>場</th><th>R</th><th>3連単</th><th>決まり手</th><th>払戻</th><th>人気</th><th>詳細</th></tr></thead>
@@ -720,7 +682,7 @@ function dailyPageHtml(dateISO: string, dayRaces: Race[]): string {
 
   const body = `
 <h1>${dateLabel(dateISO)}の競艇 結果まとめ — 高配当・万舟・イン逃げ崩れ</h1>
-<p style="color:var(--muted);">確定${done.length}レースの結果・払戻を自動集計。各レースの「答え合わせ」では直前サインの検証を公開しています。</p>
+<p style="color:var(--muted);">確定${done.length}レースの結果・払戻を自動集計しています。</p>
 <section><h2>高配当ランキング TOP5</h2>${table(byPayout.slice(0, 5))}</section>
 <section><h2>万舟券(3連単1万円以上) — ${manshu.length}本</h2>${manshu.length ? table(manshu) : `<p style="color:var(--muted);">この日の万舟券はありませんでした。</p>`}</section>
 <section><h2>イン逃げ崩れ — ${inLose.length}レース</h2>${inLose.length ? table(inLose.slice(0, 20)) : `<p style="color:var(--muted);">この日はインが崩れたレースはありませんでした。</p>`}</section>
@@ -740,7 +702,7 @@ function dailyPageHtml(dateISO: string, dayRaces: Race[]): string {
 function venueStatsHtml(venue: string, list: Race[], base: string): string {
   const done = list.filter((r) => r.status === "verified" && r.result);
   if (done.length === 0) {
-    return `<div class="card"><p style="color:var(--muted);">実測データは蓄積中です。答え合わせ済みレースが増えると、イン逃げ実測率・決まり手分布・平均配当がここに表示されます。</p></div>`;
+    return `<div class="card"><p style="color:var(--muted);">実測データは蓄積中です。結果データが増えると、イン逃げ実測率・決まり手分布・平均配当がここに表示されます。</p></div>`;
   }
   const n = done.length;
   const inWin = done.filter((r) => r.result!.finish[0] === 1).length;
@@ -752,7 +714,7 @@ function venueStatsHtml(venue: string, list: Race[], base: string): string {
   const kHtml = [...kimarite.entries()].sort((a, b) => b[1] - a[1]).map(([k, c]) => `${esc(k)} ${Math.round((c / n) * 100)}%`).join(" / ");
   const caveat = n < 30 ? `<p style="color:var(--dim); font-size:12px;">※まだ${n}レースの集計のため参考値です。蓄積とともに精度が上がります。</p>` : "";
   return `<div class="card">
-<p><strong>${esc(venue)}の実測データ(当サイト答え合わせ${n}レース集計)</strong></p>
+<p><strong>${esc(venue)}の実測データ(当サイト集計${n}レース)</strong></p>
 <p>1号艇1着率 <strong>${Math.round((inWin / n) * 100)}%</strong>(うちイン逃げ ${Math.round((inNige / n) * 100)}%) / 決まり手: ${kHtml}</p>
 <p>3連単平均払戻 <strong>¥${avgPay.toLocaleString()}</strong> / 万舟券率 ${Math.round((manshu / n) * 100)}%</p>
 ${caveat}</div>`;
@@ -822,12 +784,12 @@ function featurePageHtml(f: Feature): string {
   const title = `${f.title}(${f.venue})の直前予想・結果まとめ｜競艇チョクゼン`;
   return articlePage({
     title,
-    metaDesc: `${f.grade}「${f.title}」(ボートレース${f.venue})の全レース直前予想と結果・答え合わせ。AI事前評価と展示反映のシグナル、払戻・決まり手を毎日自動更新。`,
+    metaDesc: `${f.grade}「${f.title}」(ボートレース${f.venue})の全レース直前予想と結果・払戻。AI事前評価と展示反映のシグナル、払戻・決まり手を毎日自動更新。`,
     path: f.path,
     base,
     crumbs: [["ホーム", base], ["特設一覧", `${base}features/`], [`${f.grade} ${f.venue}`]],
-    bodyHtml: `<h1>${esc(f.title)} — ${esc(f.venue)}競艇の直前予想・答え合わせ</h1>
-<p style="color:var(--muted);"><span class="grade-badge">${esc(f.grade)}</span> 開催期間: ${dateLabel(f.dates[0])}〜${dateLabel(f.dates[f.dates.length - 1])}・検証済み${done.length}レース。締切15分前の直前更新と結果検証を全レース掲載します。</p>
+    bodyHtml: `<h1>${esc(f.title)} — ${esc(f.venue)}競艇の直前予想・結果</h1>
+<p style="color:var(--muted);"><span class="grade-badge">${esc(f.grade)}</span> 開催期間: ${dateLabel(f.dates[0])}〜${dateLabel(f.dates[f.dates.length - 1])}。締切15分前の直前更新と結果・払戻を全レース掲載します。</p>
 ${topPayHtml}
 ${daySections}`,
   });
@@ -858,7 +820,7 @@ function todayRacesGrouped(races: Race[], base: string, features: Feature[] = []
     .map(({ sorted, next, allDone }) => {
       const v = sorted[0];
       const status = allDone
-        ? `全${sorted.length}R終了・答え合わせ公開中`
+        ? `全${sorted.length}R終了・結果公開中`
         : `次の締切 ${next.raceNo}R ${next.closeTime}`;
       const feature = v.grade ? features.find((f) => f.venueSlug === v.venueSlug && f.title === v.seriesTitle) : undefined;
       const gradeHtml = feature
@@ -986,7 +948,7 @@ function rssXml(races: Race[], resultDates: string[]): string {
     <link>${SITE_URL}/results/${d}/</link>
     <guid isPermaLink="true">${SITE_URL}/results/${d}/</guid>
     <pubDate>${rfc822(d, 22)}</pubDate>
-    <description>${esc(`${dateLabel(d)}の競艇(ボートレース)全場の結果・払戻・答え合わせの自動集計。高配当ランキング、万舟券、イン逃げ崩れ、決まり手内訳。`)}</description>
+    <description>${esc(`${dateLabel(d)}の競艇(ボートレース)全場の結果・払戻の自動集計。高配当ランキング、万舟券、イン逃げ崩れ、決まり手内訳。`)}</description>
   </item>`);
   }
 
@@ -1009,9 +971,9 @@ function rssXml(races: Race[], resultDates: string[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
 <channel>
-  <title>競艇チョクゼン — 締切15分前の直前予想と答え合わせ</title>
+  <title>競艇チョクゼン — 締切15分前の直前予想とレース結果</title>
   <link>${SITE_URL}/</link>
-  <description>競艇(ボートレース)全24場の直前予想をAIが自動分析。締切15分前の更新と、全レースの結果検証(答え合わせ)を毎日配信。</description>
+  <description>競艇(ボートレース)全24場の直前予想をAIが自動分析。締切15分前の更新と、全レースの結果・払戻を毎日配信。</description>
   <language>ja</language>
   <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${items.join("\n")}
@@ -1062,7 +1024,7 @@ async function main() {
   indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });
   await writeFile(path.join(DIST, "index.html"), indexHtml, "utf-8");
 
-  // レース詳細(1レース=1URL・事前→シグナル→答え合わせを同一URLで)
+  // レース詳細(1レース=1URL・事前→シグナル→結果を同一URLで)
   const raceTpl = await readFile(path.join(ROOT, "templates", "race-detail.template.html"), "utf-8");
   for (const r of races) await buildRacePage(raceTpl, r, races);
 
@@ -1095,7 +1057,7 @@ async function main() {
     .join("\n");
   const featIndex = articlePage({
     title: "SG・G1などグレードレース特設一覧｜競艇チョクゼン",
-    metaDesc: "競艇のSG・G1・G2・G3グレードレースの特設ページ一覧。開催節ごとに全レースの直前予想・結果・答え合わせを自動集約。",
+    metaDesc: "競艇のSG・G1・G2・G3グレードレースの特設ページ一覧。開催節ごとに全レースの直前予想・結果を自動集約。",
     path: "features/",
     base: featBase,
     crumbs: [["ホーム", featBase], ["特設一覧"]],
@@ -1130,18 +1092,18 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
     const links = [...list]
       .sort((a, b) => b.dateISO.localeCompare(a.dateISO) || a.raceNo - b.raceNo)
       .slice(0, 300)
-      .map((r) => `<li style="margin-bottom:8px;"><a href="${venueBase}${racePath(r)}">${dateLabel(r.dateISO)} 第${r.raceNo}R ${esc(r.name)} の直前分析・答え合わせ</a></li>`)
+      .map((r) => `<li style="margin-bottom:8px;"><a href="${venueBase}${racePath(r)}">${dateLabel(r.dateISO)} 第${r.raceNo}R ${esc(r.name)} の直前予想・結果</a></li>`)
       .join("\n");
     const html = articlePage({
       title: `${venue}競艇の予想と特徴データ(イン逃げ実測率・決まり手・平均配当)｜競艇チョクゼン`,
-      metaDesc: `${venue}競艇(ボートレース${venue})のイン逃げ実測率・決まり手分布・平均払戻を答え合わせ済みレースから自動集計。全レースの直前予想と結果検証の一覧つき。`,
+      metaDesc: `${venue}競艇(ボートレース${venue})のイン逃げ実測率・決まり手分布・平均払戻を確定レースの結果から自動集計。全レースの直前予想と結果の一覧つき。`,
       path: `races/${slug}/`,
       base: venueBase,
       crumbs: [["ホーム", venueBase], [`${venue}競艇`]],
       bodyHtml: `<h1>${esc(venue)}競艇場の特徴データと直前予想</h1>
-<p style="color:var(--muted);">当サイトの答え合わせ(結果検証)アーカイブから、${esc(venue)}の実測傾向を毎日自動更新しています。</p>
+<p style="color:var(--muted);">当サイトの結果アーカイブから、${esc(venue)}の実測傾向を毎日自動更新しています。</p>
 <section><h2>実測データ</h2>${venueStatsHtml(venue, list, venueBase)}</section>
-<section><h2>直前予想・答え合わせ一覧</h2><ul style="list-style:none;">${links}</ul></section>`,
+<section><h2>直前予想・結果一覧</h2><ul style="list-style:none;">${links}</ul></section>`,
     });
     const dir = path.join(DIST, "races", slug);
     await mkdir(dir, { recursive: true });
@@ -1184,7 +1146,7 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
     .join("\n");
   const racersIndex = articlePage({
     title: "ボートレーサー選手データ一覧(成績・AI評価)｜競艇チョクゼン",
-    metaDesc: "ボートレーサーの出走予定・直近成績・AI事前評価・答え合わせ記録を登録番号別に自動集計。公式配布データに基づく選手データベース。",
+    metaDesc: "ボートレーサーの出走予定・直近成績・AI事前評価・結果記録を登録番号別に自動集計。公式配布データに基づく選手データベース。",
     path: "racers/",
     base: racersBase,
     crumbs: [["ホーム", racersBase], ["選手一覧"]],
@@ -1214,7 +1176,7 @@ ${racerList.length > 0 ? `<ul style="list-style:none;">${racerLinks}</ul>` : `<p
     .join("\n");
   const resultsIndex = articlePage({
     title: "今日の競艇結果まとめ｜万舟・高配当・イン逃げ崩れの日別一覧｜競艇チョクゼン",
-    metaDesc: "競艇(ボートレース)の日別結果まとめ。高配当ランキング・万舟券・イン逃げ崩れ・決まり手内訳を毎日自動集計し、各レースの答え合わせにリンク。",
+    metaDesc: "競艇(ボートレース)の日別結果まとめ。高配当ランキング・万舟券・イン逃げ崩れ・決まり手内訳を毎日自動集計。",
     path: "results/",
     base: resultsBase,
     crumbs: [["ホーム", resultsBase], ["結果まとめ"]],
@@ -1241,10 +1203,10 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
 <section><h2>展示タイムと展示偏差</h2><p>展示タイムは周回展示で計測されるラップ。ただし水面・風・計測条件が場ごとに異なるため、絶対値の比較には意味が薄く、当サイトでは<strong>「当日のその水面の分布の中でどれだけ速いか」を偏差値(σ)化</strong>して表示します。+1σ以上は当日水準で明確に速い、-1σ以下は明確に遅い、が目安です。</p></section>
 <section><h2>進入と前づけ</h2><p>競艇は枠なり進入(1号艇がイン)が基本ですが、スタート展示で外の艇が内のコースを取りにいく「前づけ」が起きると、全艇の勝率前提が崩れます。当サイトは進入変化を検知すると全艇の評価を再計算します(フォーメーションシグナル)。</p></section>
 <section><h2>スリットとST</h2><p>STはスタートタイミング(0.15など小さいほど速い)。フライング(F)は-0.01秒でも大きなペナルティです。スタートラインを横一線に見た隊形を「スリット」と呼び、どの艇が出ているかで展開(逃げ/まくり/差し)の確率が大きく変わります。</p></section>
-<section><h2>決まり手6種</h2><p><strong>逃げ</strong>(1コースがそのまま押し切る)、<strong>差し</strong>(内側を突く)、<strong>まくり</strong>(外から一気に抜く)、<strong>まくり差し</strong>(まくりつつ内へ)、<strong>抜き</strong>(道中逆転)、<strong>恵まれ</strong>(先行艇の事故等)。当サイトの答え合わせページでは全レースの決まり手を記録し、会場ページで実測分布を公開しています。</p></section>
+<section><h2>決まり手6種</h2><p><strong>逃げ</strong>(1コースがそのまま押し切る)、<strong>差し</strong>(内側を突く)、<strong>まくり</strong>(外から一気に抜く)、<strong>まくり差し</strong>(まくりつつ内へ)、<strong>抜き</strong>(道中逆転)、<strong>恵まれ</strong>(先行艇の事故等)。当サイトでは全レースの決まり手を自動記録し、会場ページで実測分布を公開しています。</p></section>
 <section><h2>イン逃げ確率</h2><p>1号艇が逃げ切る確率の当サイト推定値。会場ごとの基準値(例: 大村は高い・戸田は低い)を、1号艇と対抗勢の力関係で補正して算出します。展示反映後には当日の気配で更新されます。</p></section>
 <section><h2>歪み(乖離)とは — 当サイトの中核指標</h2><p>展示反映後のAI勝率と、直前オッズから逆算した市場の勝率のズレのこと。プラスに大きい艇は「AIは評価しているが市場(投票)がまだ織り込んでいない」状態で、当サイトはこれをシグナルとして点灯させます。<strong>予想の当たり外れではなく、期待値のズレを探す</strong>のがこの指標の目的です。</p></section>
-<section><h2>答え合わせ(検証)の読み方</h2><p>レース確定後、同じURLに結果・払戻・決まり手と「事前評価がどう当たり、どう外れたか」を追記します。的中だけを誇示せず外れも同じ形式で記録することが、当サイトの信頼性の根拠です。<a href="${guideBase}results/">日別の結果まとめ</a>と<a href="${guideBase}labs/signals/">シグナル成績</a>もあわせてご覧ください。</p></section>`,
+<section><h2>結果アーカイブの見方</h2><p>レース確定後、同じURLに結果・払戻・決まり手を自動で追記し、日別の高配当・万舟・決まり手の集計とあわせて蓄積しています。<a href="${guideBase}results/">日別の結果まとめ</a>と<a href="${guideBase}labs/signals/">AI予想の通算成績</a>もあわせてご覧ください。</p></section>`,
   });
   const guideDir = path.join(DIST, "guide");
   await mkdir(guideDir, { recursive: true });

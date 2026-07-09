@@ -1,5 +1,5 @@
 /**
- * 答え合わせ(結果検証)エンジン。
+ * 結果反映エンジン。
  * Kファイルのパース結果を保存済みRaceにマージし、verified状態へ遷移させる。
  * - 着順・決まり手・払戻・気象を反映
  * - 事前評価(AI本命・イン逃げ確率)が結果とどう噛み合ったかのreview文を生成
@@ -83,7 +83,7 @@ function judgeSignal(text: string, finish: number[]): boolean | undefined {
   return finish.slice(0, 2).includes(lane);
 }
 
-/** 答え合わせ本文(断定表現を避け、事前評価と結果の照合を淡々と記録する) */
+/** レース結果の振り返り文(中立的な事実記述のみ。予想との照合はしない) */
 export function buildReview(
   race: Race,
   pr: ParsedRaceResult,
@@ -100,52 +100,25 @@ export function buildReview(
       : "3連単の払戻は取得できず";
   parts.push(`結果は${finish.join("-")}、決まり手は${pr.kimarite}。${pay}。`);
 
-  // 2. AI本命の検証
-  const top = [...race.entries].sort((a, b) => b.preProb - a.preProb)[0];
-  if (top) {
-    const pos = finish.indexOf(top.lane);
-    if (pos === 0) {
-      parts.push(`事前AI本命の${top.lane}号艇・${top.name}(事前勝率${Math.round(top.preProb * 100)}%)が1着で、評価どおりの決着。`);
-    } else if (pos > 0) {
-      parts.push(`事前AI本命の${top.lane}号艇・${top.name}は${pos + 1}着。頭までは届かなかった。`);
-    } else {
-      parts.push(`事前AI本命の${top.lane}号艇・${top.name}は3着圏外。事前評価が裏切られた一戦。`);
-    }
-  }
-
-  // 3. イン逃げ評価の検証
-  const inPre = race.inEscapeProbPre;
+  // 2. 展開の事実記述
+  const winner = race.entries.find((e) => e.lane === finish[0]);
+  const winnerName = winner ? `・${winner.name}` : "";
   if (finish[0] === 1 && pr.kimarite === "逃げ") {
-    parts.push(
-      inPre >= 55
-        ? `イン逃げ確率${inPre}%の高評価どおり、1号艇が押し切った。`
-        : `イン逃げ確率は${inPre}%と控えめの見立てだったが、実際はインが逃げ切った。`
-    );
+    parts.push(`1号艇${winnerName}が逃げ切る決着。`);
   } else if (finish[0] === 1) {
-    parts.push(`1号艇が1着も決まり手は${pr.kimarite}。単純なイン逃げではない展開だった。`);
+    parts.push(`1号艇${winnerName}が${pr.kimarite}で1着。`);
   } else {
     const lane1row = pr.rows.find((r) => r.lane === 1);
     const lane1pos = lane1row?.rank ? `${lane1row.rank}着` : "着外";
-    parts.push(
-      inPre >= 55
-        ? `イン逃げ確率${inPre}%の見立てに反しインは${lane1pos}に沈み、${finish[0]}号艇が制した。`
-        : `イン逃げ確率${inPre}%と警戒したとおりインは崩れ(${lane1pos})、${finish[0]}号艇が制した。`
-    );
+    parts.push(`インは${lane1pos}に敗れ、${finish[0]}号艇${winnerName}が${pr.kimarite}で制した。`);
   }
 
-  // 4. 配当帯の記録
+  // 3. 配当帯の記録
   if (popularity) {
-    if (popularity <= 3) parts.push("配当面は人気サイドの順当決着。");
-    else if (popularity <= 10) parts.push("配当面は中穴の決着。");
-    else parts.push("配当面は市場の想定を大きく外れた波乱の決着。");
+    if (popularity <= 3) parts.push("人気サイドの順当な決着。");
+    else if (popularity <= 10) parts.push("中穴の決着。");
+    else parts.push("波乱の決着となった。");
   }
-
-  // 5. 検証範囲の明示(透明性)
-  parts.push(
-    race.signals.length > 0
-      ? "点灯シグナルの的中判定は各シグナル横に表示。"
-      : "本レースは事前評価のみの検証(展示・直前オッズのシグナル検証は準備中)。"
-  );
 
   return parts.join("");
 }

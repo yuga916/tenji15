@@ -843,13 +843,33 @@ function todayRacesGrouped(races: Race[], base: string, features: Feature[] = []
         : v.grade
           ? ` <span class="grade-badge">${esc(v.grade)}</span>`
           : "";
-      return `<div style="margin-bottom:30px;">
-  <h3 style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px; font-size:17px;">
+      const header = `<h3 style="display:flex; align-items:baseline; gap:12px; margin-bottom:12px; font-size:17px;">
     <a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="color:var(--text);">${esc(v.venue)}</a>${gradeHtml}
     <span style="color:var(--muted); font-size:12.5px; font-weight:400;">${status}</span>
     <a href="${base}races/${v.venueSlug}/" style="margin-left:auto; color:var(--cyan); font-size:12px;">会場データ →</a>
-  </h3>
-  <div class="grid grid-3">${sorted.map((r) => raceCardForIndex(r, base)).join("\n")}</div>
+  </h3>`;
+
+      // 締切前のレースだけカード表示。終了分はコンパクトなボタン列に畳む
+      const upcoming = sorted.filter(isOpen);
+      const finished = sorted
+        .filter((r) => !isOpen(r))
+        .sort((a, b) => a.raceNo - b.raceNo);
+      const chip = (r: Race) =>
+        `<a href="${base}${racePath(r)}" style="display:inline-block; padding:6px 11px; border-radius:8px; border:1px solid rgba(255,255,255,.12); color:var(--muted); font-size:12px;">${r.raceNo}R${r.status === "verified" ? ' <span style="color:var(--green);">済</span>' : ""}</a>`;
+      const finishedRow =
+        finished.length > 0
+          ? `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:${upcoming.length > 0 ? "12px" : "0"}; align-items:center;">
+      <span style="color:var(--dim); font-size:11.5px;">${upcoming.length > 0 ? "終了:" : ""}</span>
+      ${finished.map(chip).join("\n")}
+    </div>`
+          : "";
+      const cards =
+        upcoming.length > 0 ? `<div class="grid grid-3">${upcoming.map((r) => raceCardForIndex(r, base)).join("\n")}</div>` : "";
+
+      return `<div style="margin-bottom:${allDone ? "18px" : "30px"};">
+  ${header}
+  ${cards}
+  ${finishedRow}
 </div>`;
     });
   return blocks.join("\n");

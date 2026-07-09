@@ -14,36 +14,67 @@ import type { VenueInfo } from "./venues.ts";
 /** コース別の基準勝率(全国水準の概算・枠なり想定) */
 const LANE_BASE: Record<number, number> = { 1: 0.55, 2: 0.14, 3: 0.12, 4: 0.10, 5: 0.06, 6: 0.03 };
 
-/** 級別の強さ係数 */
-const CLASS_COEF: Record<string, number> = { A1: 1.25, A2: 1.05, B1: 0.9, B2: 0.7 };
+/** 級別の強さ(レーティングへの加点) */
+const CLASS_BONUS: Record<string, number> = { A1: 0.3, A2: 0.05, B1: -0.05, B2: -0.35 };
 
-/** 選手個力スコア(0.5〜1.5程度): 全国勝率とモーター2連率の合成 */
-function racerScore(r: ParsedRacer): number {
-  const win = Math.min(Math.max(r.natWinRate, 2), 8);      // 2.00〜8.00に丸め
-  const winNorm = 0.6 + ((win - 2) / 6) * 0.8;             // 0.6〜1.4
-  const motor = Math.min(Math.max(r.motorRate, 15), 60);   // 15〜60%に丸め
-  const motorNorm = 0.85 + ((motor - 15) / 45) * 0.3;      // 0.85〜1.15
-  const cls = CLASS_COEF[r.racerClass] ?? 1.0;
-  return winNorm * motorNorm * cls;
+/** レーティングの影響係数(大きいほど個力差が枠の差を覆しやすい) */
+const RATING_COEF = 0.4;
+
+/** レース内偏差値(z-score)化 */
+function zScores(values: number[]): number[] {
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const sd = Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length);
+  if (sd < 1e-6) return values.map(() => 0);
+  return values.map((v) => Math.max(-2.2, Math.min(2.2, (v - mean) / sd)));
+}
+
+/**
+ * 多因子レーティング(レース内相対評価)。
+ * 全国勝率を主軸に、当地勝率(水面相性)・全国2連率(安定感)・モーター・ボート・級別を合成。
+ */
+export function computeRatings(race: ParsedRace): number[] {
+  const zNatWin = zScores(race.racers.map((r) => r.natWinRate));
+  const zLocal = zScores(race.racers.map((r) => (r.localWinRate > 0 ? r.localWinRate : r.natWinRate)));
+  const zTop2 = zScores(race.racers.map((r) => r.natTop2Rate));
+  const zMotor = zScores(race.racers.map((r) => r.motorRate));
+  const zBoat = zScores(race.racers.map((r) => r.boatRate));
+  return race.racers.map(
+    (r, i) =>
+      1.0 * zNatWin[i] +
+      0.45 * zLocal[i] +
+      0.35 * zTop2[i] +
+      0.4 * zMotor[i] +
+      0.15 * zBoat[i] +
+      (CLASS_BONUS[r.racerClass] ?? 0)
+  );
+}
+
+/** 会場補正済みのコース基準値(イン天国/難水面で1コースの前提を変える) */
+function venueLaneBase(lane: number, venue?: VenueInfo): number {
+  const base = LANE_BASE[lane] ?? 0.05;
+  if (!venue) return base;
+  const b1 = Math.min(0.68, Math.max(0.4, LANE_BASE[1] * (venue.inEscapeBase / 55)));
+  if (lane === 1) return b1;
+  return base * ((1 - b1) / (1 - LANE_BASE[1])); // 残りを従来比率で配分
 }
 
 /** 各艇の事前勝率を算出(合計1に正規化) */
-export function computePreProbs(race: ParsedRace): number[] {
-  const raw = race.racers.map((r) => (LANE_BASE[r.lane] ?? 0.05) * racerScore(r));
+export function computePreProbs(race: ParsedRace, venue?: VenueInfo): number[] {
+  const ratings = computeRatings(race);
+  const raw = race.racers.map((r, i) => venueLaneBase(r.lane, venue) * Math.exp(RATING_COEF * ratings[i]));
   const sum = raw.reduce((a, b) => a + b, 0);
   return raw.map((v) => v / sum);
 }
 
 /** イン逃げ確率(%): 場の基準値を1号艇と対抗勢の力関係で補正 */
 export function computeInEscape(race: ParsedRace, venue: VenueInfo, probs: number[]): number {
-  const lane1 = race.racers.find((r) => r.lane === 1);
-  if (!lane1) return venue.inEscapeBase;
-  const s1 = racerScore(lane1);
-  const rivals = race.racers.filter((r) => r.lane !== 1);
-  const sR = rivals.reduce((a, r) => a + racerScore(r), 0) / Math.max(rivals.length, 1);
-  const ratio = s1 / sR; // 1.0=互角
-  const adjusted = venue.inEscapeBase * (0.6 + 0.4 * ratio) * (0.7 + probs[0] * 0.75);
-  return Math.round(Math.min(85, Math.max(20, adjusted)));
+  const ratings = computeRatings(race);
+  const idx1 = race.racers.findIndex((r) => r.lane === 1);
+  if (idx1 < 0) return venue.inEscapeBase;
+  const rivalMax = Math.max(...ratings.filter((_, i) => i !== idx1));
+  const edge = ratings[idx1] - rivalMax; // 1号艇と最強対抗の力差(σ)
+  const adjusted = venue.inEscapeBase * (1 + 0.18 * Math.max(-2, Math.min(2, edge))) * (0.75 + probs[idx1] * 0.6);
+  return Math.round(Math.min(88, Math.max(18, adjusted)));
 }
 
 /** 展開確率(事前): イン逃げ確率から残りを配分 */

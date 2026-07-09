@@ -50,7 +50,24 @@ const sum = probs.reduce((a, b) => a + b, 0);
 assert(Math.abs(sum - 1) < 1e-9, `勝率合計=1 (実際: ${sum.toFixed(6)})`);
 assert(probs[0] > probs[1] && probs[0] > probs[5], `1号艇(A1)が最有力 (1号=${(probs[0] * 100).toFixed(1)}%)`);
 const inEsc = computeInEscape(omura, venueByJcd.get("24")!, probs);
-assert(inEsc >= 55 && inEsc <= 85, `大村×A1のイン逃げ確率が高水準 (実際: ${inEsc}%)`);
+assert(inEsc >= 55 && inEsc <= 88, `大村×A1のイン逃げ確率が高水準 (実際: ${inEsc}%)`);
+
+// 多因子モデル: 弱い1号艇(B2) vs 強い外枠(A1)では本命が入れ替わる
+const flipRace = {
+  raceNo: 1, raceName: "テスト", distance: 1800, closeTime: "12:00",
+  racers: [
+    { lane: 1, regNo: "1", name: "弱1", age: 30, branch: "x", weight: 52, racerClass: "B2", natWinRate: 2.1, natTop2Rate: 14, localWinRate: 2.0, localTop2Rate: 0, motorNo: 1, motorRate: 22, boatNo: 1, boatRate: 28 },
+    { lane: 2, regNo: "2", name: "並2", age: 30, branch: "x", weight: 52, racerClass: "B1", natWinRate: 4.5, natTop2Rate: 30, localWinRate: 4.3, localTop2Rate: 0, motorNo: 2, motorRate: 33, boatNo: 2, boatRate: 33 },
+    { lane: 3, regNo: "3", name: "並3", age: 30, branch: "x", weight: 52, racerClass: "B1", natWinRate: 4.2, natTop2Rate: 28, localWinRate: 4.0, localTop2Rate: 0, motorNo: 3, motorRate: 31, boatNo: 3, boatRate: 32 },
+    { lane: 4, regNo: "4", name: "強4", age: 30, branch: "x", weight: 52, racerClass: "A1", natWinRate: 7.6, natTop2Rate: 55, localWinRate: 7.8, localTop2Rate: 0, motorNo: 4, motorRate: 52, boatNo: 4, boatRate: 40 },
+    { lane: 5, regNo: "5", name: "並5", age: 30, branch: "x", weight: 52, racerClass: "B1", natWinRate: 4.0, natTop2Rate: 27, localWinRate: 3.8, localTop2Rate: 0, motorNo: 5, motorRate: 30, boatNo: 5, boatRate: 31 },
+    { lane: 6, regNo: "6", name: "並6", age: 30, branch: "x", weight: 52, racerClass: "B1", natWinRate: 3.8, natTop2Rate: 26, localWinRate: 3.6, localTop2Rate: 0, motorNo: 6, motorRate: 29, boatNo: 6, boatRate: 30 },
+  ],
+} as any;
+const flipProbs = computePreProbs(flipRace);
+const flipTop = flipProbs.indexOf(Math.max(...flipProbs));
+assert(flipTop !== 0, `多因子: 弱1号艇vs強A1外枠で本命が変動 (◎=${flipTop + 1}号艇)`);
+assert(flipProbs[0] > 0.1, `多因子: それでも1号艇はコース分の下駄あり (実際: ${(flipProbs[0] * 100).toFixed(1)}%)`);
 
 assert(warnings.length === 0, `警告0件 (実際: ${warnings.length}件 ${warnings[0] ?? ""})`);
 

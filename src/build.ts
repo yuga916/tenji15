@@ -142,6 +142,20 @@ function kimariteBar(r: Race): string {
   );
 }
 
+/** 算出ファクターのチップ表示(予想の透明性・説得力のため) */
+function factorChips(status: RaceStatus): string {
+  const chip = (label: string, live = false) =>
+    `<span style="border:1px solid ${live ? "rgba(255,138,61,.5)" : "rgba(77,216,255,.4)"}; color:${live ? "var(--signal)" : "var(--cyan)"}; border-radius:20px; padding:2px 10px; font-size:11px; white-space:nowrap;">${label}</span>`;
+  const base = ["全国勝率", "当地勝率", "2連率", "モーター", "ボート", "級別", "コース×会場イン強度"].map((f) => chip(f)).join("");
+  const live =
+    status === "signal"
+      ? ["展示タイム", "進入", "直前オッズ"].map((f) => chip(`${f}✓反映済`, true)).join("")
+      : ["展示タイム", "進入", "直前オッズ"].map((f) => chip(`${f}(展示後に反映)`, true)).join("");
+  return `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; align-items:center;">
+    <span style="color:var(--dim); font-size:11px;">算出ファクター:</span>${base}${live}
+  </div>`;
+}
+
 /** AIの結論(買い目候補)。断定表現を避け、評価順+根拠を簡潔に提示する */
 function betSuggestion(r: Race): string {
   const sorted = [...r.entries].sort((a, b) => b.aiProb - a.aiProb);
@@ -197,7 +211,8 @@ function betSuggestion(r: Race): string {
       <ul style="font-size:13px; color:#cfdde6; padding-left:18px; line-height:1.9;">
         ${reasons.map((x) => `<li>${x}</li>`).join("\n")}
       </ul>
-      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。オッズは締切まで変動します。</p>
+      ${factorChips(r.status)}
+      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。オッズは締切まで変動します。算出方法の詳細は<a href="${baseFor(4)}guide/ai-yosou/">競艇のAI予想とは</a>をご覧ください。</p>
     </div>
   </section>`;
 }

@@ -70,7 +70,7 @@ export function convertBText(text: string, dateISO: string): Race[] {
         continue;
       }
       for (const pr of vd.races) {
-        const probs = computePreProbs(pr);
+        const probs = computePreProbs(pr, venue);
         const inEscape = computeInEscape(pr, venue, probs);
         races.push({
           raceId: `${venue.slug}-${dateISO}-${pr.raceNo}`,
@@ -95,7 +95,7 @@ export function convertBText(text: string, dateISO: string): Race[] {
           signals: [],
           verdict: buildPreVerdict(pr, venue.name, probs, inEscape),
           updatedAt: now,
-          modelVersion: "v0.2.0-baseline",
+          modelVersion: "v0.4.0-multifactor",
         });
       }
     }

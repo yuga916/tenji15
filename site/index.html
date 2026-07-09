@@ -111,8 +111,8 @@
     <div class="grid grid-3">
       <div class="card">
         <div class="step-num">1</div>
-        <h3 style="font-size:15px; margin-bottom:8px;">事前評価(ベースライン)</h3>
-        <p style="color:var(--muted); font-size:13px;">公式配布の番組表・過去成績から機械学習モデルが各艇の勝率とイン逃げ確率を算出。これが「事前の答え」。</p>
+        <h3 style="font-size:15px; margin-bottom:8px;">事前評価 — 6ファクター×会場補正</h3>
+        <p style="color:var(--muted); font-size:13px;">公式データの<strong style="color:var(--text);">全国勝率・当地勝率(水面相性)・2連率・モーター・ボート・級別</strong>をレース内で偏差値化して合成。さらに会場ごとのイン強度(大村は強く、戸田・平和島は弱い)でコース基準を補正し、各艇の勝率とイン逃げ確率を算出します。</p>
       </div>
       <div class="card">
         <div class="step-num">2</div>
@@ -141,6 +141,19 @@
         <div class="label">記録済みレース数</div>
         <div class="note">※結果アーカイブに全件掲載</div>
       </div>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; align-items:center;">
+      <span style="color:var(--dim); font-size:12px;">AIが見ているファクター:</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">全国勝率</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">当地勝率(水面相性)</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">2連率</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">モーター2連率</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">ボート2連率</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">級別</span>
+      <span style="border:1px solid rgba(77,216,255,.4); color:var(--cyan); border-radius:20px; padding:3px 12px; font-size:12px;">コース×会場イン強度</span>
+      <span style="border:1px solid rgba(255,138,61,.5); color:var(--signal); border-radius:20px; padding:3px 12px; font-size:12px;">+展示タイム(直前)</span>
+      <span style="border:1px solid rgba(255,138,61,.5); color:var(--signal); border-radius:20px; padding:3px 12px; font-size:12px;">+進入変化(直前)</span>
+      <span style="border:1px solid rgba(255,138,61,.5); color:var(--signal); border-radius:20px; padding:3px 12px; font-size:12px;">+直前オッズ乖離</span>
     </div>
     <p style="color:var(--muted); font-size:12.5px; margin-top:16px;">当サイトは「必勝」「絶対に当たる」等の断定的表現を使用しません。すべての数値は検証可能な算出方法とともに公開します。</p>
   </div>

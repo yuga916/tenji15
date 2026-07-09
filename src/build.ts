@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import type { Race, Entry, Signal, RaceStatus } from "./types.ts";
 import { loadAllRaces } from "./store.ts";
 import { GUIDE_TERMS } from "./guideTerms.ts";
+import { venueBySlug } from "./venues.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -365,6 +366,61 @@ function otherRacesHtml(all: Race[], current: Race, base: string): string {
 <div class="grid grid-3">${venueCards}</div>`;
 }
 
+/* ---------- 会場特性セクション(予想根拠の明示) ---------- */
+interface VenueStat { n: number; inWin: number; inNige: number; manshu: number; paySum: number; kimarite: Map<string, number> }
+
+function collectVenueStats(races: Race[]): Map<string, VenueStat> {
+  const map = new Map<string, VenueStat>();
+  for (const r of races) {
+    if (r.status !== "verified" || !r.result) continue;
+    let s = map.get(r.venueSlug);
+    if (!s) { s = { n: 0, inWin: 0, inNige: 0, manshu: 0, paySum: 0, kimarite: new Map() }; map.set(r.venueSlug, s); }
+    s.n++;
+    if (r.result.finish[0] === 1) s.inWin++;
+    if (r.result.finish[0] === 1 && r.result.kimarite === "逃げ") s.inNige++;
+    if (r.result.payout3t >= 10000) s.manshu++;
+    s.paySum += r.result.payout3t;
+    s.kimarite.set(r.result.kimarite, (s.kimarite.get(r.result.kimarite) ?? 0) + 1);
+  }
+  return map;
+}
+
+function venueSectionHtml(r: Race, stat: VenueStat | undefined, inEscapeBase: number | undefined, base: string): string {
+  const character =
+    inEscapeBase === undefined ? "" :
+    inEscapeBase >= 60 ? `<strong style="color:var(--cyan);">イン天国</strong>(全国有数のイン水面)` :
+    inEscapeBase >= 48 ? `<strong>標準的な水面</strong>` :
+    `<strong style="color:var(--signal);">難水面</strong>(インが崩れやすく波乱型)`;
+  const baseLine =
+    inEscapeBase === undefined ? "" :
+    `<p style="font-size:13.5px; color:#cfdde6; margin-bottom:10px;">${esc(r.venue)}はイン基準${inEscapeBase}%(全国平均55%)の${character}。この会場特性がAI評価のコース基準補正に反映されています。</p>`;
+
+  let measured = `<p style="color:var(--muted); font-size:12.5px;">実測データは蓄積中です(確定レースが増えると自動表示)。</p>`;
+  if (stat && stat.n >= 5) {
+    const pct = (a: number) => Math.round((a / stat.n) * 100);
+    const topKim = [...stat.kimarite.entries()].sort((a, b) => b[1] - a[1])[0];
+    const cell = (v: string, l: string) =>
+      `<div style="min-width:110px;"><div style="font-size:19px; font-weight:900;">${v}</div><div style="color:var(--dim); font-size:11px;">${l}</div></div>`;
+    measured = `<div style="display:flex; flex-wrap:wrap; gap:18px;">
+      ${cell(`${pct(stat.inWin)}%`, "1号艇1着率(実測)")}
+      ${cell(`${pct(stat.inNige)}%`, "イン逃げ率(実測)")}
+      ${cell(esc(topKim?.[0] ?? "—"), "最多決まり手")}
+      ${cell(`${pct(stat.manshu)}%`, "万舟券率")}
+      ${cell(`¥${Math.round(stat.paySum / stat.n).toLocaleString()}`, "3連単平均払戻")}
+    </div>
+    <p style="color:var(--dim); font-size:11.5px; margin-top:8px;">※当サイトが記録した${esc(r.venue)}の確定${stat.n}レースの集計(毎日自動更新)。</p>`;
+  }
+
+  return `<section>
+    <h2>${esc(r.venue)}の水面特性 — この予想の前提</h2>
+    <div class="card">
+      ${baseLine}
+      ${measured}
+      <p style="font-size:12px; margin-top:10px;"><a href="${base}races/${r.venueSlug}/">${esc(r.venue)}の会場データをもっと見る →</a></p>
+    </div>
+  </section>`;
+}
+
 /* ---------- JSON-LD ---------- */
 function breadcrumbJsonLd(r: Race): string {
   return JSON.stringify({
@@ -423,7 +479,7 @@ function verdictTitle(status: RaceStatus): string {
   return "このレースの結論はこうだった";
 }
 
-async function buildRacePage(template: string, r: Race, all: Race[]): Promise<void> {
+async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map<string, VenueStat>): Promise<void> {
   const base = baseFor(4);
   const m = STATUS_META[r.status];
   const inDelta = r.inEscapeProb - r.inEscapeProbPre;
@@ -469,6 +525,7 @@ async function buildRacePage(template: string, r: Race, all: Race[]): Promise<vo
     IN_NOTE: esc(r.inNote),
     SIGNAL_FEED: signalFeed(r),
     BET_SECTION: betSuggestion(r),
+    VENUE_SECTION: venueSectionHtml(r, vStats.get(r.venueSlug), venueBySlug.get(r.venueSlug)?.inEscapeBase, base),
     KIMARITE_BAR: kimariteBar(r),
     KIMARITE_NOTE: esc(r.kimariteNote),
     ENTRIES_ROWS: entriesRows(r, base),
@@ -1061,7 +1118,8 @@ async function main() {
 
   // レース詳細(1レース=1URL・事前→シグナル→結果を同一URLで)
   const raceTpl = await readFile(path.join(ROOT, "templates", "race-detail.template.html"), "utf-8");
-  for (const r of races) await buildRacePage(raceTpl, r, races);
+  const vStats = collectVenueStats(races);
+  for (const r of races) await buildRacePage(raceTpl, r, races, vStats);
 
   // スタブページ(深度1)
   const stubs: [string, string, string][] = [

@@ -590,6 +590,9 @@ ${ogTags(opts.title, opts.metaDesc, opts.path)}
 ${ldScripts}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="${opts.base}assets/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="512x512" href="${opts.base}assets/favicon-512.png">
+<link rel="apple-touch-icon" href="${opts.base}assets/apple-touch-icon.png">
 <link rel="stylesheet" href="${opts.base}assets/styles.css">
 ${gaSnippet()}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="${opts.base}">競艇<span class="num">チョクゼン</span></a>
@@ -797,6 +800,9 @@ function stubPage(title: string, body: string, base: string): string {
 <title>${title} - 競艇チョクゼン</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="${base}assets/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="512x512" href="${base}assets/favicon-512.png">
+<link rel="apple-touch-icon" href="${base}assets/apple-touch-icon.png">
 <link rel="stylesheet" href="${base}assets/styles.css">
 ${gaSnippet()}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="${base}">競艇<span class="num">チョクゼン</span></a></div></header>
@@ -1444,6 +1450,7 @@ ${faqHtml}
   const { xml, robots } = sitemaps(entries);
   await writeFile(path.join(DIST, "sitemap.xml"), xml, "utf-8");
   await writeFile(path.join(DIST, "robots.txt"), robots, "utf-8");
+  await writeFile(path.join(DIST, "favicon.ico"), await readFile(path.join(ROOT, "site", "assets", "favicon.ico")));
   await writeFile(path.join(DIST, ".nojekyll"), "", "utf-8");
 
   console.log(`[build] 完了: レース${races.length} / 選手${racers.size} / 結果まとめ${resultDates.length}日分 → ${DIST}`);

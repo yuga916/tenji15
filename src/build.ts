@@ -1244,12 +1244,12 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
     .map((a) => `<li style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">${racerAvatar(a.name, a.racerClass, 32)}<a href="${racersBase}racers/${a.regNo}/">${esc(a.name)}(登番${a.regNo})</a> <span style="color:var(--dim); font-size:12px;">${esc(a.racerClass)}・掲載${a.appearances.length}走</span></li>`)
     .join("\n");
   const racersIndex = articlePage({
-    title: "ボートレーサー選手データ一覧(成績・AI評価)｜競艇チョクゼン",
+    title: "競艇選手一覧表｜ボートレーサーの成績・AI評価データ｜競艇チョクゼン",
     metaDesc: "ボートレーサーの出走予定・直近成績・AI事前評価・結果記録を登録番号別に自動集計。公式配布データに基づく選手データベース。",
     path: "racers/",
     base: racersBase,
     crumbs: [["ホーム", racersBase], ["選手一覧"]],
-    bodyHtml: `<h1>選手データ一覧</h1>
+    bodyHtml: `<h1>競艇選手一覧表 — 成績・AI評価データ</h1>
 <p style="color:var(--muted);">当サイトのアーカイブに登場した選手のページを自動生成しています(毎日更新・拡大中)。</p>
 ${racerList.length > 0 ? `<ul style="list-style:none;">${racerLinks}</ul>` : `<p style="color:var(--muted);">蓄積中です。出走データが貯まると選手ページがここに追加されます。</p>`}`,
   });
@@ -1338,6 +1338,7 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
       { q: "イン逃げしやすい競艇場はどこですか?", a: "大村や徳山は60%を超える「イン天国」、戸田・平和島・江戸川などは40%台の難水面とされます。当サイトでは会場別の実測値を毎日更新しています。" },
     ],
     manshu: [
+      { q: "万舟券の読み方は?", a: "「まんしゅうけん」と読みます。略して「万舟(まんしゅう)」とも呼ばれます。「万船」と書かれることもありますが、正式には舟の字を使います。" },
       { q: "万舟券とは何ですか?", a: "3連単の払戻金が10,000円以上になった高配当のことです。100円の舟券が1万円以上になるケースを指します。" },
       { q: "万舟券はどのくらいの頻度で出ますか?", a: "発生率は15〜17%程度で、全国で1日あたりおおよそ20レース前後発生すると言われます。" },
     ],

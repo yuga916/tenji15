@@ -596,7 +596,7 @@ ${ldScripts}
 <link rel="stylesheet" href="${opts.base}assets/styles.css">
 ${gaSnippet()}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="${opts.base}">競艇<span class="num">チョクゼン</span></a>
-<nav class="global"><a href="${opts.base}results/">結果まとめ</a><a href="${opts.base}racers/">選手</a><a href="${opts.base}guide/">ガイド</a></nav></div></header>
+<nav class="global"><a href="${opts.base}guide/kanzen-guide/">予想ガイド</a><a href="${opts.base}results/">結果まとめ</a><a href="${opts.base}racers/">選手</a><a href="${opts.base}guide/">用語</a></nav></div></header>
 <main class="wrap article">
 <nav class="breadcrumb" aria-label="パンくずリスト">${crumbHtml}</nav>
 ${opts.bodyHtml}
@@ -1243,15 +1243,34 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
   const racerLinks = racerList
     .map((a) => `<li style="margin-bottom:10px; display:flex; align-items:center; gap:10px;">${racerAvatar(a.name, a.racerClass, 32)}<a href="${racersBase}racers/${a.regNo}/">${esc(a.name)}(登番${a.regNo})</a> <span style="color:var(--dim); font-size:12px;">${esc(a.racerClass)}・掲載${a.appearances.length}走</span></li>`)
     .join("\n");
+  const RACERS_FAQ: { q: string; a: string }[] = [
+    { q: "競艇選手(ボートレーサー)は何人いますか?", a: "全国におよそ1,600人が登録されており、成績によってA1・A2・B1・B2の4つの級別に半年ごとに格付けされます。A1級は全体の上位約20%です。" },
+    { q: "級別(A1・A2・B1・B2)は何が違いますか?", a: "直近の勝率・出走回数などで決まる格付けです。A1級が最上位で、優勝戦やグレードレースへの斡旋が増えます。当サイトの一覧ではアイコンの色で級別を表しています(金=A1、銀=A2、水色=B1、灰=B2)。" },
+    { q: "選手ページでは何が見られますか?", a: "その選手の出走アーカイブ(会場・レース・枠番)、当サイトAIの事前評価、確定した着順の記録を登録番号別に自動集計しています。" },
+    { q: "選手の勝率はどこのデータですか?", a: "ボートレース公式が配布する番組表・競走成績データを毎日自動取得して集計しています。手入力ではないため転記ミスがありません。" },
+  ];
+  const racersFaqHtml = `<section><h2>競艇選手についてよくある質問</h2>${RACERS_FAQ.map((x) => `<h3 style="font-size:14.5px; margin:14px 0 6px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("\n")}</section>`;
   const racersIndex = articlePage({
     title: "競艇選手一覧表｜ボートレーサーの成績・AI評価データ｜競艇チョクゼン",
     metaDesc: "ボートレーサーの出走予定・直近成績・AI事前評価・結果記録を登録番号別に自動集計。公式配布データに基づく選手データベース。",
     path: "racers/",
     base: racersBase,
     crumbs: [["ホーム", racersBase], ["選手一覧"]],
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: RACERS_FAQ.map((x) => ({
+          "@type": "Question",
+          name: x.q,
+          acceptedAnswer: { "@type": "Answer", text: x.a },
+        })),
+      },
+    ],
     bodyHtml: `<h1>競艇選手一覧表 — 成績・AI評価データ</h1>
-<p style="color:var(--muted);">当サイトのアーカイブに登場した選手のページを自動生成しています(毎日更新・拡大中)。</p>
-${racerList.length > 0 ? `<ul style="list-style:none;">${racerLinks}</ul>` : `<p style="color:var(--muted);">蓄積中です。出走データが貯まると選手ページがここに追加されます。</p>`}`,
+<p style="color:var(--muted);">全国約1,600人のボートレーサーのうち、当サイトのアーカイブに登場した選手のページを自動生成しています(毎日更新・拡大中)。アイコンの色は級別(金=A1・銀=A2・水色=B1・灰=B2)です。</p>
+${racerList.length > 0 ? `<ul style="list-style:none;">${racerLinks}</ul>` : `<p style="color:var(--muted);">蓄積中です。出走データが貯まると選手ページがここに追加されます。</p>`}
+${racersFaqHtml}`,
   });
   await mkdir(path.join(DIST, "racers"), { recursive: true });
   await writeFile(path.join(DIST, "racers", "index.html"), racersIndex, "utf-8");
@@ -1295,6 +1314,7 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
     base: guideBase,
     crumbs: [["ホーム", guideBase], ["用語・見方ガイド"]],
     bodyHtml: `<h1>用語・見方ガイド — 直前予想に必要な知識と当サイト指標の読み方</h1>
+<p style="color:var(--muted);">予想の手順を最初から知りたい方は<a href="${guideBase}guide/kanzen-guide/"><strong>競艇予想のやり方 完全ガイド</strong></a>からどうぞ。</p>
 <section><h2>用語別の詳しい解説</h2><div class="grid grid-3">${GUIDE_TERMS.map(
       (t) => `<a class="card" href="${guideBase}guide/${t.slug}/" style="color:var(--text);"><h3 style="font-size:14.5px; margin-bottom:6px;">${esc(t.term)}とは</h3><p style="color:var(--muted); font-size:12px;">${esc(t.metaDesc.slice(0, 55))}…</p></a>`
     ).join("\n")}</div></section>
@@ -1310,6 +1330,74 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
   const guideDir = path.join(DIST, "guide");
   await mkdir(guideDir, { recursive: true });
   await writeFile(path.join(guideDir, "index.html"), guideHtml, "utf-8");
+
+  // 柱ページ: 競艇予想のやり方 完全ガイド(全ガイド・データページを束ねるハブ)
+  const HUB_PUBLISHED = "2026-07-13";
+  const hubBase = baseFor(2);
+  const HUB_FAQ: { q: string; a: string }[] = [
+    { q: "競艇予想は何から始めればいいですか?", a: "まず番組表で各艇の級別・勝率・モーター2連率を確認して大まかな力関係を掴み、締切15分前の展示航走で当日の気配を確かめ、最後にオッズと見比べて買い目を決める、の3ステップが基本です。" },
+    { q: "競艇予想で一番大事なファクターは何ですか?", a: "最重要はコース(枠番)です。1コースの全国1着率は約55%あり、他の公営競技にない大きな偏りです。その前提の上で選手の実力・モーター・当日の展示気配を重ねて精度を上げます。" },
+    { q: "展示航走は本当に予想に役立ちますか?", a: "番組表は前日確定のため、当日のモーターの仕上がりや進入隊形は展示航走でしか分かりません。展示タイムの相対比較(偏差)や進入変化は、直前に予想を修正する数少ない客観情報です。" },
+    { q: "初心者はどの舟券から買うのがおすすめですか?", a: "的中率を体感しやすい2連単や、まずは単勝・複勝から始め、レースの見方に慣れてから3連単に進むのが定石です。3連単は120通りあり配当も高い分、資金管理が重要になります。" },
+  ];
+  const hubFaqHtml = `<section><h2>よくある質問</h2>${HUB_FAQ.map((x) => `<h3 style="font-size:14.5px; margin:14px 0 6px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("\n")}</section>`;
+  const hubHtml = articlePage({
+    title: "競艇予想のやり方 完全ガイド｜初心者の手順・コツ・データの使い方｜競艇チョクゼン",
+    metaDesc: "競艇(ボートレース)予想のやり方を3ステップで解説。番組表の6ファクターの見方、展示航走のチェックポイント、オッズと期待値の考え方まで、初心者が予想を組み立てる手順とコツをデータ付きでまとめた完全ガイド。",
+    path: "guide/kanzen-guide/",
+    base: hubBase,
+    crumbs: [["ホーム", hubBase], ["用語・見方ガイド", `${hubBase}guide/`], ["競艇予想のやり方 完全ガイド"]],
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: "競艇予想のやり方 完全ガイド — 初心者の手順・コツ・データの使い方",
+        description: "競艇予想を組み立てる3ステップ(番組表→展示航走→オッズ)と、コース・選手・モーター・会場データの使い方を解説。",
+        datePublished: HUB_PUBLISHED,
+        dateModified: HUB_PUBLISHED,
+        image: `${SITE_URL}/assets/og-image.png`,
+        author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+        publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+        mainEntityOfPage: `${SITE_URL}/guide/kanzen-guide/`,
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: HUB_FAQ.map((x) => ({
+          "@type": "Question",
+          name: x.q,
+          acceptedAnswer: { "@type": "Answer", text: x.a },
+        })),
+      },
+    ],
+    bodyHtml: `<h1>競艇予想のやり方 完全ガイド — 手順・コツ・データの使い方</h1>
+<p style="color:var(--muted);">競艇の予想は「番組表で力関係を掴む → 展示航走で当日の気配を確かめる → オッズと見比べて買い目を決める」の3ステップに整理できます。このページは、その手順を初心者向けに最短ルートでまとめた当サイトの柱ガイドです。各項目の詳しい解説ページへのリンクつき。</p>
+
+<section><h2>ステップ1: 番組表で力関係を掴む(前日〜当日朝)</h2>
+<p>番組表(出走表)で最初に見るのは<strong>コース(枠番)</strong>です。1コースの全国1着率は約55%と圧倒的で、これが競艇予想のすべての出発点になります。その上で各艇を次の6ファクターで比較します。</p>
+<p><strong>①級別</strong>(A1が最上位)、<strong>②全国勝率</strong>(実力の基準値)、<strong>③当地勝率</strong>(その水面との相性)、<strong>④全国2連率</strong>(安定感)、<strong>⑤モーター2連率</strong>(機力)、<strong>⑥ボート2連率</strong>。当サイトのAI事前評価はこの6つをレース内で相対化して合成しています。詳しくは<a href="${hubBase}guide/ai-yosou/">競艇のAI予想とは</a>を、1号艇がどれだけ信頼できるかの読み方は<a href="${hubBase}guide/innige/">イン逃げ確率とは</a>をご覧ください。</p></section>
+
+<section><h2>ステップ2: 展示航走で当日の気配を確かめる(締切15分前)</h2>
+<p>番組表は前日確定の情報なので、<strong>当日のモーターの実際の出足・伸び</strong>と<strong>進入隊形</strong>は展示航走でしか分かりません。チェックポイントは3つです。</p>
+<p>(1) <a href="${hubBase}guide/tenji-time/">展示タイム</a> — 絶対値ではなく当日のレース内での相対差(偏差)で見る。(2) <a href="${hubBase}guide/maezuke/">進入・前づけ</a> — 枠なりが崩れたら勝率の前提ごと崩れる。(3) <a href="${hubBase}guide/slit/">スリット・ST</a> — スタートの出方で逃げ/まくり/差しの展開が決まる。展示の基本は<a href="${hubBase}guide/tenji/">展示航走とは</a>にまとめています。当サイトは全レースの展示情報を自動取得し、締切前に評価を更新しています。</p></section>
+
+<section><h2>ステップ3: オッズと見比べて買い目を決める(直前)</h2>
+<p>最後は「自分の評価」と「オッズ(市場の評価)」の比較です。実力通りに売れている本命を薄く追うより、<strong>評価とオッズにズレ(歪み)がある艇</strong>を狙う方が長期の期待値は高くなります。考え方は<a href="${hubBase}guide/odds-yugami/">オッズの歪みとは</a>で解説しています。舟券の種類と配当の仕組みは<a href="${hubBase}guide/sanrentan/">3連単とは</a>、高配当の条件は<a href="${hubBase}guide/manshu/">万舟券とは</a>をどうぞ。</p></section>
+
+<section><h2>会場(水面)で予想の前提が変わる</h2>
+<p>同じ1号艇でも、イン有利の大村と難水面の戸田では信頼度がまったく違います。当サイトは全24場のイン逃げ実測率・<a href="${hubBase}guide/kimarite/">決まり手</a>分布・平均配当を確定レースから毎日自動集計しています。<a href="${hubBase}labs/venues/">会場別データ一覧</a>で確認できます。</p></section>
+
+<section><h2>データで検証しながら上達する</h2>
+<p>予想は出しっぱなしにせず、結果と突き合わせて初めて上達します。当サイトでは<a href="${hubBase}results/">日別の結果まとめ</a>(万舟・高配当・イン逃げ崩れ)と、<a href="${hubBase}labs/signals/">AI予想の通算成績</a>(本命1着率・仮想回収率を隠さず公開)を毎日更新しています。気になる選手は<a href="${hubBase}racers/">選手一覧</a>から個別ページで出走記録を追えます。</p></section>
+
+${hubFaqHtml}
+
+<section><h2>用語をさらに詳しく</h2><p>${GUIDE_TERMS.map((t) => `<a href="${hubBase}guide/${t.slug}/">${esc(t.term)}とは</a>`).join(" / ")}</p>
+<p style="margin-top:12px;"><a href="${hubBase}">→ 今日の直前予想を見る(無料・全レース)</a></p></section>`,
+  });
+  const hubDir = path.join(guideDir, "kanzen-guide");
+  await mkdir(hubDir, { recursive: true });
+  await writeFile(path.join(hubDir, "index.html"), hubHtml, "utf-8");
 
   // 用語ページのFAQ(リッチリザルト用)。回答は本文の要約
   const GUIDE_FAQ: Record<string, { q: string; a: string }[]> = {
@@ -1438,6 +1526,7 @@ ${faqHtml}
     { loc: `${SITE_URL}/racers/`, lastmod: jstToday },
     ...solidRacers.map((a) => ({ loc: `${SITE_URL}/racers/${a.regNo}/`, lastmod: racerLastmod(a) })),
     { loc: `${SITE_URL}/guide/`, lastmod: GUIDE_PUBLISHED },
+    { loc: `${SITE_URL}/guide/kanzen-guide/`, lastmod: HUB_PUBLISHED },
     ...GUIDE_TERMS.map((t) => ({ loc: `${SITE_URL}/guide/${t.slug}/`, lastmod: GUIDE_PUBLISHED })),
     { loc: `${SITE_URL}/features/`, lastmod: jstToday },
     ...features.map((f) => ({

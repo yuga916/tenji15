@@ -602,7 +602,7 @@ ${gaSnippet()}</head><body>
 ${opts.bodyHtml}
 <div class="age-note"><strong>20歳未満の方は舟券を購入できません。</strong>分析情報は的中を保証するものではありません。無理のない金額で計画的にお楽しみください。</div>
 </main>
-<footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン</p></div></div></footer>
+<footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a></p></div></div></footer>
 </body></html>`;
 }
 

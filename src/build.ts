@@ -14,7 +14,8 @@ import { fileURLToPath } from "node:url";
 import type { Race, Entry, Signal, RaceStatus } from "./types.ts";
 import { loadAllRaces } from "./store.ts";
 import { GUIDE_TERMS } from "./guideTerms.ts";
-import { venueBySlug } from "./venues.ts";
+import { venueBySlug, VENUES } from "./venues.ts";
+import type { HistoryAgg } from "./backfill.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -774,6 +775,28 @@ function dailyPageHtml(dateISO: string, dayRaces: Race[]): string {
 }
 
 /* ---------- 会場実測データ(A3) ---------- */
+/** 過去分バックフィル集計による会場の長期実測セクション(データ未蓄積なら空文字) */
+function venueHistoryHtml(history: HistoryAgg | null, slug: string, base: string): string {
+  if (!history) return "";
+  const jcd = VENUES.find((v) => v.slug === slug)?.jcd;
+  if (!jcd) return "";
+  const v = history.venues[jcd];
+  if (!v || v.races < 100) return "";
+  const p = (a: number, b: number) => (b > 0 ? (100 * a / b).toFixed(1) : "—");
+  const kimTop = Object.entries(v.kimarite).sort((a, b) => b[1] - a[1]).slice(0, 3)
+    .map(([k, n]) => `${k} ${(100 * n / Math.max(1, v.races)).toFixed(1)}%`).join(" / ");
+  const cell = (label: string, val: string) => `<div style="flex:1; min-width:120px;"><div style="color:var(--dim); font-size:11px;">${label}</div><div style="font-size:16px; font-weight:700;">${val}</div></div>`;
+  return `<section><h2>長期実測データ(過去${history.races.toLocaleString()}レース集計中)</h2>
+<div class="card"><div style="display:flex; flex-wrap:wrap; gap:14px;">
+${cell("集計レース", v.races.toLocaleString())}
+${cell("イン1着率(実測)", `${p(v.laneWins[0], v.races)}%`)}
+${cell("万舟率", `${p(v.manshu, Math.max(1, v.payoutCnt))}%`)}
+${cell("平均3連単", `¥${Math.round(v.payoutSum / Math.max(1, v.payoutCnt)).toLocaleString()}`)}
+${cell("期間内最高配当", `¥${v.maxPayout.toLocaleString()}`)}
+</div>
+<p style="color:var(--muted); font-size:12.5px; margin-top:10px;">決まり手上位: ${kimTop || "集計中"}。全24場の比較は<a href="${base}stats/manshu/">万舟券統計</a>へ。</p></div></section>`;
+}
+
 function venueStatsHtml(venue: string, list: Race[], base: string): string {
   const done = list.filter((r) => r.status === "verified" && r.result);
   if (done.length === 0) {
@@ -1102,6 +1125,13 @@ async function main() {
   const todayRaces = races.filter((r) => r.dateISO === currentDate);
   const features = collectFeatures(races);
 
+  // 過去分バックフィル集計(あれば会場ページ・統計ページで使用)
+  let history: HistoryAgg | null = null;
+  try {
+    const h = JSON.parse(await readFile(path.join(process.cwd(), "data", "history", "agg.json"), "utf-8")) as HistoryAgg;
+    if (h && h.races > 0) history = h;
+  } catch { /* 未生成 */ }
+
   await mkdir(DIST, { recursive: true });
   const assetsSrc = path.join(ROOT, "site", "assets");
   const assetsDst = path.join(DIST, "assets");
@@ -1202,6 +1232,7 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
       bodyHtml: `<h1>${esc(venue)}競艇場の特徴データと直前予想</h1>
 <p style="color:var(--muted);">当サイトの結果アーカイブから、${esc(venue)}の実測傾向を毎日自動更新しています。</p>
 <section><h2>実測データ</h2>${venueStatsHtml(venue, list, venueBase)}</section>
+${venueHistoryHtml(history, slug, venueBase)}
 <section><h2>直前予想・結果一覧</h2><ul style="list-style:none;">${links}</ul></section>`,
     });
     const dir = path.join(DIST, "races", slug);
@@ -1399,6 +1430,103 @@ ${hubFaqHtml}
   await mkdir(hubDir, { recursive: true });
   await writeFile(path.join(hubDir, "index.html"), hubHtml, "utf-8");
 
+  // 万舟統計ページ(/stats/manshu/): バックフィル済みの過去集計があればそれを、なければ直近アーカイブを使用
+  const statsBase = baseFor(2);
+  const pctOf = (a: number, b: number) => (b > 0 ? (100 * a / b).toFixed(1) : "0.0");
+  const venueName = (jcd: string) => VENUES.find((v) => v.jcd === jcd)?.name ?? `場${jcd}`;
+  const venueSlugOf = (jcd: string) => VENUES.find((v) => v.jcd === jcd)?.slug;
+
+  // フォールバック: 直近アーカイブの確定レースから同形の集計を作る
+  const fallbackHistory = (): HistoryAgg => {
+    const agg: HistoryAgg = { version: 1, cursor: "", target: "", done: false, fetchedDays: 0, failedDates: [], from: "9999-12-31", to: "0000-01-01", races: 0, venues: {}, racers: {}, manshuTop: [] };
+    for (const r of races) {
+      if (r.status !== "verified" || !r.result) continue;
+      const jcd = VENUES.find((v) => v.slug === r.venueSlug)?.jcd;
+      if (!jcd) continue;
+      const va = (agg.venues[jcd] ??= { races: 0, laneWins: [0, 0, 0, 0, 0, 0], courseWins: [0, 0, 0, 0, 0, 0], kimarite: {}, payoutSum: 0, payoutCnt: 0, manshu: 0, maxPayout: 0, maxPayoutDate: "", byMonth: {}, byRaceNo: {} });
+      const win = r.result.finish[0];
+      const month = String(Number(r.dateISO.slice(5, 7)));
+      va.races++; agg.races++;
+      if (win >= 1 && win <= 6) va.laneWins[win - 1]++;
+      const mA = (va.byMonth[month] ??= { races: 0, lane1Win: 0, manshu: 0 }); mA.races++;
+      const rA = (va.byRaceNo[String(r.raceNo)] ??= { races: 0, manshu: 0, lane1Win: 0 }); rA.races++;
+      if (win === 1) { mA.lane1Win++; rA.lane1Win++; }
+      const p = r.result.payout3t;
+      if (p > 0) {
+        va.payoutSum += p; va.payoutCnt++;
+        if (p >= 10000) { va.manshu++; mA.manshu++; rA.manshu++; agg.manshuTop.push({ date: r.dateISO, jcd, raceNo: r.raceNo, amount: p, combo: r.result.finish.join("-") }); }
+        if (p > va.maxPayout) { va.maxPayout = p; va.maxPayoutDate = r.dateISO; }
+      }
+      if (r.dateISO < agg.from) agg.from = r.dateISO;
+      if (r.dateISO > agg.to) agg.to = r.dateISO;
+    }
+    agg.manshuTop.sort((a, b) => b.amount - a.amount);
+    if (agg.manshuTop.length > 20) agg.manshuTop.length = 20;
+    return agg;
+  };
+  const H = history ?? fallbackHistory();
+  if (H.races > 0) {
+    const period = `${dateLabel(H.from)}〜${dateLabel(H.to)}`;
+    const venueRows = Object.entries(H.venues)
+      .filter(([, v]) => v.payoutCnt >= 10)
+      .map(([jcd, v]) => ({ jcd, v, rate: v.manshu / Math.max(1, v.payoutCnt) }))
+      .sort((a, b) => b.rate - a.rate);
+    const venueTable = venueRows.map((x, i) => {
+      const slug = venueSlugOf(x.jcd);
+      const nameCell = slug ? `<a href="${statsBase}races/${slug}/">${esc(venueName(x.jcd))}</a>` : esc(venueName(x.jcd));
+      return `<tr><td>${i + 1}</td><td>${nameCell}</td><td>${x.v.payoutCnt.toLocaleString()}</td><td>${x.v.manshu.toLocaleString()}</td><td><strong>${pctOf(x.v.manshu, x.v.payoutCnt)}%</strong></td><td>¥${Math.round(x.v.payoutSum / Math.max(1, x.v.payoutCnt)).toLocaleString()}</td><td>¥${x.v.maxPayout.toLocaleString()}</td></tr>`;
+    }).join("\n");
+    const byR: Record<string, { races: number; manshu: number; lane1Win: number }> = {};
+    const byM: Record<string, { races: number; manshu: number; lane1Win: number }> = {};
+    for (const v of Object.values(H.venues)) {
+      for (const [k, r] of Object.entries(v.byRaceNo)) { const t = (byR[k] ??= { races: 0, manshu: 0, lane1Win: 0 }); t.races += r.races; t.manshu += r.manshu; t.lane1Win += r.lane1Win; }
+      for (const [k, m] of Object.entries(v.byMonth)) { const t = (byM[k] ??= { races: 0, manshu: 0, lane1Win: 0 }); t.races += m.races; t.manshu += m.manshu; t.lane1Win += m.lane1Win; }
+    }
+    const rnTable = Object.keys(byR).map(Number).sort((a, b) => a - b).map((n) => { const t = byR[String(n)]; return `<tr><td>${n}R</td><td>${t.races.toLocaleString()}</td><td><strong>${pctOf(t.manshu, t.races)}%</strong></td><td>${pctOf(t.lane1Win, t.races)}%</td></tr>`; }).join("\n");
+    const moTable = Object.keys(byM).map(Number).sort((a, b) => a - b).map((n) => { const t = byM[String(n)]; return `<tr><td>${n}月</td><td>${t.races.toLocaleString()}</td><td><strong>${pctOf(t.manshu, t.races)}%</strong></td><td>${pctOf(t.lane1Win, t.races)}%</td></tr>`; }).join("\n");
+    const topTable = H.manshuTop.slice(0, 20).map((m, i) => `<tr><td>${i + 1}</td><td>${dateLabel(m.date)}</td><td>${esc(venueName(m.jcd))}</td><td>${m.raceNo}R</td><td>${esc(m.combo)}</td><td><strong>¥${m.amount.toLocaleString()}</strong></td><td>${m.popularity ? `${m.popularity}番人気` : "—"}</td></tr>`).join("\n");
+    const tableStyle = `style="width:100%; border-collapse:collapse; font-size:13px;"`;
+    const thStyle = `style="text-align:left; color:var(--dim); font-size:11.5px; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.12);"`;
+    const note = history ? "" : `<p style="color:var(--signal); font-size:12.5px;">※現在は直近アーカイブのみの集計です。過去3年分のデータを毎晩自動で遡って取得中のため、数値は日々拡充されます。</p>`;
+    const manshuStats = articlePage({
+      title: "万舟券が出やすい競艇場ランキング【実測データ】｜レース番号別・月別の万舟率｜競艇チョクゼン",
+      metaDesc: `万舟券(3連単1万円以上)が出やすい競艇場を全24場の実測データでランキング。レース番号別・月別の万舟率、平均3連単配当、期間内の高配当記録も掲載。${period}・${H.races.toLocaleString()}レースを自動集計。`,
+      path: "stats/manshu/",
+      base: statsBase,
+      crumbs: [["ホーム", statsBase], ["データ", undefined], ["万舟券統計"]],
+      jsonLd: [{
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: "万舟券が出やすい競艇場ランキング — 実測データで見る万舟率",
+        description: "全24場の万舟率・平均3連単配当・高配当記録を公式配布の競走成績から自動集計。",
+        datePublished: "2026-07-17",
+        dateModified: H.to,
+        image: `${SITE_URL}/assets/og-image.png`,
+        author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+        publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+        mainEntityOfPage: `${SITE_URL}/stats/manshu/`,
+      }],
+      bodyHtml: `<h1>万舟券が出やすい競艇場ランキング — 実測データ</h1>
+<p style="color:var(--muted);">公式配布の競走成績から、3連単1万円以上(=万舟券)の出現率を自動集計しています。集計期間: <strong>${period}</strong>・<strong>${H.races.toLocaleString()}レース</strong>。万舟券の基礎知識は<a href="${statsBase}guide/manshu/">万舟券とは</a>をご覧ください。</p>
+${note}
+<section><h2>会場別 万舟率ランキング</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>会場</th><th ${thStyle}>集計レース</th><th ${thStyle}>万舟本数</th><th ${thStyle}>万舟率</th><th ${thStyle}>平均3連単</th><th ${thStyle}>期間内最高</th></tr></thead><tbody>${venueTable}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">万舟率が高い場はイン信頼度が低く荒れやすい水面、低い場はイン天国の傾向。会場名をクリックすると各場の詳細データへ。</p></section>
+<section><h2>レース番号別の万舟率(全場合算)</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>レース</th><th ${thStyle}>集計</th><th ${thStyle}>万舟率</th><th ${thStyle}>イン1着率</th></tr></thead><tbody>${rnTable}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">進入固定や企画レース(1〜3R)、実力上位が揃う優勝戦(12R)など、番組構成の違いが万舟率に表れます。</p></section>
+<section><h2>月別の万舟率</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>月</th><th ${thStyle}>集計</th><th ${thStyle}>万舟率</th><th ${thStyle}>イン1着率</th></tr></thead><tbody>${moTable}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">冬場は追い風・向かい風が安定しイン有利、春先は風が強く荒れやすい——といった季節性の検証に。</p></section>
+<section><h2>期間内の高配当記録</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>日付</th><th ${thStyle}>会場</th><th ${thStyle}>R</th><th ${thStyle}>組番</th><th ${thStyle}>3連単配当</th><th ${thStyle}>人気</th></tr></thead><tbody>${topTable}</tbody></table></div></section>
+<section><h2>このデータの使い方</h2><p>万舟狙いなら「万舟率の高い場×荒れやすいレース番号」を、本命党なら逆を選ぶのが基本です。当サイトの<a href="${statsBase}">今日の直前予想</a>では、これらの傾向に展示航走後の当日情報を重ねて全レースを評価しています。<a href="${statsBase}guide/kanzen-guide/">競艇予想のやり方 完全ガイド</a>もあわせてどうぞ。</p></section>`,
+    });
+    const statsDir = path.join(DIST, "stats", "manshu");
+    await mkdir(statsDir, { recursive: true });
+    await writeFile(path.join(statsDir, "index.html"), manshuStats, "utf-8");
+  }
+
   // 用語ページのFAQ(リッチリザルト用)。回答は本文の要約
   const GUIDE_FAQ: Record<string, { q: string; a: string }[]> = {
     tenji: [
@@ -1527,6 +1655,7 @@ ${faqHtml}
     ...solidRacers.map((a) => ({ loc: `${SITE_URL}/racers/${a.regNo}/`, lastmod: racerLastmod(a) })),
     { loc: `${SITE_URL}/guide/`, lastmod: GUIDE_PUBLISHED },
     { loc: `${SITE_URL}/guide/kanzen-guide/`, lastmod: HUB_PUBLISHED },
+    { loc: `${SITE_URL}/stats/manshu/`, lastmod: history?.to ?? jstToday },
     ...GUIDE_TERMS.map((t) => ({ loc: `${SITE_URL}/guide/${t.slug}/`, lastmod: GUIDE_PUBLISHED })),
     { loc: `${SITE_URL}/features/`, lastmod: jstToday },
     ...features.map((f) => ({

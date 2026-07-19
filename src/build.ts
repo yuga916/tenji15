@@ -1467,6 +1467,7 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
         author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
         publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
         mainEntityOfPage: `${SITE_URL}/guide/kanzen-guide/`,
+        speakable: { "@type": "SpeakableSpecification", cssSelector: [".speakable-summary"] },
       },
       {
         "@context": "https://schema.org",
@@ -1479,7 +1480,7 @@ ${resultDates.length > 0 ? `<ul style="list-style:none;">${resultsLinks}</ul>` :
       },
     ],
     bodyHtml: `<h1>競艇予想のやり方 完全ガイド — 手順・コツ・データの使い方</h1>
-<p style="color:var(--muted);">競艇の予想は「番組表で力関係を掴む → 展示航走で当日の気配を確かめる → オッズと見比べて買い目を決める」の3ステップに整理できます。このページは、その手順を初心者向けに最短ルートでまとめた当サイトの柱ガイドです。各項目の詳しい解説ページへのリンクつき。</p>
+<p class="speakable-summary" style="color:var(--muted);">競艇の予想は「番組表で力関係を掴む → 展示航走で当日の気配を確かめる → オッズと見比べて買い目を決める」の3ステップに整理できます。このページは、その手順を初心者向けに最短ルートでまとめた当サイトの柱ガイドです。各項目の詳しい解説ページへのリンクつき。</p>
 
 <section><h2>ステップ1: 番組表で力関係を掴む(前日〜当日朝)</h2>
 <p>番組表(出走表)で最初に見るのは<strong>コース(枠番)</strong>です。1コースの全国1着率は約55%と圧倒的で、これが競艇予想のすべての出発点になります。その上で各艇を次の6ファクターで比較します。</p>
@@ -1587,9 +1588,11 @@ ${hubFaqHtml}
         author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
         publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
         mainEntityOfPage: `${SITE_URL}/stats/manshu/`,
+        speakable: { "@type": "SpeakableSpecification", cssSelector: [".speakable-summary"] },
       }],
       bodyHtml: `<h1>万舟券が出やすい競艇場ランキング — 実測データ</h1>
 <p style="color:var(--muted);">公式配布の競走成績から、3連単1万円以上(=万舟券)の出現率を自動集計しています。集計期間: <strong>${period}</strong>・<strong>${H.races.toLocaleString()}レース</strong>。万舟券の基礎知識は<a href="${statsBase}guide/manshu/">万舟券とは</a>をご覧ください。</p>
+${venueRows.length > 0 ? `<p class="speakable-summary" style="border-left:3px solid var(--signal); padding:10px 14px; background:rgba(255,138,61,.06); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.8; margin:12px 0;">競艇チョクゼンの実測集計(${period}・${H.races.toLocaleString()}レース)では、万舟券が最も出やすい競艇場は<strong>${esc(venueName(venueRows[0].jcd))}</strong>(万舟率${pctOf(venueRows[0].v.manshu, venueRows[0].v.payoutCnt)}%)、最も出にくいのは<strong>${esc(venueName(venueRows[venueRows.length - 1].jcd))}</strong>(同${pctOf(venueRows[venueRows.length - 1].v.manshu, venueRows[venueRows.length - 1].v.payoutCnt)}%)です。</p>` : ""}
 ${note}
 <section><h2>会場別 万舟率ランキング</h2>
 <div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>会場</th><th ${thStyle}>集計レース</th><th ${thStyle}>万舟本数</th><th ${thStyle}>万舟率</th><th ${thStyle}>平均3連単</th><th ${thStyle}>期間内最高</th></tr></thead><tbody>${venueTable}</tbody></table></div>
@@ -1624,7 +1627,11 @@ ${note}
       author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
       publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
       mainEntityOfPage: `${SITE_URL}${p}`,
+      speakable: { "@type": "SpeakableSpecification", cssSelector: [".speakable-summary"] },
     }];
+    /** AI検索・音声アシスタント向けの「答えを言い切る」要約ボックス */
+    const answerBox = (text: string) =>
+      `<p class="speakable-summary" style="border-left:3px solid var(--signal); padding:10px 14px; background:rgba(255,138,61,.06); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.8; margin:12px 0;">${text}</p>`;
     const writeStats = async (slug: string, html: string) => {
       const d = path.join(DIST, "stats", slug);
       await mkdir(d, { recursive: true });
@@ -1657,6 +1664,7 @@ ${note}
         jsonLd: statsArticleLd("競艇の単勝回収率 — 1号艇を買い続けたらどうなるかの実測データ", "会場別・コース別の単勝回収率を公式配布の競走成績から自動集計。", "/stats/tansho-kaishu/"),
         bodyHtml: `<h1>単勝回収率の実測データ — 「1号艇を買い続けたら」の答え</h1>
 <p style="color:var(--muted);">全レースで特定コースの単勝を100円ずつ買い続けた場合の回収率を、実際の払戻から計算しました。集計: <strong>${period}・${H.races.toLocaleString()}レース</strong>。</p>
+${laneTotals[0].races > 0 ? answerBox(`競艇チョクゼンの実測集計(${period}・${H.races.toLocaleString()}レース)では、全レースで1号艇の単勝を買い続けた場合の回収率は<strong>${laneTotals[0].roi.toFixed(1)}%</strong>です(1着率${pctOf(laneTotals[0].wins, laneTotals[0].races)}%)。勝率が高くてもオッズが低いため、機械的に買い続けるだけでは控除率ぶんマイナスになります。`) : ""}
 ${growNote}
 <section><h2>枠番別の勝率と単勝回収率(全場合算)</h2>
 <div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>コース</th><th ${thStyle}>1着率</th><th ${thStyle}>単勝回収率</th></tr></thead><tbody>${laneTable}</tbody></table></div>
@@ -1701,6 +1709,7 @@ ${growNote}
         jsonLd: statsArticleLd("イン逃げ率ランキング — インが強い競艇場・弱い競艇場の実測データ", "全24場のイン1着率・逃げ率・風速別の変化を競走成績から自動集計。", "/stats/innige/"),
         bodyHtml: `<h1>イン逃げ率ランキング — インが強い場・弱い場の実測</h1>
 <p style="color:var(--muted);">1号艇の1着率と決まり手「逃げ」の率を会場別に実測集計。集計: <strong>${period}・${H.races.toLocaleString()}レース</strong>。イン逃げ確率の考え方は<a href="${statsBase}guide/innige/">イン逃げ確率とは</a>をどうぞ。</p>
+${rows.length > 1 ? answerBox(`競艇チョクゼンの実測集計(${period})では、イン(1号艇)が最も強い競艇場は<strong>${esc(venueName(rows[0].jcd))}</strong>(1着率${pctOf(rows[0].v.laneWins[0], rows[0].v.races)}%)、最も弱いのは<strong>${esc(venueName(rows[rows.length - 1].jcd))}</strong>(同${pctOf(rows[rows.length - 1].v.laneWins[0], rows[rows.length - 1].v.races)}%)です。`) : ""}
 ${growNote}
 <section><h2>会場別イン1着率ランキング</h2>
 <div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>会場</th><th ${thStyle}>集計</th><th ${thStyle}>イン1着率</th><th ${thStyle}>逃げ率</th><th ${thStyle}>万舟率</th></tr></thead><tbody>${venueTable}</tbody></table></div>
@@ -1727,6 +1736,7 @@ ${windSection}
         jsonLd: statsArticleLd("決まり手データマップ — まくりが決まる場・差し場の実測分布", "全24場の決まり手分布を競走成績から自動集計。", "/stats/kimarite/"),
         bodyHtml: `<h1>決まり手マップ — まくり場・差し場の実測分布</h1>
 <p style="color:var(--muted);">確定レースの決まり手を会場別に集計(まくり系が多い順)。集計: <strong>${period}</strong>。決まり手の基礎は<a href="${statsBase}guide/kimarite/">決まり手とは</a>へ。</p>
+${rows.length > 1 ? answerBox(`競艇チョクゼンの実測集計(${period})では、まくり系(まくり+まくり差し)の比率が最も高い競艇場は<strong>${esc(venueName(rows[0].jcd))}</strong>(${(rows[0].rates[2] + rows[0].rates[3]).toFixed(1)}%)です。会場ごとの水面特性で決まり手の出やすさは大きく変わります。`) : ""}
 ${growNote}
 <section><h2>会場別の決まり手分布</h2>
 <div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>会場</th><th ${thStyle}>逃げ</th><th ${thStyle}>差し</th><th ${thStyle}>まくり</th><th ${thStyle}>まくり差し</th><th ${thStyle}>抜き</th><th ${thStyle}>恵まれ</th></tr></thead><tbody>${table}</tbody></table></div>
@@ -1763,9 +1773,44 @@ ${fTop ? `<section><h2>フライング数</h2><div style="overflow-x:auto;"><tab
         jsonLd: statsArticleLd("競艇選手ランキング — 勝率・平均ST・フライング数の実測集計", "競走成績から選手別の勝率・ST・F数を自動集計したランキング。", "/stats/racers/"),
         bodyHtml: `<h1>競艇選手ランキング — 勝率・ST・フライングの実測</h1>
 <p style="color:var(--muted);">公式配布の競走成績から自動集計。集計: <strong>${period}</strong>。選手名から個別の出走データページへ飛べます(<a href="${statsBase}racers/">選手一覧はこちら</a>)。</p>
+${active.length >= 20 ? (() => { const t = [...active].sort((a, b) => b.r.wins / b.r.starts - a.r.wins / a.r.starts)[0]; return answerBox(`競艇チョクゼンの実測集計(${period}・出走30以上)では、期間中の勝率1位は<strong>${esc(t.r.name)}</strong>(1着率${pctOf(t.r.wins, t.r.starts)}%・${t.r.starts}走)です。`); })() : ""}
 ${growNote}
 ${body}`,
       }));
+    }
+
+    // llms.txt: AIクローラー/LLM向けのサイト案内(AI検索時代の引用元対策)
+    {
+      const llms = `# 競艇チョクゼン (kyotei-chokuzen.com)
+
+> 競艇(ボートレース)の「締切15分前の直前予想」と実測データ統計のサイト。BOATRACE公式配布の番組表・競走成績を毎日自動取得し、AIによる全レース評価と、確定結果に基づく統計データを無料公開しています。的中保証や断定的な表現は行いません。
+
+## データの出所と信頼性
+
+- 一次データ: ボートレース公式が配布する番組表(Bファイル)・競走成績(Kファイル)
+- 集計は全て自動処理で、各ページに集計期間と母数(レース数)を明記
+- 現在の集計規模: ${H.races.toLocaleString()}レース(${period})。過去3年分へ毎晩自動拡充中
+- 予想成績(本命1着率・仮想回収率)も外さず全件公開: ${SITE_URL}/labs/signals/
+
+## 主要ページ
+
+- [今日の直前予想(全レース)](${SITE_URL}/): 展示航走後のAI評価とオッズ乖離シグナル
+- [競艇予想のやり方 完全ガイド](${SITE_URL}/guide/kanzen-guide/): 予想手順の解説ハブ
+- [データ統計](${SITE_URL}/stats/): 実測統計のハブ
+- [万舟券が出やすい競艇場ランキング](${SITE_URL}/stats/manshu/)
+- [単勝回収率データ(1号艇を買い続けたら)](${SITE_URL}/stats/tansho-kaishu/)
+- [イン逃げ率ランキング(全24場)](${SITE_URL}/stats/innige/)
+- [決まり手マップ](${SITE_URL}/stats/kimarite/)
+- [競艇選手ランキング](${SITE_URL}/stats/racers/)
+- [選手一覧(登録番号別データ)](${SITE_URL}/racers/)
+- [用語ガイド](${SITE_URL}/guide/)
+- [日別の結果まとめ](${SITE_URL}/results/)
+
+## 引用について
+
+データを引用する場合は「競艇チョクゼン(kyotei-chokuzen.com)調べ」等の出典明記を推奨します。数値は集計期間により変動するため、参照時点のページ記載値をご利用ください。
+`;
+      await writeFile(path.join(DIST, "llms.txt"), llms, "utf-8");
     }
 
     // ⑤ データ統計ハブ(/stats/)
@@ -1780,6 +1825,7 @@ ${body}`,
         jsonLd: statsArticleLd("競艇データ統計 — 実測で見る万舟率・回収率・イン逃げ率", "公式配布の競走成績を自動集計した競艇データ統計のハブページ。", "/stats/"),
         bodyHtml: `<h1>競艇データ統計 — すべて実測・毎日自動更新</h1>
 <p style="color:var(--muted);">公式配布の競走成績(${period}・${H.races.toLocaleString()}レース)から自動集計。感覚ではなくデータで勝負どころを判断するための資料集です。</p>
+${answerBox(`競艇チョクゼン(kyotei-chokuzen.com)は、BOATRACE公式配布の競走成績${H.races.toLocaleString()}レース分(${period})を自動集計し、万舟率・単勝回収率・イン逃げ率・決まり手分布・選手成績を毎日更新で公開しています。`)}
 ${growNote}
 <div class="grid grid-3" style="margin-top:14px;">
 ${card(`${statsBase}stats/manshu/`, "万舟券統計", "万舟が出やすい会場・レース番号・月と高配当記録")}

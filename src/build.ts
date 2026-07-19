@@ -15,7 +15,7 @@ import type { Race, Entry, Signal, RaceStatus } from "./types.ts";
 import { loadAllRaces } from "./store.ts";
 import { GUIDE_TERMS } from "./guideTerms.ts";
 import { venueBySlug, VENUES } from "./venues.ts";
-import type { HistoryAgg } from "./backfill.ts";
+import { normalizeAgg, type HistoryAgg } from "./backfill.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
@@ -597,7 +597,7 @@ ${ldScripts}
 <link rel="stylesheet" href="${opts.base}assets/styles.css">
 ${gaSnippet()}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="${opts.base}">競艇<span class="num">チョクゼン</span></a>
-<nav class="global"><a href="${opts.base}guide/kanzen-guide/">予想ガイド</a><a href="${opts.base}results/">結果まとめ</a><a href="${opts.base}racers/">選手</a><a href="${opts.base}guide/">用語</a></nav></div></header>
+<nav class="global"><a href="${opts.base}guide/kanzen-guide/">予想ガイド</a><a href="${opts.base}stats/">データ</a><a href="${opts.base}results/">結果まとめ</a><a href="${opts.base}racers/">選手</a><a href="${opts.base}guide/">用語</a></nav></div></header>
 <main class="wrap article">
 <nav class="breadcrumb" aria-label="パンくずリスト">${crumbHtml}</nav>
 ${opts.bodyHtml}
@@ -1129,7 +1129,7 @@ async function main() {
   let history: HistoryAgg | null = null;
   try {
     const h = JSON.parse(await readFile(path.join(process.cwd(), "data", "history", "agg.json"), "utf-8")) as HistoryAgg;
-    if (h && h.races > 0) history = h;
+    if (h && h.races > 0) history = normalizeAgg(h);
   } catch { /* 未生成 */ }
 
   await mkdir(DIST, { recursive: true });
@@ -1443,8 +1443,13 @@ ${hubFaqHtml}
       if (r.status !== "verified" || !r.result) continue;
       const jcd = VENUES.find((v) => v.slug === r.venueSlug)?.jcd;
       if (!jcd) continue;
-      const va = (agg.venues[jcd] ??= { races: 0, laneWins: [0, 0, 0, 0, 0, 0], courseWins: [0, 0, 0, 0, 0, 0], kimarite: {}, payoutSum: 0, payoutCnt: 0, manshu: 0, maxPayout: 0, maxPayoutDate: "", byMonth: {}, byRaceNo: {} });
+      const va = (agg.venues[jcd] ??= { races: 0, laneWins: [0, 0, 0, 0, 0, 0], courseWins: [0, 0, 0, 0, 0, 0], kimarite: {}, payoutSum: 0, payoutCnt: 0, manshu: 0, maxPayout: 0, maxPayoutDate: "", byMonth: {}, byRaceNo: {}, winBetSumByLane: [0, 0, 0, 0, 0, 0], winBetCntByLane: [0, 0, 0, 0, 0, 0], byWind: {} });
       const win = r.result.finish[0];
+      if (r.result.kimarite) va.kimarite[r.result.kimarite] = (va.kimarite[r.result.kimarite] ?? 0) + 1;
+      if (r.result.payoutWin && win >= 1 && win <= 6) {
+        va.winBetSumByLane[win - 1] += r.result.payoutWin;
+        va.winBetCntByLane[win - 1]++;
+      }
       const month = String(Number(r.dateISO.slice(5, 7)));
       va.races++; agg.races++;
       if (win >= 1 && win <= 6) va.laneWins[win - 1]++;
@@ -1493,7 +1498,7 @@ ${hubFaqHtml}
       metaDesc: `万舟券(3連単1万円以上)が出やすい競艇場を全24場の実測データでランキング。レース番号別・月別の万舟率、平均3連単配当、期間内の高配当記録も掲載。${period}・${H.races.toLocaleString()}レースを自動集計。`,
       path: "stats/manshu/",
       base: statsBase,
-      crumbs: [["ホーム", statsBase], ["データ", undefined], ["万舟券統計"]],
+      crumbs: [["ホーム", statsBase], ["データ統計", `${statsBase}stats/`], ["万舟券統計"]],
       jsonLd: [{
         "@context": "https://schema.org",
         "@type": "Article",
@@ -1525,6 +1530,191 @@ ${note}
     const statsDir = path.join(DIST, "stats", "manshu");
     await mkdir(statsDir, { recursive: true });
     await writeFile(path.join(statsDir, "index.html"), manshuStats, "utf-8");
+  }
+
+  // ---------- データ統計ページ群(過去集計から自動生成) ----------
+  {
+    const period = H.races > 0 ? `${dateLabel(H.from)}〜${dateLabel(H.to)}` : "蓄積中";
+    const tableStyle = `style="width:100%; border-collapse:collapse; font-size:13px;"`;
+    const thStyle = `style="text-align:left; color:var(--dim); font-size:11.5px; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.12);"`;
+    const growNote = history ? "" : `<p style="color:var(--signal); font-size:12.5px;">※現在は直近アーカイブのみの集計です。過去3年分のデータを毎晩自動で遡って取得中のため、数値は日々拡充されます。</p>`;
+    const statsArticleLd = (headline: string, desc: string, p: string) => [{
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline, description: desc,
+      datePublished: "2026-07-18", dateModified: H.to || "2026-07-18",
+      image: `${SITE_URL}/assets/og-image.png`,
+      author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+      publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+      mainEntityOfPage: `${SITE_URL}${p}`,
+    }];
+    const writeStats = async (slug: string, html: string) => {
+      const d = path.join(DIST, "stats", slug);
+      await mkdir(d, { recursive: true });
+      await writeFile(path.join(d, "index.html"), html, "utf-8");
+    };
+    const venueEntries = Object.entries(H.venues).filter(([, v]) => v.races >= 10);
+    const nameCellOf = (jcd: string) => {
+      const slug = venueSlugOf(jcd);
+      return slug ? `<a href="${statsBase}races/${slug}/">${esc(venueName(jcd))}</a>` : esc(venueName(jcd));
+    };
+
+    // ① コース別・単勝回収率
+    {
+      const rows = venueEntries
+        .map(([jcd, v]) => ({ jcd, v, roi: v.races > 0 ? (v.winBetSumByLane[0] / (100 * v.races)) * 100 : 0 }))
+        .sort((a, b) => b.roi - a.roi);
+      const venueTable = rows.map((x, i) => `<tr><td>${i + 1}</td><td>${nameCellOf(x.jcd)}</td><td>${x.v.races.toLocaleString()}</td><td>${pctOf(x.v.laneWins[0], x.v.races)}%</td><td><strong>${x.roi.toFixed(1)}%</strong></td></tr>`).join("\n");
+      const laneTotals = [0, 1, 2, 3, 4, 5].map((i) => {
+        let races = 0, wins = 0, sum = 0;
+        for (const [, v] of venueEntries) { races += v.races; wins += v.laneWins[i]; sum += v.winBetSumByLane[i]; }
+        return { lane: i + 1, races, wins, roi: races > 0 ? (sum / (100 * races)) * 100 : 0 };
+      });
+      const laneTable = laneTotals.map((l) => `<tr><td>${l.lane}コース(枠)</td><td>${pctOf(l.wins, l.races)}%</td><td><strong>${l.roi.toFixed(1)}%</strong></td></tr>`).join("\n");
+      await writeStats("tansho-kaishu", articlePage({
+        title: "競艇の単勝回収率データ【1号艇を買い続けたら?】会場別・コース別の実測値｜競艇チョクゼン",
+        metaDesc: `「1号艇の単勝を買い続けたら回収率は何%か」を${period}・${H.races.toLocaleString()}レースの実測で公開。会場別ランキングと1〜6コース別の勝率・回収率データ。`,
+        path: "stats/tansho-kaishu/",
+        base: statsBase,
+        crumbs: [["ホーム", statsBase], ["データ統計", `${statsBase}stats/`], ["単勝回収率"]],
+        jsonLd: statsArticleLd("競艇の単勝回収率 — 1号艇を買い続けたらどうなるかの実測データ", "会場別・コース別の単勝回収率を公式配布の競走成績から自動集計。", "/stats/tansho-kaishu/"),
+        bodyHtml: `<h1>単勝回収率の実測データ — 「1号艇を買い続けたら」の答え</h1>
+<p style="color:var(--muted);">全レースで特定コースの単勝を100円ずつ買い続けた場合の回収率を、実際の払戻から計算しました。集計: <strong>${period}・${H.races.toLocaleString()}レース</strong>。</p>
+${growNote}
+<section><h2>枠番別の勝率と単勝回収率(全場合算)</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>コース</th><th ${thStyle}>1着率</th><th ${thStyle}>単勝回収率</th></tr></thead><tbody>${laneTable}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">回収率100%未満=買い続けると控除率ぶん負ける、が基本。「勝率が高い」と「儲かる」は別物であることがわかります。</p></section>
+<section><h2>会場別・1号艇単勝の回収率ランキング</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>会場</th><th ${thStyle}>集計</th><th ${thStyle}>イン1着率</th><th ${thStyle}>1号艇単勝回収率</th></tr></thead><tbody>${venueTable}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">イン1着率が高くても、オッズが低く売れすぎている場は回収率が伸びません。「人気と実力のズレ」がある場を探すのがこのデータの使い方です。</p></section>
+<section><h2>期待値で考える</h2><p>回収率を上げる鍵は、市場の評価(オッズ)と実際の確率のズレを突くこと。当サイトの<a href="${statsBase}guide/odds-yugami/">オッズの歪み</a>指標は、この考え方を締切15分前の全レースに自動適用したものです。<a href="${statsBase}">今日の直前予想</a>で実際の歪みシグナルを確認できます。</p></section>`,
+      }));
+    }
+
+    // ② イン逃げ率ランキング+風速別
+    {
+      const rows = venueEntries
+        .map(([jcd, v]) => ({ jcd, v, rate: v.races > 0 ? v.laneWins[0] / v.races : 0 }))
+        .sort((a, b) => b.rate - a.rate);
+      const venueTable = rows.map((x, i) => {
+        const nige = x.v.kimarite["逃げ"] ?? 0;
+        return `<tr><td>${i + 1}</td><td>${nameCellOf(x.jcd)}</td><td>${x.v.races.toLocaleString()}</td><td><strong>${pctOf(x.v.laneWins[0], x.v.races)}%</strong></td><td>${pctOf(nige, x.v.races)}%</td><td>${pctOf(x.v.manshu, Math.max(1, x.v.payoutCnt))}%</td></tr>`;
+      }).join("\n");
+      const windTotals: Record<string, { races: number; lane1Win: number; manshu: number }> = {};
+      for (const [, v] of venueEntries) {
+        for (const [k, w] of Object.entries(v.byWind)) {
+          const t = (windTotals[k] ??= { races: 0, lane1Win: 0, manshu: 0 });
+          t.races += w.races; t.lane1Win += w.lane1Win; t.manshu += w.manshu;
+        }
+      }
+      const windOrder = ["0-2", "3-5", "6+"];
+      const windLabels: Record<string, string> = { "0-2": "微風(0〜2m)", "3-5": "やや強い(3〜5m)", "6+": "強風(6m以上)" };
+      const windRows = windOrder.filter((k) => windTotals[k]).map((k) => { const t = windTotals[k]; return `<tr><td>${windLabels[k]}</td><td>${t.races.toLocaleString()}</td><td><strong>${pctOf(t.lane1Win, t.races)}%</strong></td><td>${pctOf(t.manshu, t.races)}%</td></tr>`; }).join("\n");
+      const windSection = windRows
+        ? `<section><h2>風速別のイン1着率(全場合算)</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>風速</th><th ${thStyle}>集計</th><th ${thStyle}>イン1着率</th><th ${thStyle}>万舟率</th></tr></thead><tbody>${windRows}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">風が強いほどスタートとターンが乱れ、イン信頼度が下がる——を実測で確認できます。当日の風は各レースページの直前情報に表示されます。</p></section>`
+        : `<section><h2>風速別のイン1着率</h2><p style="color:var(--muted);">風速データは過去分の蓄積が進むと表示されます(毎晩自動拡充中)。</p></section>`;
+      await writeStats("innige", articlePage({
+        title: "イン逃げ率ランキング【全24場実測】インが強い競艇場・弱い競艇場と風の影響｜競艇チョクゼン",
+        metaDesc: `競艇場別のイン(1号艇)1着率・逃げ率を${period}の実測データでランキング。インが強い場・弱い場、風速によるイン信頼度の変化まで自動集計。`,
+        path: "stats/innige/",
+        base: statsBase,
+        crumbs: [["ホーム", statsBase], ["データ統計", `${statsBase}stats/`], ["イン逃げ率ランキング"]],
+        jsonLd: statsArticleLd("イン逃げ率ランキング — インが強い競艇場・弱い競艇場の実測データ", "全24場のイン1着率・逃げ率・風速別の変化を競走成績から自動集計。", "/stats/innige/"),
+        bodyHtml: `<h1>イン逃げ率ランキング — インが強い場・弱い場の実測</h1>
+<p style="color:var(--muted);">1号艇の1着率と決まり手「逃げ」の率を会場別に実測集計。集計: <strong>${period}・${H.races.toLocaleString()}レース</strong>。イン逃げ確率の考え方は<a href="${statsBase}guide/innige/">イン逃げ確率とは</a>をどうぞ。</p>
+${growNote}
+<section><h2>会場別イン1着率ランキング</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>会場</th><th ${thStyle}>集計</th><th ${thStyle}>イン1着率</th><th ${thStyle}>逃げ率</th><th ${thStyle}>万舟率</th></tr></thead><tbody>${venueTable}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">上位=イン天国(本命党向き)、下位=難水面(穴党向き)。各会場名から詳細データページへ飛べます。</p></section>
+${windSection}
+<section><h2>今日のレースに当てはめる</h2><p>当サイトのレースページでは、この会場基準値に「そのレースの1号艇と対抗の力関係」「展示後の当日気配」を重ねてイン逃げ確率を算出しています。<a href="${statsBase}">今日の直前予想を見る</a></p></section>`,
+      }));
+    }
+
+    // ③ 決まり手マップ
+    {
+      const KIMS = ["逃げ", "差し", "まくり", "まくり差し", "抜き", "恵まれ"];
+      const rows = venueEntries.map(([jcd, v]) => {
+        const total = Object.values(v.kimarite).reduce((a, b) => a + b, 0) || 1;
+        return { jcd, v, total, rates: KIMS.map((k) => (100 * (v.kimarite[k] ?? 0)) / total) };
+      }).sort((a, b) => b.rates[2] + b.rates[3] - (a.rates[2] + a.rates[3])); // まくり系の多い順
+      const table = rows.map((x) => `<tr><td>${nameCellOf(x.jcd)}</td>${x.rates.map((r, i) => `<td${i === 0 ? "" : ""}>${r.toFixed(1)}%</td>`).join("")}</tr>`).join("\n");
+      await writeStats("kimarite", articlePage({
+        title: "決まり手データマップ【全24場実測】まくりが決まる競艇場・差し場はどこか｜競艇チョクゼン",
+        metaDesc: `競艇の決まり手(逃げ・差し・まくり・まくり差し・抜き・恵まれ)の会場別分布を${period}の実測データで公開。まくりが決まりやすい場、差し水面がひと目でわかります。`,
+        path: "stats/kimarite/",
+        base: statsBase,
+        crumbs: [["ホーム", statsBase], ["データ統計", `${statsBase}stats/`], ["決まり手マップ"]],
+        jsonLd: statsArticleLd("決まり手データマップ — まくりが決まる場・差し場の実測分布", "全24場の決まり手分布を競走成績から自動集計。", "/stats/kimarite/"),
+        bodyHtml: `<h1>決まり手マップ — まくり場・差し場の実測分布</h1>
+<p style="color:var(--muted);">確定レースの決まり手を会場別に集計(まくり系が多い順)。集計: <strong>${period}</strong>。決まり手の基礎は<a href="${statsBase}guide/kimarite/">決まり手とは</a>へ。</p>
+${growNote}
+<section><h2>会場別の決まり手分布</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>会場</th><th ${thStyle}>逃げ</th><th ${thStyle}>差し</th><th ${thStyle}>まくり</th><th ${thStyle}>まくり差し</th><th ${thStyle}>抜き</th><th ${thStyle}>恵まれ</th></tr></thead><tbody>${table}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">まくり率が高い場では4〜6コースの一発、差し率が高い場では2・3コースの絡みが狙い目——という買い目の組み立てに使えます。</p></section>
+<section><h2>展開予想との関係</h2><p>当サイトのレースページの「展開確率」は、この会場傾向とレース個別の力関係から逃げ/まくり/差しの確率を推定したものです。<a href="${statsBase}guide/kanzen-guide/">予想の組み立て方(完全ガイド)</a>もあわせてどうぞ。</p></section>`,
+      }));
+    }
+
+    // ④ 選手ランキング
+    {
+      const rls = Object.entries(H.racers).map(([regNo, r]) => ({ regNo, r }));
+      const active = rls.filter((x) => x.r.starts >= 30);
+      const linkOf = (regNo: string, name: string) => (racers.has(regNo) ? `<a href="${statsBase}racers/${regNo}/">${esc(name)}</a>` : esc(name));
+      const winTop = [...active].sort((a, b) => b.r.wins / b.r.starts - a.r.wins / a.r.starts).slice(0, 20)
+        .map((x, i) => `<tr><td>${i + 1}</td><td>${linkOf(x.regNo, x.r.name)}</td><td>${x.r.starts}</td><td><strong>${pctOf(x.r.wins, x.r.starts)}%</strong></td><td>${pctOf(x.r.top2, x.r.starts)}%</td></tr>`).join("\n");
+      const stTop = active.filter((x) => x.r.stCnt >= 20).sort((a, b) => a.r.stSum / a.r.stCnt - b.r.stSum / b.r.stCnt).slice(0, 20)
+        .map((x, i) => `<tr><td>${i + 1}</td><td>${linkOf(x.regNo, x.r.name)}</td><td>${x.r.stCnt}</td><td><strong>${(x.r.stSum / x.r.stCnt).toFixed(3)}</strong></td></tr>`).join("\n");
+      const fTop = [...active].sort((a, b) => b.r.f - a.r.f).slice(0, 10).filter((x) => x.r.f > 0)
+        .map((x, i) => `<tr><td>${i + 1}</td><td>${linkOf(x.regNo, x.r.name)}</td><td>${x.r.starts}</td><td><strong>${x.r.f}</strong></td></tr>`).join("\n");
+      const body = active.length >= 20
+        ? `<section><h2>勝率ランキング(出走30以上)</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>選手</th><th ${thStyle}>出走</th><th ${thStyle}>1着率</th><th ${thStyle}>2連対率</th></tr></thead><tbody>${winTop}</tbody></table></div></section>
+<section><h2>平均ST(スタートタイミング)ランキング</h2>
+<div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>選手</th><th ${thStyle}>計測数</th><th ${thStyle}>平均ST</th></tr></thead><tbody>${stTop}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">STの意味は<a href="${statsBase}guide/slit/">スリット・STとは</a>を参照。</p></section>
+${fTop ? `<section><h2>フライング数</h2><div style="overflow-x:auto;"><table ${tableStyle}><thead><tr><th ${thStyle}>#</th><th ${thStyle}>選手</th><th ${thStyle}>出走</th><th ${thStyle}>F数</th></tr></thead><tbody>${fTop}</tbody></table></div></section>` : ""}`
+        : `<p style="color:var(--muted);">選手ランキングは過去データの蓄積が進むと表示されます(毎晩自動で3年分を遡って集計中)。まずは<a href="${statsBase}racers/">選手一覧</a>から個別ページをご覧ください。</p>`;
+      await writeStats("racers", articlePage({
+        title: "競艇選手ランキング【実測データ】勝率・平均ST・フライング数の一覧｜競艇チョクゼン",
+        metaDesc: `ボートレーサーの勝率ランキング・平均STランキング・フライング数を${period}の競走成績から自動集計。選手個別ページへのリンク付き。`,
+        path: "stats/racers/",
+        base: statsBase,
+        crumbs: [["ホーム", statsBase], ["データ統計", `${statsBase}stats/`], ["選手ランキング"]],
+        jsonLd: statsArticleLd("競艇選手ランキング — 勝率・平均ST・フライング数の実測集計", "競走成績から選手別の勝率・ST・F数を自動集計したランキング。", "/stats/racers/"),
+        bodyHtml: `<h1>競艇選手ランキング — 勝率・ST・フライングの実測</h1>
+<p style="color:var(--muted);">公式配布の競走成績から自動集計。集計: <strong>${period}</strong>。選手名から個別の出走データページへ飛べます(<a href="${statsBase}racers/">選手一覧はこちら</a>)。</p>
+${growNote}
+${body}`,
+      }));
+    }
+
+    // ⑤ データ統計ハブ(/stats/)
+    {
+      const card = (href: string, title: string, desc: string) => `<a class="card" href="${href}" style="color:var(--text);"><h3 style="font-size:14.5px; margin-bottom:6px;">${title}</h3><p style="color:var(--muted); font-size:12px;">${desc}</p></a>`;
+      await writeStats("", articlePage({
+        title: "競艇データ統計【実測】万舟率・回収率・イン逃げ率・決まり手・選手ランキング｜競艇チョクゼン",
+        metaDesc: `競艇の実測データ集。万舟券が出やすい会場、単勝回収率、イン逃げ率ランキング、決まり手マップ、選手ランキングを公式競走成績から毎日自動集計(${period})。`,
+        path: "stats/",
+        base: statsBase,
+        crumbs: [["ホーム", statsBase], ["データ統計"]],
+        jsonLd: statsArticleLd("競艇データ統計 — 実測で見る万舟率・回収率・イン逃げ率", "公式配布の競走成績を自動集計した競艇データ統計のハブページ。", "/stats/"),
+        bodyHtml: `<h1>競艇データ統計 — すべて実測・毎日自動更新</h1>
+<p style="color:var(--muted);">公式配布の競走成績(${period}・${H.races.toLocaleString()}レース)から自動集計。感覚ではなくデータで勝負どころを判断するための資料集です。</p>
+${growNote}
+<div class="grid grid-3" style="margin-top:14px;">
+${card(`${statsBase}stats/manshu/`, "万舟券統計", "万舟が出やすい会場・レース番号・月と高配当記録")}
+${card(`${statsBase}stats/tansho-kaishu/`, "単勝回収率", "「1号艇を買い続けたら?」の実測回収率")}
+${card(`${statsBase}stats/innige/`, "イン逃げ率ランキング", "インが強い場・弱い場と風速の影響")}
+${card(`${statsBase}stats/kimarite/`, "決まり手マップ", "まくり場・差し場の実測分布")}
+${card(`${statsBase}stats/racers/`, "選手ランキング", "勝率・平均ST・フライング数")}
+${card(`${statsBase}labs/signals/`, "AI予想の通算成績", "本命1着率・仮想回収率を隠さず公開")}
+</div>
+<section style="margin-top:18px;"><h2>データの出所と更新</h2><p>ボートレース公式が配布する番組表・競走成績を毎日自動取得し、確定レースのみを集計しています。過去3年分の遡り取得を毎晩実行中のため、各ページの集計母数は日々増えていきます。予想への活かし方は<a href="${statsBase}guide/kanzen-guide/">競艇予想のやり方 完全ガイド</a>へ。</p></section>`,
+      }));
+    }
   }
 
   // 用語ページのFAQ(リッチリザルト用)。回答は本文の要約
@@ -1655,7 +1845,12 @@ ${faqHtml}
     ...solidRacers.map((a) => ({ loc: `${SITE_URL}/racers/${a.regNo}/`, lastmod: racerLastmod(a) })),
     { loc: `${SITE_URL}/guide/`, lastmod: GUIDE_PUBLISHED },
     { loc: `${SITE_URL}/guide/kanzen-guide/`, lastmod: HUB_PUBLISHED },
+    { loc: `${SITE_URL}/stats/`, lastmod: history?.to ?? jstToday },
     { loc: `${SITE_URL}/stats/manshu/`, lastmod: history?.to ?? jstToday },
+    { loc: `${SITE_URL}/stats/tansho-kaishu/`, lastmod: history?.to ?? jstToday },
+    { loc: `${SITE_URL}/stats/innige/`, lastmod: history?.to ?? jstToday },
+    { loc: `${SITE_URL}/stats/kimarite/`, lastmod: history?.to ?? jstToday },
+    { loc: `${SITE_URL}/stats/racers/`, lastmod: history?.to ?? jstToday },
     ...GUIDE_TERMS.map((t) => ({ loc: `${SITE_URL}/guide/${t.slug}/`, lastmod: GUIDE_PUBLISHED })),
     { loc: `${SITE_URL}/features/`, lastmod: jstToday },
     ...features.map((f) => ({

@@ -34,6 +34,11 @@ export interface VenueAgg {
   maxPayoutDate: string;
   byMonth: Record<string, MonthAgg>;   // "1"〜"12"
   byRaceNo: Record<string, { races: number; manshu: number; lane1Win: number }>; // "1"〜"12"
+  /** 単勝回収率算出用: 勝った枠番別の単勝払戻合計と、その払戻が取れたレース数(index0=1号艇) */
+  winBetSumByLane: number[];
+  winBetCntByLane: number[];
+  /** 風速バケット別("0-2","3-5","6+")のレース数・イン1着・万舟 */
+  byWind: Record<string, MonthAgg>;
 }
 export interface RacerAgg {
   name: string;
@@ -77,12 +82,32 @@ function emptyVenueAgg(): VenueAgg {
     races: 0, laneWins: [0, 0, 0, 0, 0, 0], courseWins: [0, 0, 0, 0, 0, 0], kimarite: {},
     payoutSum: 0, payoutCnt: 0, manshu: 0, maxPayout: 0, maxPayoutDate: "",
     byMonth: {}, byRaceNo: {},
+    winBetSumByLane: [0, 0, 0, 0, 0, 0], winBetCntByLane: [0, 0, 0, 0, 0, 0],
+    byWind: {},
   };
+}
+
+/** 風速(m)をバケット名に変換 */
+export function windBucket(speed: number | undefined): string | null {
+  if (speed === undefined || Number.isNaN(speed)) return null;
+  if (speed <= 2) return "0-2";
+  if (speed <= 5) return "3-5";
+  return "6+";
+}
+
+/** 旧スキーマのaggに新フィールドを補完(後方互換) */
+export function normalizeAgg(agg: HistoryAgg): HistoryAgg {
+  for (const v of Object.values(agg.venues)) {
+    v.winBetSumByLane ??= [0, 0, 0, 0, 0, 0];
+    v.winBetCntByLane ??= [0, 0, 0, 0, 0, 0];
+    v.byWind ??= {};
+  }
+  return agg;
 }
 
 export async function loadAgg(): Promise<HistoryAgg | null> {
   try {
-    return JSON.parse(await readFile(AGG_PATH, "utf-8")) as HistoryAgg;
+    return normalizeAgg(JSON.parse(await readFile(AGG_PATH, "utf-8")) as HistoryAgg);
   } catch {
     return null;
   }
@@ -114,6 +139,18 @@ export function applyDay(agg: HistoryAgg, dateISO: string, parsed: ReturnType<ty
       if (race.kimarite && race.kimarite !== "—") va.kimarite[race.kimarite] = (va.kimarite[race.kimarite] ?? 0) + 1;
 
       const p3t = race.payouts.find((p) => p.bet === "3連単");
+      const pWin = race.payouts.find((p) => p.bet === "単勝" && Number(p.combo) === winner.lane);
+      if (pWin && winner.lane >= 1 && winner.lane <= 6) {
+        va.winBetSumByLane[winner.lane - 1] += pWin.amount;
+        va.winBetCntByLane[winner.lane - 1]++;
+      }
+      const wb = windBucket(race.windSpeed);
+      if (wb) {
+        const wA = (va.byWind[wb] ??= { races: 0, lane1Win: 0, manshu: 0 });
+        wA.races++;
+        if (winner.lane === 1) wA.lane1Win++;
+        if (p3t && p3t.amount >= MANSHU) wA.manshu++;
+      }
       const mA = (va.byMonth[month] ??= { races: 0, lane1Win: 0, manshu: 0 });
       mA.races++;
       if (winner.lane === 1) mA.lane1Win++;

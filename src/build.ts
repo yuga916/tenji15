@@ -1113,6 +1113,82 @@ ${entries.map((e) => `  <url><loc>${e.loc}</loc><lastmod>${e.lastmod}</lastmod><
   return { xml, robots };
 }
 
+/* ---------- 朝のダイジェスト+本日の注目3レース(リテンション) ---------- */
+function dailyDigest(races: Race[], todayRaces: Race[], currentDate: string, base: string): string {
+  const addD = (iso: string, d: number) => {
+    const t = new Date(`${iso}T00:00:00Z`);
+    t.setUTCDate(t.getUTCDate() + d);
+    return t.toISOString().slice(0, 10);
+  };
+  const topAi = (r: Race) => [...r.entries].sort((a, b) => b.aiProb - a.aiProb)[0];
+
+  // 昨日のダイジェスト
+  const yesterday = addD(currentDate, -1);
+  const yRaces = races.filter((r) => r.dateISO === yesterday && r.status === "verified" && r.result);
+  let digestHtml = "";
+  if (yRaces.length >= 5) {
+    const hits = yRaces.filter((r) => topAi(r)?.lane === r.result!.finish[0]);
+    const manshu = yRaces.filter((r) => r.result!.payout3t >= 10000);
+    const maxPay = Math.max(...yRaces.map((r) => r.result!.payout3t));
+    const roiRaces = yRaces.filter((r) => r.result!.payoutWin !== undefined || topAi(r)?.lane !== r.result!.finish[0]);
+    const roiReturn = hits.reduce((s, r) => s + (r.result!.payoutWin ?? 0), 0);
+    const roi = roiRaces.length > 0 ? Math.round((roiReturn / (roiRaces.length * 100)) * 100) : null;
+    const chip = (label: string, val: string) => `<span style="border:1px solid rgba(255,255,255,.15); border-radius:20px; padding:4px 12px; font-size:12.5px; color:var(--muted);">${label} <strong style="color:var(--text);">${val}</strong></span>`;
+    digestHtml = `<div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px;">
+<span style="color:var(--dim); font-size:12px;">昨日(${dateLabel(yesterday)})の実績:</span>
+${chip("AI本命1着", `${hits.length}/${yRaces.length}R(${Math.round((100 * hits.length) / yRaces.length)}%)`)}
+${roi !== null ? chip("本命単勝の仮想回収率", `${roi}%`) : ""}
+${chip("万舟", `${manshu.length}本`)}
+${chip("最高配当", `¥${maxPay.toLocaleString()}`)}
+<a href="${base}results/${yesterday}/" style="font-size:12.5px;">詳細→</a>
+</div>`;
+  }
+
+  // 本日の注目3レース
+  const now = Date.now();
+  const upcoming = todayRaces.filter((r) => {
+    if (r.status === "verified") return false;
+    const close = new Date(`${r.dateISO}T${r.closeTime}:00+09:00`).getTime();
+    return close > now;
+  });
+  const picks: { r: Race; tag: string; tagColor: string; reason: string }[] = [];
+  const used = new Set<string>();
+  const take = (r: Race | undefined, tag: string, tagColor: string, reason: (r: Race) => string) => {
+    if (!r || used.has(r.raceId)) return;
+    used.add(r.raceId);
+    picks.push({ r, tag, tagColor, reason: reason(r) });
+  };
+  if (upcoming.length >= 3) {
+    const byInDesc = [...upcoming].sort((a, b) => b.inEscapeProb - a.inEscapeProb);
+    take(byInDesc[0], "鉄板候補", "#4dd8ff", (r) => {
+      const t = topAi(r);
+      return `イン逃げ確率${r.inEscapeProb}%。本命${t.lane}号艇・${esc(t.name)}を軸に堅く。`;
+    });
+    const outsider = [...upcoming].filter((r) => topAi(r)?.lane !== 1).sort((a, b) => (topAi(b)?.aiProb ?? 0) - (topAi(a)?.aiProb ?? 0))[0];
+    take(outsider, "妙味", "#e8b04b", (r) => {
+      const t = topAi(r);
+      return `AIの本命は${t.lane}号艇・${esc(t.name)}(${Math.round(t.aiProb * 100)}%)。イン過信は禁物の一戦。`;
+    });
+    const byInAsc = [...upcoming].sort((a, b) => a.inEscapeProb - b.inEscapeProb);
+    take(byInAsc.find((r) => !used.has(r.raceId)), "高配当狙い", "#ff8a3d", (r) =>
+      `イン逃げ確率${r.inEscapeProb}%と不安定。荒れれば万舟圏、押さえ広めに。`);
+  }
+  const cards = picks.map(({ r, tag, tagColor, reason }) => `<a class="card" href="${base}${racePath(r)}" style="color:var(--text); display:block;">
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+<span style="border:1px solid ${tagColor}; color:${tagColor}; border-radius:20px; padding:2px 10px; font-size:11.5px;">${tag}</span>
+<span style="color:var(--dim); font-size:12px;">締切 ${r.closeTime}</span>
+</div>
+<h3 style="font-size:15px; margin-bottom:6px;">${esc(r.venue)} ${r.raceNo}R <span style="color:var(--muted); font-weight:400; font-size:12.5px;">${esc(r.name)}</span></h3>
+<p style="color:var(--muted); font-size:12.5px;">${reason}</p></a>`).join("\n");
+
+  if (!digestHtml && picks.length === 0) return "";
+  return `<div class="card" style="margin-bottom:18px;">
+<h2 style="font-size:16px; margin-bottom:10px;">今日の注目 — 毎朝ここから</h2>
+${digestHtml}
+${picks.length > 0 ? `<div class="grid grid-3">${cards}</div><p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※事前評価に基づく候補です。締切15分前の展示反映で評価が更新されるため、購入前に各レースページの最新シグナルをご確認ください。</p>` : `<p style="color:var(--muted); font-size:13px;">本日のレースはすべて締切済みです。明日の番組は夕方に公開されます。</p>`}
+</div>`;
+}
+
 /* ---------- main ---------- */
 async function main() {
   const races = await loadAllRaces();
@@ -1144,6 +1220,7 @@ async function main() {
   const indexBase = baseFor(0);
   let indexHtml = await readFile(path.join(ROOT, "site", "index.html"), "utf-8");
   indexHtml = indexHtml
+    .replace("<!--{{DAILY_DIGEST}}-->", dailyDigest(races, todayRaces, currentDate, indexBase))
     .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(todayRaces, indexBase))
     .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(todayRaces, indexBase))
     .replace("<!--{{TODAY_RACES}}-->", todayRacesGrouped(todayRaces, indexBase, features))

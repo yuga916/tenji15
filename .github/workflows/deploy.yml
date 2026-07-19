@@ -75,3 +75,14 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      # IndexNow: Bing(=ChatGPT検索が使うインデックス)へ更新を通知。
+      # 5分ごとのデプロイ全部で送るとスパム的なので、朝の番組確定ビルド(21:30 UTC)のみ。
+      - name: Notify IndexNow (daily)
+        if: github.event.schedule == '30 21 * * *'
+        run: |
+          curl -s https://kyotei-chokuzen.com/sitemap.xml -o sitemap.xml || exit 0
+          URLS=$(grep -o '<loc>[^<]*</loc>' sitemap.xml | sed 's/<[^>]*>//g' | head -500 | sed 's/.*/"&"/' | paste -sd, -)
+          cat > payload.json <<EOF
+          {"host":"kyotei-chokuzen.com","key":"8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24","keyLocation":"https://kyotei-chokuzen.com/8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24.txt","urlList":[${URLS}]}
+          EOF
+          curl -s -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data @payload.json -w "\nIndexNow HTTP %{http_code}\n" || echo "::warning::IndexNow通知失敗(継続)"

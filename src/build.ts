@@ -33,6 +33,35 @@ function gaSnippet(): string {
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', '${GA_ID}');
+</script>
+<script>
+// カスタムイベント計測: サイトの価値提供の瞬間をキーイベント候補として送る
+(function(){
+  if (typeof window.gtag !== 'function') return;
+  // ① 要素が画面に入ったら1回だけ発火([data-ev]付き要素)
+  try {
+    var seen = new WeakSet();
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting && !seen.has(e.target)) {
+          seen.add(e.target);
+          var name = e.target.getAttribute('data-ev');
+          var params = {};
+          if (e.target.getAttribute('data-race-status')) params.race_status = e.target.getAttribute('data-race-status');
+          window.gtag('event', name, params);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('[data-ev]').forEach(function(el){ io.observe(el); });
+  } catch(_) {}
+  // ② レース詳細ページへの遷移クリックを計測(トップの注目・一覧・会場ページ等から)
+  document.addEventListener('click', function(ev){
+    var a = ev.target.closest ? ev.target.closest('a[href]') : null;
+    if (!a) return;
+    var m = a.getAttribute('href').match(/races\\/([a-z]+)\\/\\d{4}-\\d{2}-\\d{2}\\/(\\d+)\\/?$/);
+    if (m) window.gtag('event', 'select_race', { venue_slug: m[1], race_no: Number(m[2]) });
+  }, true);
+})();
 </script>`;
 }
 
@@ -200,7 +229,7 @@ function betSuggestion(r: Race): string {
   // 結果確定後は買い目セクションを表示しない(結果データページとして中立に保つ)
   if (r.status === "verified") return "";
 
-  return `<section>
+  return `<section data-ev="view_bet_suggestion" data-race-status="${r.status}">
     <h2>シンプル結論 — AI評価の高い組み合わせ</h2>
     <div class="card">
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">

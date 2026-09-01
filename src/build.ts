@@ -710,9 +710,36 @@ function avatarLegend(): string {
   return `<p style="color:var(--dim); font-size:11px; margin-top:6px;">選手アイコンの色=級別: ${dot("#e8b04b", "A1")}${dot("#b8c4cf", "A2")}${dot("#4dd8ff", "B1")}${dot("#7a8a96", "B2")}</p>`;
 }
 
-function racerPageHtml(agg: RacerAgg): string {
+function racerPageHtml(agg: RacerAgg, hist?: HistoryAgg["racers"][string], histPeriod?: string): string {
   const base = baseFor(2);
   const top3Rate = agg.starts > 0 ? Math.round(((agg.wins + agg.seconds + agg.thirds) / agg.starts) * 100) : 0;
+
+  // 過去分バックフィル集計による実測セクション+Q&A(30走以上で表示)
+  const hp = (a: number, b: number) => (b > 0 ? ((100 * a) / b).toFixed(1) : "0.0");
+  let histSection = "";
+  let histFaq: { q: string; a: string }[] = [];
+  if (hist && hist.starts >= 30 && histPeriod) {
+    const courseRows = hist.byCourse
+      .map((c, i) => ({ course: i + 1, starts: c[0], wins: c[1], top2: c[2] }))
+      .filter((c) => c.starts > 0);
+    const best = [...courseRows].filter((c) => c.starts >= 5).sort((a, b) => b.wins / b.starts - a.wins / a.starts)[0];
+    const avgSt = hist.stCnt >= 10 ? (hist.stSum / hist.stCnt).toFixed(3) : null;
+    const tbl = courseRows
+      .map((c) => `<tr><td><span class="boat boat-${c.course}">${c.course}</span></td><td>${c.starts}</td><td>${hp(c.wins, c.starts)}%</td><td>${hp(c.top2, c.starts)}%</td></tr>`)
+      .join("\n");
+    histSection = `<section><h2>実測データ(${histPeriod}・${hist.starts}走)</h2><div class="card">
+<p style="margin-bottom:10px;">1着率 <strong>${hp(hist.wins, hist.starts)}%</strong> / 2連対率 <strong>${hp(hist.top2, hist.starts)}%</strong> / 3連対率 ${hp(hist.top3, hist.starts)}%${avgSt ? ` / 平均ST <strong>${avgSt}</strong>` : ""}${hist.f > 0 ? ` / F${hist.f}本` : ""}</p>
+<div class="table-scroll"><table class="entries"><thead><tr><th>進入コース</th><th>出走</th><th>1着率</th><th>2連対率</th></tr></thead><tbody>${tbl}</tbody></table></div>
+<p style="color:var(--dim); font-size:12px; margin-top:8px;">公式配布の競走成績から自動集計した実測値(実際の進入コース基準)。</p></div></section>`;
+    histFaq = [
+      { q: `${agg.name}選手の勝率は?`, a: `競艇チョクゼンの実測集計(${histPeriod}・${hist.starts}走)では、1着率${hp(hist.wins, hist.starts)}%・2連対率${hp(hist.top2, hist.starts)}%です。` },
+      ...(best ? [{ q: `${agg.name}選手の得意コースは?`, a: `同集計では${best.course}コースが最も高く、1着率${hp(best.wins, best.starts)}%(${best.starts}走)です。` }] : []),
+      ...(avgSt ? [{ q: `${agg.name}選手のスタート(ST)は速い?`, a: `平均STは${avgSt}(${hist.stCnt}計測)です。全国的にはおおむね0.15前後が平均とされます。${hist.f > 0 ? `期間中のフライングは${hist.f}本。` : "期間中のフライングはありません。"}` }] : []),
+    ];
+  }
+  const histFaqHtml = histFaq.length > 0
+    ? `<section><h2>よくある質問</h2>${histFaq.map((x) => `<h3 style="font-size:14.5px; margin:14px 0 6px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("\n")}</section>`
+    : "";
   const rows = [...agg.appearances]
     .sort((a, b) => b.race.dateISO.localeCompare(a.race.dateISO) || b.race.raceNo - a.race.raceNo)
     .slice(0, 60)
@@ -748,15 +775,26 @@ function racerPageHtml(agg: RacerAgg): string {
 <p>結果確定済み ${agg.starts}走: <strong>1着${agg.wins}回・2着${agg.seconds}回・3着${agg.thirds}回</strong>(3連対率${top3Rate}%)。${aiNote}</p>
 <p style="color:var(--dim); font-size:12px;">※当サイトが記録を開始した2026年7月以降の出走のみを集計した参考値です。通算成績は公式をご確認ください。</p>
 </div></section>
+${histSection}
 <section><h2>出走履歴と結果</h2><div class="table-scroll"><table class="entries">
 <thead><tr><th>日付</th><th>場</th><th>R</th><th>枠</th><th>AI事前勝率</th><th>結果</th><th>分析</th></tr></thead>
-<tbody>${rows}</tbody></table></div></section>`;
+<tbody>${rows}</tbody></table></div></section>
+${histFaqHtml}`;
   return articlePage({
-    title: `${agg.name}(登番${agg.regNo})の成績・出走予定・AI評価｜競艇チョクゼン`,
-    metaDesc: `ボートレーサー${agg.name}(登番${agg.regNo}・${agg.racerClass})の出走予定・直近成績・AI事前評価と結果記録。1着${agg.wins}回/3連対率${top3Rate}%(当サイト集計)。`,
+    title: `${agg.name}(登番${agg.regNo})の成績・勝率・得意コース｜競艇チョクゼン`,
+    metaDesc: hist && hist.starts >= 30
+      ? `ボートレーサー${agg.name}(登番${agg.regNo}・${agg.racerClass})の勝率・コース別成績・平均ST・出走予定。実測${hist.starts}走で1着率${hp(hist.wins, hist.starts)}%(競艇チョクゼン自動集計)。`
+      : `ボートレーサー${agg.name}(登番${agg.regNo}・${agg.racerClass})の出走予定・直近成績・AI事前評価と結果記録。1着${agg.wins}回/3連対率${top3Rate}%(当サイト集計)。`,
     path: `racers/${agg.regNo}/`,
     base,
     crumbs: [["ホーム", base], ["選手一覧", `${base}racers/`], [`${agg.name}`]],
+    jsonLd: histFaq.length > 0
+      ? [{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: histFaq.map((x) => ({ "@type": "Question", name: x.q, acceptedAnswer: { "@type": "Answer", text: x.a } })),
+        }]
+      : undefined,
     bodyHtml: body,
   });
 }
@@ -1321,9 +1359,33 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
     list.push(r);
     byVenue.set(r.venueSlug, list);
   }
+  // 会場Q&A用の全国順位(過去集計が100レース以上ある場のみ)
+  const hvEntries = history ? Object.entries(history.venues).filter(([, v]) => v.races >= 100) : [];
+  const hvIn = [...hvEntries].sort((a, b) => b[1].laneWins[0] / b[1].races - a[1].laneWins[0] / a[1].races).map(([j]) => j);
+  const hvManshu = [...hvEntries].sort((a, b) => b[1].manshu / Math.max(1, b[1].payoutCnt) - a[1].manshu / Math.max(1, a[1].payoutCnt)).map(([j]) => j);
   for (const [slug, list] of byVenue) {
     const venue = list[0].venue;
     const venueBase = baseFor(2);
+    const jcdOfVenue = VENUES.find((v) => v.slug === slug)?.jcd;
+    const hv = jcdOfVenue && history ? history.venues[jcdOfVenue] : undefined;
+    let venueFaq: { q: string; a: string }[] = [];
+    if (hv && hv.races >= 100 && jcdOfVenue) {
+      const p = (a: number, b: number) => (b > 0 ? ((100 * a) / b).toFixed(1) : "0.0");
+      const inRate = p(hv.laneWins[0], hv.races);
+      const inPos = hvIn.indexOf(jcdOfVenue) + 1;
+      const manshuRate = p(hv.manshu, Math.max(1, hv.payoutCnt));
+      const manshuPos = hvManshu.indexOf(jcdOfVenue) + 1;
+      const makuri = p((hv.kimarite["まくり"] ?? 0) + (hv.kimarite["まくり差し"] ?? 0), hv.races);
+      const periodL = `${dateLabel(history!.from)}〜${dateLabel(history!.to)}・${hv.races.toLocaleString()}レース`;
+      venueFaq = [
+        { q: `${venue}競艇場の特徴は?`, a: `競艇チョクゼンの実測集計(${periodL})では、イン(1号艇)1着率${inRate}%で全${hvIn.length}場中${inPos}位、まくり系の決まり手が${makuri}%、平均3連単配当は¥${Math.round(hv.payoutSum / Math.max(1, hv.payoutCnt)).toLocaleString()}です。` },
+        { q: `${venue}競艇場でインは信頼できますか?`, a: `実測のイン1着率は${inRate}%です。全国平均(約55%)と比べて${Number(inRate) >= 56 ? "高く、イン重視の組み立てが基本になります" : Number(inRate) >= 52 ? "ほぼ平均的な水準です" : "低く、イン過信は禁物の水面です"}(全${hvIn.length}場中${inPos}位)。` },
+        { q: `${venue}競艇場は荒れやすいですか?`, a: `万舟券(3連単1万円以上)の発生率は${manshuRate}%で、全${hvManshu.length}場中${manshuPos}位です。${manshuPos <= 8 ? "全国的に見て荒れやすい部類です。" : manshuPos <= 16 ? "荒れやすさは中位です。" : "比較的堅く決まりやすい場です。"}期間内の最高配当は¥${hv.maxPayout.toLocaleString()}でした。` },
+      ];
+    }
+    const venueFaqHtml = venueFaq.length > 0
+      ? `<section><h2>よくある質問</h2>${venueFaq.map((x) => `<h3 style="font-size:14.5px; margin:14px 0 6px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("\n")}</section>`
+      : "";
     const links = [...list]
       .sort((a, b) => b.dateISO.localeCompare(a.dateISO) || a.raceNo - b.raceNo)
       .slice(0, 300)
@@ -1335,10 +1397,18 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
       path: `races/${slug}/`,
       base: venueBase,
       crumbs: [["ホーム", venueBase], [`${venue}競艇`]],
+      jsonLd: venueFaq.length > 0
+        ? [{
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: venueFaq.map((x) => ({ "@type": "Question", name: x.q, acceptedAnswer: { "@type": "Answer", text: x.a } })),
+          }]
+        : undefined,
       bodyHtml: `<h1>${esc(venue)}競艇場の特徴データと直前予想</h1>
 <p style="color:var(--muted);">当サイトの結果アーカイブから、${esc(venue)}の実測傾向を毎日自動更新しています。</p>
 <section><h2>実測データ</h2>${venueStatsHtml(venue, list, venueBase)}</section>
 ${venueHistoryHtml(history, slug, venueBase)}
+${venueFaqHtml}
 <section><h2>直前予想・結果一覧</h2><ul style="list-style:none;">${links}</ul></section>`,
     });
     const dir = path.join(DIST, "races", slug);
@@ -1368,10 +1438,11 @@ ${venueHistoryHtml(history, slug, venueBase)}
 
   // 選手ページ(A1): 登番別に自動生成
   const racers = collectRacers(races);
+  const histPeriodLabel = history ? `${dateLabel(history.from)}〜${dateLabel(history.to)}` : undefined;
   for (const agg of racers.values()) {
     const dir = path.join(DIST, "racers", agg.regNo);
     await mkdir(dir, { recursive: true });
-    await writeFile(path.join(dir, "index.html"), racerPageHtml(agg), "utf-8");
+    await writeFile(path.join(dir, "index.html"), racerPageHtml(agg, history?.racers[agg.regNo], histPeriodLabel), "utf-8");
   }
   const racersBase = baseFor(1);
   const racerList = [...racers.values()].sort(

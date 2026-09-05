@@ -1283,6 +1283,22 @@ async function main() {
     await writeFile(path.join(assetsDst, f), await readFile(path.join(assetsSrc, f)));
   }
 
+  // 直近7日分の結果を軽量JSON化(「見たレースのその後」のクライアント表示用)
+  {
+    const recentDates = [...new Set(races.filter((r) => r.status === "verified" && r.result).map((r) => r.dateISO))]
+      .sort()
+      .slice(-7);
+    await mkdir(path.join(DIST, "data"), { recursive: true });
+    for (const d of recentDates) {
+      const map: Record<string, { f: number[]; p3: number; k: string }> = {};
+      for (const r of races) {
+        if (r.dateISO !== d || r.status !== "verified" || !r.result) continue;
+        map[`${r.venueSlug}_${d}_${r.raceNo}`] = { f: r.result.finish, p3: r.result.payout3t, k: r.result.kimarite };
+      }
+      await writeFile(path.join(DIST, "data", `results-${d}.json`), JSON.stringify(map), "utf-8");
+    }
+  }
+
   // トップページ(マーカー置換をfillより先に)
   const indexBase = baseFor(0);
   let indexHtml = await readFile(path.join(ROOT, "site", "index.html"), "utf-8");

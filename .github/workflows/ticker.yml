@@ -1,0 +1,56 @@
+name: Ticker (5分ごとに本体ビルドを起動)
+
+# GitHubのcronは高頻度指定を大幅に間引く(実測: */5指定で1日6回程度)。
+# そこで長時間ジョブ1本がループし、5分ごとに deploy.yml を workflow_dispatch で起動する。
+# workflow_dispatch は GITHUB_TOKEN からでも新しい実行を作れる(公式仕様の例外)ため、
+# 個人トークンや外部cronサービスは不要。
+#
+# ・1本あたり最大約5.7時間走り、終了直前に自分自身を再起動して連鎖する
+# ・concurrency で同時に1本だけ。連鎖が切れても毎時のcron(間引かれても数時間内に発火)で復帰
+# ・起動する時間帯(JST): 06:30 朝の番組確定ビルド(+全体IndexNow) / 08:00〜22:59 5分ごと
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"   # 復帰用フォールバック(間引かれてよい)
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: ticker
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Loop and dispatch
+        run: |
+          set -u
+          END=$(( $(date +%s) + 335 * 60 ))
+          LAST_DAILY=""
+          echo "ticker start $(TZ=Asia/Tokyo date '+%F %T') JST"
+          while [ "$(date +%s)" -lt "$END" ]; do
+            H=$(TZ=Asia/Tokyo date +%H | sed 's/^0//'); M=$(TZ=Asia/Tokyo date +%M | sed 's/^0//'); D=$(TZ=Asia/Tokyo date +%F)
+            H=${H:-0}; M=${M:-0}
+            if [ "$H" -eq 6 ] && [ "$M" -ge 30 ] && [ "$M" -lt 40 ] && [ "$LAST_DAILY" != "$D" ]; then
+              echo "[$D $H:$M] daily build"
+              gh workflow run deploy.yml --ref main -f daily=true -f indexnow=false && LAST_DAILY="$D" || echo "dispatch failed"
+            elif [ "$H" -ge 8 ] && [ "$H" -le 22 ]; then
+              IDX=false; [ "$M" -lt 5 ] && IDX=true
+              echo "[$D $H:$M] build (indexnow=$IDX)"
+              gh workflow run deploy.yml --ref main -f daily=false -f indexnow=$IDX || echo "dispatch failed"
+            else
+              echo "[$D $H:$M] idle"
+            fi
+            # 次の5分境界まで待つ
+            sleep $(( 300 - $(date +%s) % 300 ))
+          done
+          echo "ticker end; re-dispatch self"
+          gh workflow run ticker.yml --ref main || echo "self re-dispatch failed (cron fallback will restart)"

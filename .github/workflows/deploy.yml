@@ -86,3 +86,19 @@ jobs:
           {"host":"kyotei-chokuzen.com","key":"8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24","keyLocation":"https://kyotei-chokuzen.com/8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24.txt","urlList":[${URLS}]}
           EOF
           curl -s -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data @payload.json -w "\nIndexNow HTTP %{http_code}\n" || echo "::warning::IndexNow通知失敗(継続)"
+      # IndexNow(毎時): 当日のレースページ・当日まとめだけを開催時間帯に毎時通知。
+      # ChatGPT検索(Bingインデックス)に「展示反映後の直前版」を拾わせて鮮度で差別化する。
+      # 5分間隔のスケジュール実行のうち、UTC分が0〜5の回(=毎時0分起動の回)だけ送る。
+      - name: Notify IndexNow (hourly, today's races)
+        if: github.event_name == 'schedule' && github.event.schedule != '30 21 * * *'
+        run: |
+          M=$(date -u +%M | sed 's/^0//'); M=${M:-0}
+          if [ "$M" -gt 5 ]; then echo "skip (minute=$M)"; exit 0; fi
+          curl -s https://kyotei-chokuzen.com/today-urls.txt -o today.txt || exit 0
+          [ -s today.txt ] || exit 0
+          URLS=$(grep -E '^https://' today.txt | head -500 | sed 's/.*/"&"/' | paste -sd, -)
+          cat > payload.json <<EOF
+          {"host":"kyotei-chokuzen.com","key":"8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24","keyLocation":"https://kyotei-chokuzen.com/8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24.txt","urlList":[${URLS}]}
+          EOF
+          echo "notify $(grep -c '^https://' today.txt) urls"
+          curl -s -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data @payload.json -w "\nIndexNow HTTP %{http_code}\n" || echo "::warning::IndexNow通知失敗(継続)"

@@ -1256,6 +1256,218 @@ ${picks.length > 0 ? `<div class="grid grid-3">${cards}</div><p style="color:var
 </div>`;
 }
 
+/* ---------- 当日横断まとめ(/today/*)とトップのジャンプグリッド ----------
+ * ChatGPT等のAI検索は1質問に1〜2URLしか引用しない。「今日のナイター予想」「各場12Rの本命」
+ * 「今日荒れそうなレース」のような横断質問に対して、1URLで答えられるページを毎ビルド生成する。 */
+const topAiOf = (r: Race) => [...r.entries].sort((a, b) => b.aiProb - a.aiProb)[0];
+const groupByVenue = (races: Race[]) => {
+  const m = new Map<string, Race[]>();
+  for (const r of races) m.set(r.venueSlug, [...(m.get(r.venueSlug) ?? []), r]);
+  return m;
+};
+/** 1R締切が14:00以降ならナイター(ミッドナイト含む)。closeTimeは"HH:mm"なので文字列比較でよい */
+const isNightVenue = (list: Race[]) => list.length > 0 && [...list].sort((a, b) => a.raceNo - b.raceNo)[0].closeTime >= "14:00";
+const isMidnightVenue = (list: Race[]) => list.length > 0 && [...list].sort((a, b) => b.raceNo - a.raceNo)[0].closeTime >= "22:20";
+
+function jumpGrid(todayRaces: Race[], base: string): string {
+  if (todayRaces.length === 0) return "";
+  const now = Date.now();
+  const rows = [...groupByVenue(todayRaces).values()]
+    .map((list) => {
+      const sorted = [...list].sort((a, b) => a.raceNo - b.raceNo);
+      const next = sorted
+        .filter((r) => r.status !== "verified" && new Date(closeIso(r)).getTime() > now)
+        .sort((a, b) => a.closeTime.localeCompare(b.closeTime))[0];
+      return { v: sorted[0], sorted, next, night: isNightVenue(list), allDone: !next };
+    })
+    .sort((a, b) => Number(a.allDone) - Number(b.allDone) || (a.next?.closeTime ?? "99").localeCompare(b.next?.closeTime ?? "99"));
+  const chip = (r: Race, isNext: boolean) => {
+    const done = r.status === "verified";
+    const closed = !done && new Date(closeIso(r)).getTime() <= now;
+    const style = isNext
+      ? "background:var(--cyan); color:#0b1220; font-weight:700; border-color:var(--cyan);"
+      : done || closed
+        ? "color:var(--dim); border-color:rgba(255,255,255,.08);"
+        : "color:var(--text); border-color:rgba(255,255,255,.2);";
+    return `<a href="${base}${racePath(r)}" title="${esc(r.venue)}${r.raceNo}R 締切${r.closeTime}${done ? "(結果あり)" : ""}" style="display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:28px; padding:0 6px; border:1px solid; border-radius:7px; font-size:12px; ${style}">${r.raceNo}</a>`;
+  };
+  const rowsHtml = rows
+    .map(({ v, sorted, next, night, allDone }) => `<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06);">
+<a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="min-width:66px; font-weight:700; color:var(--text); font-size:13.5px;">${esc(v.venue)}${night ? '<span style="color:var(--dim); font-size:10.5px; font-weight:400;"> 夜</span>' : ""}${v.grade ? ` <span class="grade-badge">${esc(v.grade)}</span>` : ""}</a>
+<div style="display:flex; gap:4px; flex-wrap:wrap;">${sorted.map((r) => chip(r, !!next && r.raceId === next.raceId)).join("")}</div>
+<span style="color:var(--dim); font-size:11.5px; margin-left:auto;">${allDone ? "全R終了" : `次 ${next!.raceNo}R ${next!.closeTime}`}</span>
+</div>`)
+    .join("\n");
+  return `<div class="card" style="margin-bottom:18px; padding:14px 16px;">
+<div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+<h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切</span></h2>
+<div style="display:flex; gap:12px; font-size:12px; flex-wrap:wrap;"><a href="${base}today/main-races/">各場12R本命</a><a href="${base}today/night/">ナイター</a><a href="${base}today/manshu/">万舟狙い目</a></div>
+</div>
+${rowsHtml}
+</div>`;
+}
+
+function todayRaceTable(list: Race[], base: string, manshuRate?: (r: Race) => string | null): string {
+  const now = Date.now();
+  const th = (s: string) => `<th style="text-align:left; color:var(--dim); font-size:11.5px; padding:6px 8px; border-bottom:1px solid rgba(255,255,255,.12); white-space:nowrap;">${s}</th>`;
+  const td = (s: string, extra = "") => `<td style="padding:8px 8px; border-bottom:1px solid rgba(255,255,255,.06); vertical-align:top; ${extra}">${s}</td>`;
+  const rows = list
+    .map((r) => {
+      const t = topAiOf(r);
+      const done = r.status === "verified" && !!r.result;
+      const closed = !done && new Date(closeIso(r)).getTime() <= now;
+      const st = done
+        ? `<span style="color:var(--green);">確定</span>`
+        : closed
+          ? `<span style="color:var(--dim);">締切</span>`
+          : r.status === "signal"
+            ? `<span style="color:var(--signal);">直前更新済</span>`
+            : `<span style="color:var(--muted);">事前評価</span>`;
+      const res = done ? `${r.result!.finish.join("-")}<div style="color:var(--muted); font-size:11.5px;">¥${r.result!.payout3t.toLocaleString()}${r.result!.payout3t >= 10000 ? ' <span style="color:var(--signal);">万舟</span>' : ""}</div>` : "—";
+      const mr = manshuRate ? manshuRate(r) : null;
+      return `<tr>${td(`<a href="${base}${racePath(r)}" style="font-weight:700;">${esc(r.venue)} ${r.raceNo}R</a><div style="color:var(--dim); font-size:11px;">${esc(r.name)}</div>`)}${td(r.closeTime, "white-space:nowrap;")}${td(`<strong>${t.lane}</strong> ${esc(t.name)} <span style="color:var(--muted); font-size:12px;">${Math.round(t.aiProb * 100)}%</span>`)}${td(`${r.inEscapeProb}%`)}${mr !== null && manshuRate ? td(mr ?? "—") : ""}${td(st, "white-space:nowrap;")}${td(res)}</tr>`;
+    })
+    .join("");
+  return `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:13px;"><thead><tr>${th("レース")}${th("締切")}${th("AI本命")}${th("イン逃げ")}${manshuRate ? th("会場万舟率") : ""}${th("状態")}${th("結果/3連単")}</tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function todayPages(todayRaces: Race[], currentDate: string, history: HistoryAgg | null): { slug: string; html: string }[] {
+  const base = baseFor(2);
+  const md = dateLabel(currentDate);
+  const byVenue = groupByVenue(todayRaces);
+  const venuesOf = (lists: Race[][]) => lists.map((l) => l[0].venue);
+  const pickLine = (r: Race) => {
+    const t = topAiOf(r);
+    return `${r.venue}${r.raceNo}R(締切${r.closeTime})は${t.lane}号艇・${t.name}(AI勝率${Math.round(t.aiProb * 100)}%)`;
+  };
+  const ld = (headline: string, desc: string, p: string, faq: { q: string; a: string }[]) => [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline, description: desc,
+      datePublished: currentDate, dateModified: new Date().toISOString(),
+      image: `${SITE_URL}/assets/og-image.png`,
+      author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+      publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+      mainEntityOfPage: `${SITE_URL}${p}`,
+      speakable: { "@type": "SpeakableSpecification", cssSelector: [".speakable-summary"] },
+    },
+    ...(faq.length > 0 ? [{
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+    }] : []),
+  ];
+  const box = (text: string) =>
+    `<p class="speakable-summary" style="border-left:3px solid var(--signal); padding:10px 14px; background:rgba(255,138,61,.06); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.8; margin:12px 0;">${text}</p>`;
+  const faqHtml = (faq: { q: string; a: string }[]) =>
+    faq.length === 0 ? "" : `<section><h2>よくある質問</h2>${faq.map((f) => `<h3 style="font-size:14px; margin-top:12px;">${esc(f.q)}</h3><p style="color:var(--muted);">${esc(f.a)}</p>`).join("")}</section>`;
+  const note = `<p style="color:var(--dim); font-size:11.5px; margin-top:12px;">※AI本命は事前評価で、締切15分前の展示航走反映後に各レースページで更新されます(このページも5分ごとに再生成)。的中を保証するものではありません。</p>`;
+  const nav = `<p style="font-size:12.5px; color:var(--muted);">当日まとめ: <a href="${base}today/main-races/">各場12R本命</a> / <a href="${base}today/night/">ナイター</a> / <a href="${base}today/manshu/">万舟狙い目</a> / <a href="${base}">全レース一覧(トップ)</a></p>`;
+  const empty = (msg: string) => `<div class="card"><p style="color:var(--muted);">${msg}</p></div>`;
+  const pages: { slug: string; html: string }[] = [];
+
+  // ① ナイター
+  {
+    const nightLists = [...byVenue.values()].filter(isNightVenue);
+    const list = nightLists.flat().sort((a, b) => a.closeTime.localeCompare(b.closeTime) || a.raceNo - b.raceNo);
+    const names = venuesOf(nightLists);
+    const mids = nightLists.filter(isMidnightVenue).map((l) => l[0].venue);
+    const summary = list.length > 0
+      ? `${md}のナイター競艇は<strong>${names.join("・")}</strong>の${names.length}場で開催${mids.length > 0 ? `(うちミッドナイト: ${mids.join("・")})` : ""}。全${list.length}レースのAI本命と締切時刻を一覧にしました。最初の締切は${list[0].venue}${list[0].raceNo}Rの${list[0].closeTime}、最終は${list[list.length - 1].venue}${list[list.length - 1].raceNo}Rの${list[list.length - 1].closeTime}です。`
+      : `${md}はナイター開催がありません(デイ・サマータイム開催のみ)。全レースの直前予想は<a href="${base}">トップページ</a>をご覧ください。`;
+    const faq = list.length > 0 ? [
+      { q: `今日(${md})のナイター競艇はどこで開催されていますか?`, a: `${names.join("、")}の${names.length}場です。${mids.length > 0 ? `${mids.join("、")}はミッドナイト開催で最終レースの締切は${[...nightLists.filter(isMidnightVenue).flat()].sort((a, b) => b.closeTime.localeCompare(a.closeTime))[0].closeTime}です。` : ""}` },
+      { q: `今日のナイター最終レース(12R)のAI本命は?`, a: nightLists.map((l) => pickLine([...l].sort((a, b) => b.raceNo - a.raceNo)[0])).join("。") + "。締切15分前の展示反映で評価は更新されます。" },
+    ] : [];
+    const title = `今日のナイター競艇 直前予想【${md}】${names.length > 0 ? names.join("・") + "の" : ""}全レースAI本命一覧｜競艇チョクゼン`;
+    const desc = list.length > 0
+      ? `${md}のナイター競艇(${names.join("・")})全${list.length}レースのAI本命・イン逃げ確率・締切時刻を一覧化。締切15分前の展示反映で自動更新。`
+      : `${md}のナイター競艇開催情報。ナイター(蒲郡・住之江・丸亀・若松・下関・大村・桐生)の直前予想を毎日自動更新。`;
+    pages.push({ slug: "night", html: articlePage({
+      title, metaDesc: desc, path: "today/night/", base,
+      crumbs: [["ホーム", base], ["今日のナイター予想"]],
+      jsonLd: ld(title, desc, "/today/night/", faq),
+      bodyHtml: `<h1>今日のナイター競艇 直前予想 — ${md}</h1>
+${box(summary)}
+${nav}
+${list.length > 0 ? todayRaceTable(list, base) : empty("本日のナイター開催はありません。")}
+${note}
+${faqHtml(faq)}
+<section><h2>ナイター競艇の特徴</h2><p style="color:var(--muted);">ナイター場は日没後に気温・水面が落ち着き、モーターの出足差が昼より結果に出やすいとされます。展示タイムの偏差(<a href="${base}guide/tenji-time/">展示タイムの見方</a>)と<a href="${base}stats/innige/">会場別イン逃げ率</a>を合わせて確認してください。</p></section>`,
+    }) });
+  }
+
+  // ② 各場12R(メインレース)
+  {
+    const mains = [...byVenue.values()]
+      .map((l) => [...l].sort((a, b) => b.raceNo - a.raceNo)[0])
+      .sort((a, b) => a.closeTime.localeCompare(b.closeTime));
+    const finals = mains.filter((r) => /優勝|準優/.test(r.name));
+    const summary = mains.length > 0
+      ? `${md}は${mains.length}場で開催。各場の最終レース(${mains[0].raceNo === 12 ? "12R" : "メインレース"})のAI本命は、${mains.map(pickLine).join("、")}です。${finals.length > 0 ? `${finals.map((r) => `${r.venue}${r.raceNo}R`).join("・")}は${finals.length === 1 ? finals[0].name : "優勝戦・準優勝戦"}。` : ""}`
+      : `${md}の開催データがまだありません。`;
+    const faq = mains.length > 0 ? [
+      { q: `今日(${md})の競艇、各場12R(メインレース)の本命は?`, a: mains.map(pickLine).join("。") + "。" },
+      { q: `今日いちばん締切が遅いレースは?`, a: `${mains[mains.length - 1].venue}${mains[mains.length - 1].raceNo}Rの${mains[mains.length - 1].closeTime}締切です。` },
+    ] : [];
+    const title = `今日の競艇12R(メインレース)予想【${md}】全${mains.length}場の最終レースAI本命一覧｜競艇チョクゼン`;
+    const desc = `${md}の競艇各場12R(メインレース)のAI本命・イン逃げ確率・締切時刻を1ページに集約。${mains.map((r) => r.venue).join("・")}。展示反映後に自動更新。`;
+    pages.push({ slug: "main-races", html: articlePage({
+      title, metaDesc: desc, path: "today/main-races/", base,
+      crumbs: [["ホーム", base], ["今日の各場12R"]],
+      jsonLd: ld(title, desc, "/today/main-races/", faq),
+      bodyHtml: `<h1>今日の各場12R(メインレース)AI本命 — ${md}</h1>
+${box(summary)}
+${nav}
+${mains.length > 0 ? todayRaceTable(mains, base) : empty("本日の開催データがありません。")}
+${note}
+${faqHtml(faq)}
+<section><h2>12Rが「メイン」と呼ばれる理由</h2><p style="color:var(--muted);">各場の最終12Rは節の優勝戦・準優勝戦や、その日のA級選手が集まる番組が組まれることが多く、売上も最大になります。売上が大きいほどオッズが実力を反映しやすく、<a href="${base}guide/odds-yugami/">オッズの歪み</a>は小さくなる傾向があるため、直前の展示評価で差をつける価値が高いレースです。</p></section>`,
+    }) });
+  }
+
+  // ③ 万舟狙い目(荒れ候補)
+  {
+    const now = Date.now();
+    const mrOf = (r: Race): string | null => {
+      if (!history) return null;
+      const jcd = VENUES.find((v) => v.slug === r.venueSlug)?.jcd;
+      const v = jcd ? history.venues[jcd] : undefined;
+      return v && v.payoutCnt >= 100 ? `${(100 * v.manshu / v.payoutCnt).toFixed(1)}%` : null;
+    };
+    const open = todayRaces.filter((r) => r.status !== "verified" && new Date(closeIso(r)).getTime() > now);
+    const pool = open.length >= 5 ? open : todayRaces;
+    const cands = [...pool].sort((a, b) => a.inEscapeProb - b.inEscapeProb || a.closeTime.localeCompare(b.closeTime)).slice(0, 10);
+    const hit = todayRaces.filter((r) => r.status === "verified" && r.result && r.result.payout3t >= 10000)
+      .sort((a, b) => b.result!.payout3t - a.result!.payout3t);
+    const summary = cands.length > 0
+      ? `${md}の荒れ候補(万舟狙い目)は、イン逃げ確率が低い順に<strong>${cands.slice(0, 3).map((r) => `${r.venue}${r.raceNo}R(イン逃げ${r.inEscapeProb}%・締切${r.closeTime})`).join("、")}</strong>です。${hit.length > 0 ? `本日ここまでの万舟は${hit.length}本、最高は${hit[0].venue}${hit[0].raceNo}Rの¥${hit[0].result!.payout3t.toLocaleString()}。` : "本日の万舟はまだ出ていません。"}`
+      : `${md}の開催データがまだありません。`;
+    const faq = cands.length > 0 ? [
+      { q: `今日(${md})の競艇で荒れそうなレースは?`, a: `AIのイン逃げ確率が低い順に${cands.slice(0, 5).map((r) => `${r.venue}${r.raceNo}R(${r.inEscapeProb}%)`).join("、")}が荒れ候補です。イン逃げ確率は締切15分前の展示反映で更新されます。` },
+      { q: `万舟券とは?`, a: `3連単の払戻が1万円以上になった舟券のことです。全レースの約20〜30%で発生し、会場によって出やすさが大きく異なります(実測ランキングは万舟券統計ページ)。` },
+    ] : [];
+    const title = `今日の競艇 万舟狙い目レース【${md}】荒れる候補${cands.length}レース(イン逃げ確率順)｜競艇チョクゼン`;
+    const desc = `${md}の競艇で荒れそうなレースをAIのイン逃げ確率が低い順に${cands.length}レース掲載。会場別の実測万舟率・締切時刻・本日確定した万舟も掲載。展示反映後に自動更新。`;
+    pages.push({ slug: "manshu", html: articlePage({
+      title, metaDesc: desc, path: "today/manshu/", base,
+      crumbs: [["ホーム", base], ["今日の万舟狙い目"]],
+      jsonLd: ld(title, desc, "/today/manshu/", faq),
+      bodyHtml: `<h1>今日の万舟狙い目レース — ${md}</h1>
+${box(summary)}
+${nav}
+<h2 style="font-size:16px;">荒れ候補 ${cands.length}レース(イン逃げ確率が低い順)</h2>
+${cands.length > 0 ? todayRaceTable(cands, base, mrOf) : empty("本日の開催データがありません。")}
+${note}
+${hit.length > 0 ? `<section><h2>本日確定した万舟(${hit.length}本)</h2>${todayRaceTable(hit, base, mrOf)}</section>` : ""}
+${faqHtml(faq)}
+<section><h2>荒れるレースの見つけ方</h2><p style="color:var(--muted);">イン逃げ確率が低い=1号艇の信頼度が低いレースは、2〜6号艇の1着で配当が跳ねやすくなります。会場ごとの出やすさは<a href="${base}stats/manshu/">万舟券が出やすい競艇場ランキング</a>、風の影響は<a href="${base}stats/innige/">イン逃げ率と風速の関係</a>、買い方は<a href="${base}guide/manshu/">万舟券の狙い方</a>を参照してください。</p></section>`,
+    }) });
+  }
+  return pages;
+}
+
 /* ---------- main ---------- */
 async function main() {
   const races = await loadAllRaces();
@@ -1303,6 +1515,7 @@ async function main() {
   const indexBase = baseFor(0);
   let indexHtml = await readFile(path.join(ROOT, "site", "index.html"), "utf-8");
   indexHtml = indexHtml
+    .replace("<!--{{JUMP_GRID}}-->", jumpGrid(todayRaces, indexBase))
     .replace("<!--{{DAILY_DIGEST}}-->", dailyDigest(races, todayRaces, currentDate, indexBase))
     .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(todayRaces, indexBase))
     .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(todayRaces, indexBase))
@@ -1311,6 +1524,26 @@ async function main() {
     .replace("<!--{{REVIEW_RACES}}-->", reviewRaces(races, indexBase));
   indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });
   await writeFile(path.join(DIST, "index.html"), indexHtml, "utf-8");
+
+  // 当日横断まとめ(/today/night, /today/main-races, /today/manshu)
+  for (const p of todayPages(todayRaces, currentDate, history)) {
+    const dir = path.join(DIST, "today", p.slug);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, "index.html"), p.html, "utf-8");
+  }
+  // 当日URL一覧(deploy側の毎時IndexNow通知用。5分ごとに更新される当日ページだけを鮮度通知する)
+  await writeFile(
+    path.join(DIST, "today-urls.txt"),
+    [
+      `${SITE_URL}/`,
+      `${SITE_URL}/today/main-races/`,
+      `${SITE_URL}/today/night/`,
+      `${SITE_URL}/today/manshu/`,
+      ...[...groupByVenue(todayRaces).keys()].map((s) => `${SITE_URL}/races/${s}/${currentDate}/`),
+      ...todayRaces.map((r) => `${SITE_URL}/${racePath(r)}`),
+    ].join("\n") + "\n",
+    "utf-8",
+  );
 
   // レース詳細(1レース=1URL・事前→シグナル→結果を同一URLで)
   const raceTpl = await readFile(path.join(ROOT, "templates", "race-detail.template.html"), "utf-8");
@@ -1984,6 +2217,10 @@ ${body}`,
 ## 主要ページ
 
 - [今日の直前予想(全レース)](${SITE_URL}/): 展示航走後のAI評価とオッズ乖離シグナル
+- [今日の各場12R(メインレース)AI本命一覧](${SITE_URL}/today/main-races/): 全場の最終レースを1ページで
+- [今日のナイター競艇 直前予想](${SITE_URL}/today/night/): ナイター・ミッドナイト開催場の全レース
+- [今日の万舟狙い目レース](${SITE_URL}/today/manshu/): イン逃げ確率が低い荒れ候補と本日確定した万舟
+- 個別レース: ${SITE_URL}/races/{会場slug}/{YYYY-MM-DD}/{R}/ (例: ${SITE_URL}/races/gamagori/${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}/12/)。開催時間帯は5分ごとに直前情報を反映
 - [競艇予想のやり方 完全ガイド](${SITE_URL}/guide/kanzen-guide/): 予想手順の解説ハブ
 - [データ統計](${SITE_URL}/stats/): 実測統計のハブ
 - [万舟券が出やすい競艇場ランキング](${SITE_URL}/stats/manshu/)
@@ -2165,6 +2402,9 @@ ${faqHtml}
 
   const entries: SitemapEntry[] = [
     { loc: `${SITE_URL}/`, lastmod: jstToday },
+    { loc: `${SITE_URL}/today/main-races/`, lastmod: jstToday },
+    { loc: `${SITE_URL}/today/night/`, lastmod: jstToday },
+    { loc: `${SITE_URL}/today/manshu/`, lastmod: jstToday },
     ...races.map((r) => ({ loc: `${SITE_URL}/${racePath(r)}`, lastmod: dateOf(r.updatedAt) })),
     ...[...byVenue.keys()].map((s) => ({ loc: `${SITE_URL}/races/${s}/`, lastmod: jstToday })),
     ...[...dayLastmod.entries()].map(([p, d]) => ({ loc: `${SITE_URL}/races/${p}/`, lastmod: d })),

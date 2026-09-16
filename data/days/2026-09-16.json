@@ -350,21 +350,21 @@
     "raceNo": 4,
     "name": "おは4戦",
     "seriesTitle": "ボートレース唐 津 9月16日 唐津うまかもんカップ 第 1日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:02",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 5,
+    "wave": 5,
     "inEscapeProbPre": 70,
     "inEscapeProb": 70,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前70%から展示反映で70%に更新。",
     "kimarite": {
       "nige": 0.7,
       "makuri": 0.14,
       "sashi": 0.13,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -375,7 +375,8 @@
         "natWinRate": 6.69,
         "motorRate": 0,
         "preProb": 0.741,
-        "aiProb": 0.741
+        "aiProb": 0.741,
+        "marketProb": 0.323
       },
       {
         "lane": 2,
@@ -386,7 +387,8 @@
         "natWinRate": 6.13,
         "motorRate": 0,
         "preProb": 0.133,
-        "aiProb": 0.133
+        "aiProb": 0.133,
+        "marketProb": 0.031
       },
       {
         "lane": 3,
@@ -397,7 +399,8 @@
         "natWinRate": 5.04,
         "motorRate": 0,
         "preProb": 0.055,
-        "aiProb": 0.055
+        "aiProb": 0.055,
+        "marketProb": 0.215
       },
       {
         "lane": 4,
@@ -419,7 +422,8 @@
         "natWinRate": 3.53,
         "motorRate": 0,
         "preProb": 0.014,
-        "aiProb": 0.014
+        "aiProb": 0.014,
+        "marketProb": 0.215
       },
       {
         "lane": 6,
@@ -430,13 +434,45 @@
         "natWinRate": 6.18,
         "motorRate": 0,
         "preProb": 0.035,
-        "aiProb": 0.035
+        "aiProb": 0.035,
+        "marketProb": 0.215
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は70%想定。本命候補は1号艇・古結宏(A1・事前勝率74%)、対抗は2号艇・齊藤仁(同13%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-16T00:25:32.962Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・古結宏: AI評価74%に対し市場は32%。+42ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・齊藤仁: AI評価13%に対し市場は3%。+10ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・加藤高史: 市場22%に対しAI評価は6%。過剰人気の可能性。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・宮地博士: 市場22%に対しAI評価は1%。過剰人気の可能性。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "6号艇・郷原章平: 市場22%に対しAI評価は4%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・古結宏(展示反映後AI勝率74%)。妙味は1号艇・古結宏(歪み+42pt)。イン逃げ確率は70%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-16T00:40:27.985Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "karatsu-2026-09-16-5",
@@ -4952,13 +4988,13 @@
     "windSpeed": 1,
     "wave": 1,
     "inEscapeProbPre": 83,
-    "inEscapeProb": 83,
-    "inNote": "事前83%から展示反映で83%に更新。",
+    "inEscapeProb": 90,
+    "inNote": "事前83%から展示反映で90%に更新。1号艇の展示偏差は+2.2σ。",
     "kimarite": {
-      "nige": 0.83,
-      "makuri": 0.08,
-      "sashi": 0.07,
-      "other": 0.02
+      "nige": 0.9,
+      "makuri": 0.04,
+      "sashi": 0.04,
+      "other": 0.01
     },
     "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
@@ -4971,10 +5007,12 @@
         "natWinRate": 6.95,
         "motorRate": 31.33,
         "preProb": 0.784,
-        "aiProb": 0.779,
-        "marketProb": 0.778,
+        "aiProb": 0.899,
+        "marketProb": 0.766,
         "course": 1,
-        "exSt": 0.03
+        "exSt": 0.03,
+        "exTime": 6.75,
+        "exDev": 2.2
       },
       {
         "lane": 2,
@@ -4985,10 +5023,12 @@
         "natWinRate": 3.49,
         "motorRate": 36.25,
         "preProb": 0.05,
-        "aiProb": 0.05,
-        "marketProb": 0.074,
+        "aiProb": 0.024,
+        "marketProb": 0.058,
         "course": 2,
-        "exSt": 0.01
+        "exSt": 0.01,
+        "exTime": 6.88,
+        "exDev": -0.3
       },
       {
         "lane": 3,
@@ -4999,10 +5039,12 @@
         "natWinRate": 4.48,
         "motorRate": 32.94,
         "preProb": 0.06,
-        "aiProb": 0.06,
-        "marketProb": 0.037,
+        "aiProb": 0.023,
+        "marketProb": 0.058,
         "course": 3,
-        "exSt": 0.21
+        "exSt": 0.21,
+        "exTime": 6.91,
+        "exDev": -0.9
       },
       {
         "lane": 4,
@@ -5013,10 +5055,12 @@
         "natWinRate": 5.02,
         "motorRate": 31.4,
         "preProb": 0.066,
-        "aiProb": 0.066,
-        "marketProb": 0.037,
+        "aiProb": 0.032,
+        "marketProb": 0.029,
         "course": 4,
-        "exSt": 0.18
+        "exSt": 0.18,
+        "exTime": 6.88,
+        "exDev": -0.3
       },
       {
         "lane": 5,
@@ -5027,10 +5071,12 @@
         "natWinRate": 5.15,
         "motorRate": 29.11,
         "preProb": 0.036,
-        "aiProb": 0.036,
-        "marketProb": 0.037,
+        "aiProb": 0.017,
+        "marketProb": 0.058,
         "course": 5,
-        "exSt": 0.09
+        "exSt": 0.09,
+        "exTime": 6.88,
+        "exDev": -0.3
       },
       {
         "lane": 6,
@@ -5041,15 +5087,30 @@
         "natWinRate": 2.52,
         "motorRate": 29.17,
         "preProb": 0.004,
-        "aiProb": 0.01,
-        "marketProb": 0.037,
+        "aiProb": 0.005,
+        "marketProb": 0.029,
         "course": 6,
-        "exSt": 0.08
+        "exSt": 0.08,
+        "exTime": 6.88,
+        "exDev": -0.3
       }
     ],
-    "signals": [],
-    "verdict": "直前最終評価: 本命候補は1号艇・馬袋義則(展示反映後AI勝率78%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は83%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-16T00:35:28.954Z",
+    "signals": [
+      {
+        "time": "09:40",
+        "type": "extime",
+        "impact": "up",
+        "text": "1号艇・馬袋義則の展示タイムがレース内偏差+2.2σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・馬袋義則: AI評価90%に対し市場は77%。+13ptの歪み(市場が織り込んでいない可能性)。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・馬袋義則(展示反映後AI勝率90%)。妙味は1号艇・馬袋義則(歪み+13pt)。イン逃げ確率は90%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-16T00:40:24.516Z",
     "modelVersion": "v0.3.0-live"
   },
   {

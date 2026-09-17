@@ -1310,21 +1310,21 @@
     "raceNo": 2,
     "name": "モー2ング戦",
     "seriesTitle": "ボートレース唐 津 9月18日 唐津うまかもんカップ 第 3日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "09:10",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 63,
     "inEscapeProb": 63,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前63%から展示反映で63%に更新。",
     "kimarite": {
       "nige": 0.63,
       "makuri": 0.17,
       "sashi": 0.16,
       "other": 0.05
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -1335,7 +1335,8 @@
         "natWinRate": 6.16,
         "motorRate": 0,
         "preProb": 0.697,
-        "aiProb": 0.697
+        "aiProb": 0.695,
+        "marketProb": 0.396
       },
       {
         "lane": 2,
@@ -1346,7 +1347,8 @@
         "natWinRate": 5.97,
         "motorRate": 0,
         "preProb": 0.184,
-        "aiProb": 0.184
+        "aiProb": 0.183,
+        "marketProb": 0.023
       },
       {
         "lane": 3,
@@ -1357,7 +1359,8 @@
         "natWinRate": 5.17,
         "motorRate": 0,
         "preProb": 0.054,
-        "aiProb": 0.054
+        "aiProb": 0.054,
+        "marketProb": 0.22
       },
       {
         "lane": 4,
@@ -1379,7 +1382,8 @@
         "natWinRate": 5.41,
         "motorRate": 0,
         "preProb": 0.036,
-        "aiProb": 0.036
+        "aiProb": 0.036,
+        "marketProb": 0.36
       },
       {
         "lane": 6,
@@ -1390,13 +1394,38 @@
         "natWinRate": 4.2,
         "motorRate": 0,
         "preProb": 0.006,
-        "aiProb": 0.006
+        "aiProb": 0.01
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は63%想定。本命候補は1号艇・鈴谷一平(A1・事前勝率70%)、対抗は2号艇・寺本重宣(同18%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-17T23:41:00.294Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:45",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・鈴谷一平: AI評価70%に対し市場は40%。+30ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "08:45",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・寺本重宣: AI評価18%に対し市場は2%。+16ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "08:45",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・嶋田貴支: 市場22%に対しAI評価は5%。過剰人気の可能性。"
+      },
+      {
+        "time": "08:45",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・橋本年光: 市場36%に対しAI評価は4%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・鈴谷一平(展示反映後AI勝率70%)。妙味は1号艇・鈴谷一平(歪み+30pt)。イン逃げ確率は63%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-17T23:45:27.926Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "karatsu-2026-09-18-3",
@@ -7064,13 +7093,13 @@
     "windSpeed": 1,
     "wave": 1,
     "inEscapeProbPre": 29,
-    "inEscapeProb": 29,
-    "inNote": "事前29%から展示反映で29%に更新。",
+    "inEscapeProb": 26,
+    "inNote": "事前29%から展示反映で26%に更新。1号艇の展示偏差は-0.7σ。",
     "kimarite": {
-      "nige": 0.29,
-      "makuri": 0.32,
-      "sashi": 0.3,
-      "other": 0.09
+      "nige": 0.26,
+      "makuri": 0.33,
+      "sashi": 0.31,
+      "other": 0.1
     },
     "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
@@ -7083,8 +7112,12 @@
         "natWinRate": 3.69,
         "motorRate": 39.02,
         "preProb": 0.235,
-        "aiProb": 0.235,
-        "marketProb": 0.245
+        "aiProb": 0.175,
+        "marketProb": 0.245,
+        "exTime": 6.87,
+        "exDev": -0.7,
+        "course": 1,
+        "exSt": 0.11
       },
       {
         "lane": 2,
@@ -7095,8 +7128,12 @@
         "natWinRate": 5.89,
         "motorRate": 42.5,
         "preProb": 0.409,
-        "aiProb": 0.409,
-        "marketProb": 0.368
+        "aiProb": 0.418,
+        "marketProb": 0.368,
+        "exTime": 6.83,
+        "exDev": 0.2,
+        "course": 2,
+        "exSt": 0.19
       },
       {
         "lane": 3,
@@ -7107,8 +7144,12 @@
         "natWinRate": 5.65,
         "motorRate": 33.33,
         "preProb": 0.217,
-        "aiProb": 0.217,
-        "marketProb": 0.245
+        "aiProb": 0.264,
+        "marketProb": 0.245,
+        "exTime": 6.81,
+        "exDev": 0.7,
+        "course": 3,
+        "exSt": 0.09
       },
       {
         "lane": 4,
@@ -7119,8 +7160,12 @@
         "natWinRate": 5.15,
         "motorRate": 29.11,
         "preProb": 0.095,
-        "aiProb": 0.095,
-        "marketProb": 0.142
+        "aiProb": 0.091,
+        "marketProb": 0.142,
+        "exTime": 6.84,
+        "exDev": 0,
+        "course": 4,
+        "exSt": 0.01
       },
       {
         "lane": 5,
@@ -7131,7 +7176,11 @@
         "natWinRate": 3.49,
         "motorRate": 36.25,
         "preProb": 0.016,
-        "aiProb": 0.016
+        "aiProb": 0.008,
+        "exTime": 6.91,
+        "exDev": -1.7,
+        "course": 5,
+        "exSt": 0.02
       },
       {
         "lane": 6,
@@ -7142,12 +7191,35 @@
         "natWinRate": 4.98,
         "motorRate": 33.33,
         "preProb": 0.028,
-        "aiProb": 0.028
+        "aiProb": 0.044,
+        "exTime": 6.78,
+        "exDev": 1.4,
+        "course": 6,
+        "exSt": -0.05
       }
     ],
-    "signals": [],
-    "verdict": "直前最終評価: 本命候補は2号艇・宮崎奨(展示反映後AI勝率41%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は29%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-17T23:41:05.900Z",
+    "signals": [
+      {
+        "time": "08:45",
+        "type": "extime",
+        "impact": "down",
+        "text": "5号艇・西村秀樹の展示タイムがレース内偏差-1.7σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "08:45",
+        "type": "extime",
+        "impact": "up",
+        "text": "6号艇・登みひ果の展示タイムがレース内偏差+1.4σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "08:45",
+        "type": "gap",
+        "impact": "down",
+        "text": "1号艇・塩田雄一: 市場25%に対しAI評価は18%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は2号艇・宮崎奨(展示反映後AI勝率42%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は26%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-17T23:45:24.618Z",
     "modelVersion": "v0.3.0-live"
   },
   {

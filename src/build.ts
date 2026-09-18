@@ -478,7 +478,7 @@ function sportsEventJsonLd(r: Race): string {
   const start = closeIso(r);
   // レースは締切の約5分後に発走し数分で終了するため、終了は締切+15分とする
   const end = new Date(new Date(start).getTime() + 15 * 60000).toISOString();
-  return JSON.stringify({
+  const event = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
     name: `${r.venue} 第${r.raceNo}R ${r.name}`,
@@ -499,7 +499,22 @@ function sportsEventJsonLd(r: Race): string {
     },
     organizer: { "@type": "Organization", name: `ボートレース${r.venue}`, url: `${SITE_URL}/races/${r.venueSlug}/` },
     performer: r.entries.map((e) => ({ "@type": "Person", name: e.name })),
-  });
+  };
+  // 鮮度シグナル: dateModified=実際にデータが変わった時刻 / lastReviewed=公式情報を最後に確認した時刻(5分ごと)
+  const page = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    url: `${SITE_URL}/${racePath(r)}`,
+    name: `${r.venue}競艇 ${r.raceNo}R ${r.status === "verified" ? "結果・払戻" : "直前予想"}(${dateLabel(r.dateISO)})`,
+    datePublished: `${r.dateISO}T00:00:00+09:00`,
+    dateModified: r.updatedAt,
+    lastReviewed: BUILD_ISO,
+    inLanguage: "ja",
+    isPartOf: { "@type": "WebSite", name: "競艇チョクゼン", url: SITE_URL },
+    about: { "@type": "SportsEvent", name: event.name, startDate: start },
+    publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
+  };
+  return JSON.stringify([event, page]);
 }
 
 /* ---------- page builders ---------- */
@@ -509,10 +524,26 @@ function verdictTitle(status: RaceStatus): string {
   return "このレースの結論はこうだった";
 }
 
+/** ビルド(=公式情報の最終確認)時刻。全ページ共通 */
+const BUILD_ISO = new Date().toISOString();
+const hmJst = (iso: string) => new Date(iso).toLocaleTimeString("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit" });
+const dateJst = (iso: string) => new Date(new Date(iso).getTime() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+
+/** 鮮度バッジの文言とクラス(サーバー生成。表示時刻は実際のデータ更新時刻とビルド時刻) */
+function freshness(r: Race): { cls: string; text: string } {
+  const upd = dateJst(r.updatedAt) === dateJst(BUILD_ISO) ? hmJst(r.updatedAt) : `${dateLabel(dateJst(r.updatedAt))} ${hmJst(r.updatedAt)}`;
+  if (r.status === "verified") return { cls: "done", text: `結果確定 <strong>${upd}</strong> ・ このページの更新は完了しています` };
+  const closed = new Date(closeIso(r)).getTime() <= Date.now();
+  if (closed) return { cls: "", text: `締切済み ・ 結果は確定後に自動反映 ・ 最終確認 ${hmJst(BUILD_ISO)}` };
+  const kind = r.status === "signal" ? "直前情報" : "事前評価";
+  return { cls: "live", text: `${kind} <strong>${upd}</strong> 更新 ・ 最終確認 ${hmJst(BUILD_ISO)} ・ 5分ごとに自動更新` };
+}
+
 async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map<string, VenueStat>): Promise<void> {
   const base = baseFor(4);
   const m = STATUS_META[r.status];
   const inDelta = r.inEscapeProb - r.inEscapeProbPre;
+  const fr = freshness(r);
   const title =
     r.status === "verified"
       ? `${r.venue}競艇 ${r.raceNo}R 結果・払戻 ${dateLabel(r.dateISO)}｜競艇チョクゼン`
@@ -520,9 +551,13 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
   const metaDesc =
     r.status === "verified"
       ? `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)})のレース結果・払戻。着順・決まり手・3連単配当¥${r.result?.payout3t.toLocaleString() ?? "—"}・人気を掲載。`
-      : `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)} 締切${r.closeTime})の直前予想。展示航走反映のイン逃げ確率${r.inEscapeProb}%、AI勝率とオッズの乖離、スリット予測を無料公開。`;
+      : `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)} 締切${r.closeTime})の直前予想。展示航走反映のイン逃げ確率${r.inEscapeProb}%、AI勝率とオッズの乖離、スリット予測を無料公開。5分ごとに自動更新(最終確認${hmJst(BUILD_ISO)})。`;
 
   const html = fill(template, {
+    FRESH_CLASS: fr.cls,
+    FRESH_TEXT: fr.text,
+    CHECKED_ISO: BUILD_ISO,
+    STATUS_RAW: r.status,
     BASE: base,
     SITE_URL,
     GA_SNIPPET: gaSnippet(),
@@ -1300,7 +1335,7 @@ function jumpGrid(todayRaces: Race[], base: string): string {
     .join("\n");
   return `<div class="card" style="margin-bottom:18px; padding:14px 16px;">
 <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
-<h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切</span></h2>
+<h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切・${hmJst(BUILD_ISO)}更新</span></h2>
 <div style="display:flex; gap:12px; font-size:12px; flex-wrap:wrap;"><a href="${base}today/main-races/">各場12R本命</a><a href="${base}today/night/">ナイター</a><a href="${base}today/manshu/">万舟狙い目</a></div>
 </div>
 ${rowsHtml}
@@ -1522,7 +1557,19 @@ async function main() {
     .replace("<!--{{TODAY_RACES}}-->", todayRacesGrouped(todayRaces, indexBase, features))
     .replace("<!--{{TOMORROW_RACES}}-->", tomorrowSection(races, currentDate, indexBase))
     .replace("<!--{{REVIEW_RACES}}-->", reviewRaces(races, indexBase));
-  indexHtml = fill(indexHtml, { BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet() });
+  {
+    // トップのライブ表示: 開催中(締切前レースあり)なら「5分ごと更新中」、全終了なら次回更新の案内
+    const openCnt = todayRaces.filter((r) => r.status !== "verified" && new Date(closeIso(r)).getTime() > Date.now()).length;
+    const live = openCnt > 0;
+    indexHtml = fill(indexHtml, {
+      BASE: indexBase, SITE_URL, GA_SNIPPET: gaSnippet(),
+      LIVE_CLASS: live ? "live" : "",
+      CHECKED_ISO: BUILD_ISO,
+      LIVE_TEXT: live
+        ? `全レース5分ごとに自動更新中 ・ 最終確認 <strong>${hmJst(BUILD_ISO)}</strong> ・ 締切前 ${openCnt}レース`
+        : `本日の締切はすべて終了 ・ 最終確認 ${hmJst(BUILD_ISO)} ・ 結果は確定後に自動反映、翌日分は毎朝6:30に公開`,
+    });
+  }
   await writeFile(path.join(DIST, "index.html"), indexHtml, "utf-8");
 
   // 当日横断まとめ(/today/night, /today/main-races, /today/manshu)

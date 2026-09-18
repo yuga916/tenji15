@@ -48,6 +48,7 @@
     <span>風: {{WIND}}・波: {{WAVE}}</span>
     <span class="countdown" data-close="{{CLOSE_ISO}}">--:--</span>
   </div>
+  <div class="fresh {{FRESH_CLASS}}" data-checked="{{CHECKED_ISO}}" data-status="{{STATUS_RAW}}"><span class="dot"></span><span>{{FRESH_TEXT}}</span></div>
 
   <!-- 3. シグナルカード(状態別の結論) -->
   <div class="signal-card">
@@ -167,6 +168,21 @@
   }
   tick();
   setInterval(tick, 1000);
+  // 鮮度バッジ: 最終確認から20分以上経った締切前ページは「更新遅延」を正直に表示
+  function fresh() {
+    var el = document.querySelector(".fresh[data-checked]");
+    if (!el || el.getAttribute("data-status") === "verified") return;
+    var age = Date.now() - new Date(el.getAttribute("data-checked")).getTime();
+    var close = document.querySelector("[data-close]");
+    var open = close && new Date(close.getAttribute("data-close")).getTime() > Date.now();
+    if (open && age > 20 * 60000 && !el.classList.contains("stale")) {
+      el.classList.remove("live"); el.classList.add("stale");
+      var s = el.querySelector("span:last-child");
+      if (s) s.textContent += "(" + Math.floor(age / 60000) + "分前・再読み込みで最新を確認)";
+    }
+  }
+  fresh();
+  setInterval(fresh, 60000);
 })();
 </script>
 

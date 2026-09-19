@@ -1478,21 +1478,21 @@
     "raceNo": 4,
     "name": "おは4戦",
     "seriesTitle": "ボートレース唐 津 9月19日 唐津うまかもんカップ 第 4日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:02",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 4,
+    "wave": 4,
     "inEscapeProbPre": 31,
     "inEscapeProb": 31,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前31%から展示反映で31%に更新。",
     "kimarite": {
       "nige": 0.31,
       "makuri": 0.31,
       "sashi": 0.29,
       "other": 0.09
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -1503,7 +1503,8 @@
         "natWinRate": 3.96,
         "motorRate": 0,
         "preProb": 0.263,
-        "aiProb": 0.263
+        "aiProb": 0.263,
+        "marketProb": 0.808
       },
       {
         "lane": 2,
@@ -1525,7 +1526,8 @@
         "natWinRate": 4.86,
         "motorRate": 0,
         "preProb": 0.12,
-        "aiProb": 0.12
+        "aiProb": 0.12,
+        "marketProb": 0.077
       },
       {
         "lane": 4,
@@ -1536,7 +1538,8 @@
         "natWinRate": 5.97,
         "motorRate": 0,
         "preProb": 0.245,
-        "aiProb": 0.245
+        "aiProb": 0.245,
+        "marketProb": 0.038
       },
       {
         "lane": 5,
@@ -1558,13 +1561,27 @@
         "natWinRate": 7.26,
         "motorRate": 0,
         "preProb": 0.14,
-        "aiProb": 0.14
+        "aiProb": 0.14,
+        "marketProb": 0.077
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は31%想定。本命候補は1号艇・江藤敦宏(B1・事前勝率26%)、対抗は4号艇・寺本重宣(同25%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-19T00:30:27.997Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "1号艇・江藤敦宏: 市場81%に対しAI評価は26%。過剰人気の可能性。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "4号艇・寺本重宣: AI評価25%に対し市場は4%。+21ptの歪み(市場が織り込んでいない可能性)。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・江藤敦宏(展示反映後AI勝率26%)。妙味は4号艇・寺本重宣(歪み+21pt)。イン逃げ確率は31%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-19T00:40:33.569Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "karatsu-2026-09-19-5",
@@ -6092,13 +6109,13 @@
     "windSpeed": 1,
     "wave": 1,
     "inEscapeProbPre": 56,
-    "inEscapeProb": 56,
-    "inNote": "事前56%から展示反映で56%に更新。",
+    "inEscapeProb": 59,
+    "inNote": "事前56%から展示反映で59%に更新。1号艇の展示偏差は+0.8σ。",
     "kimarite": {
-      "nige": 0.56,
-      "makuri": 0.2,
-      "sashi": 0.18,
-      "other": 0.06
+      "nige": 0.59,
+      "makuri": 0.18,
+      "sashi": 0.17,
+      "other": 0.05
     },
     "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
@@ -6111,10 +6128,12 @@
         "natWinRate": 5.89,
         "motorRate": 42.5,
         "preProb": 0.692,
-        "aiProb": 0.692,
-        "marketProb": 0.727,
+        "aiProb": 0.768,
+        "marketProb": 0.568,
         "course": 1,
-        "exSt": 0.17
+        "exSt": 0.17,
+        "exTime": 6.77,
+        "exDev": 0.8
       },
       {
         "lane": 2,
@@ -6125,9 +6144,12 @@
         "natWinRate": 5.14,
         "motorRate": 34.57,
         "preProb": 0.112,
-        "aiProb": 0.112,
+        "aiProb": 0.091,
         "course": 2,
-        "exSt": 0.18
+        "exSt": 0.18,
+        "exTime": 6.79,
+        "exDev": -0.1,
+        "marketProb": 0.145
       },
       {
         "lane": 3,
@@ -6138,10 +6160,12 @@
         "natWinRate": 3.34,
         "motorRate": 33.33,
         "preProb": 0.042,
-        "aiProb": 0.042,
-        "marketProb": 0.03,
+        "aiProb": 0.041,
+        "marketProb": 0.017,
         "course": 3,
-        "exSt": 0.18
+        "exSt": 0.18,
+        "exTime": 6.78,
+        "exDev": 0.4
       },
       {
         "lane": 4,
@@ -6152,10 +6176,12 @@
         "natWinRate": 5.89,
         "motorRate": 29.17,
         "preProb": 0.094,
-        "aiProb": 0.094,
-        "marketProb": 0.061,
+        "aiProb": 0.066,
+        "marketProb": 0.067,
         "course": 4,
-        "exSt": 0.13
+        "exSt": 0.13,
+        "exTime": 6.8,
+        "exDev": -0.5
       },
       {
         "lane": 5,
@@ -6166,10 +6192,12 @@
         "natWinRate": 2.52,
         "motorRate": 29.17,
         "preProb": 0.01,
-        "aiProb": 0.01,
-        "marketProb": 0.061,
+        "aiProb": 0.013,
+        "marketProb": 0.033,
         "course": 5,
-        "exSt": 0.13
+        "exSt": 0.13,
+        "exTime": 6.76,
+        "exDev": 1.2
       },
       {
         "lane": 6,
@@ -6180,22 +6208,36 @@
         "natWinRate": 6.48,
         "motorRate": 37.04,
         "preProb": 0.05,
-        "aiProb": 0.05,
-        "marketProb": 0.121,
+        "aiProb": 0.022,
+        "marketProb": 0.169,
         "course": 6,
-        "exSt": 0.14
+        "exSt": 0.14,
+        "exTime": 6.83,
+        "exDev": -1.8
       }
     ],
     "signals": [
       {
-        "time": "09:35",
+        "time": "09:40",
+        "type": "extime",
+        "impact": "down",
+        "text": "6号艇・益田啓司の展示タイムがレース内偏差-1.8σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・宮崎奨: AI評価77%に対し市場は57%。+20ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "09:40",
         "type": "gap",
         "impact": "down",
-        "text": "6号艇・益田啓司: 市場12%に対しAI評価は5%。過剰人気の可能性。"
+        "text": "6号艇・益田啓司: 市場17%に対しAI評価は2%。過剰人気の可能性。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・宮崎奨(展示反映後AI勝率69%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は56%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-19T00:35:30.437Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・宮崎奨(展示反映後AI勝率77%)。妙味は1号艇・宮崎奨(歪み+20pt)。イン逃げ確率は59%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-19T00:40:30.228Z",
     "modelVersion": "v0.3.0-live"
   },
   {

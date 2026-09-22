@@ -23,6 +23,8 @@ const DIST = path.join(ROOT, "dist");
 
 const SITE_URL = (process.env.SITE_URL ?? "https://kyotei-chokuzen.com").replace(/\/$/, "");
 const GA_ID = process.env.GA_MEASUREMENT_ID ?? "";
+/** ご意見箱(Googleフォーム・匿名) */
+const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfMY46L7RjktI-R9kf9Y950HT8-jA6-C0OydswF3xTqRYDs5w/viewform";
 
 /** GA4スニペット(測定ID未設定なら空=タグを出さない) */
 function gaSnippet(): string {
@@ -1338,6 +1340,7 @@ function jumpGrid(todayRaces: Race[], base: string): string {
 <h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切・${hmJst(BUILD_ISO)}更新</span></h2>
 <div style="display:flex; gap:12px; font-size:12px; flex-wrap:wrap;"><a href="${base}today/main-races/">各場12R本命</a><a href="${base}today/night/">ナイター</a><a href="${base}today/manshu/">万舟狙い目</a></div>
 </div>
+<p style="text-align:right; font-size:12px; color:var(--muted); margin:0 0 8px;">毎日使ってくださっている方へ: <a href="${FEEDBACK_FORM_URL}" target="_blank" rel="nofollow noopener" onclick="window.gtag&&gtag('event','click_feedback',{place:'jump_grid'})" style="color:var(--cyan);">欲しい機能を30秒で教えてください →</a></p>
 ${rowsHtml}
 </div>`;
 }

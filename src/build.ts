@@ -670,7 +670,7 @@ ${opts.bodyHtml}
 <div class="age-note"><strong>20歳未満の方は舟券を購入できません。</strong>分析情報は的中を保証するものではありません。無理のない金額で計画的にお楽しみください。</div>
 </main>
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
-<script defer src="${opts.base}assets/feedback.js?v=20260923"></script>
+<script defer src="${opts.base}assets/feedback.js?v=20260923b"></script>
 </body></html>`;
 }
 
@@ -1337,7 +1337,7 @@ function jumpGrid(todayRaces: Race[], base: string): string {
 </div>`)
     .join("\n");
   return `<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
-<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンは作りかけのサイトです。「この機能が欲しい」「ここが使いにくい」を30秒で送ってください。匿名・登録不要、全件読みます。</div></div>
+<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。「この機能が欲しい」「ここが使いにくい」を30秒で送ってください。匿名・登録不要、全件読みます。</div></div>
 <a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">欲しい機能を送る →</a>
 </div>
 <div class="card" style="margin-bottom:18px; padding:14px 16px;">

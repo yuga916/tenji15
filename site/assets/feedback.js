@@ -107,7 +107,7 @@
       "display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; padding:9px 44px 9px 14px; position:relative;" +
       "background:linear-gradient(90deg, rgba(77,216,255,.14), rgba(255,138,61,.10)); border-bottom:1px solid rgba(77,216,255,.35); color:var(--text,#e6eef5); font-size:13px;");
     bar.innerHTML =
-      '<span><strong>作りかけのサイトです。</strong>次に作る機能は、使ってくれているあなたの声で決めます。</span>' +
+      '<span><strong>もっと役に立つサイトにしたい。</strong>次に作る機能は、使ってくれているあなたの声で決めます。</span>' +
       '<a href="/feedback/" data-feedback-open="banner" style="display:inline-flex; align-items:center; padding:6px 14px; border-radius:999px; background:#4dd8ff; color:#0b1220; font-weight:700; font-size:12.5px; white-space:nowrap;">欲しい機能を30秒で送る →</a>' +
       '<button type="button" class="fb-banner-close" aria-label="閉じる" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:0; color:var(--muted,#9fb3c1); font-size:20px; cursor:pointer; line-height:1; padding:4px 8px;">×</button>';
     var header = document.querySelector("header.site");

@@ -52,6 +52,8 @@
         .then(function () {
           form.innerHTML = '<p style="color:var(--cyan,#4dd8ff); font-weight:700; margin:8px 0 4px;">送信しました。ありがとうございます!</p><p style="color:var(--muted,#9fb3c1); font-size:12.5px; margin:0;">いただいた内容は次の改善に反映します。引き続きご利用ください。</p>';
           ga("submit_feedback", { place: place, length: text.length });
+          setFlag("kc_fb_done");
+          var b = document.querySelector(".fb-banner"); if (b) b.remove();
         })
         .catch(function () {
           btn.disabled = false; btn.textContent = "送信する";
@@ -90,4 +92,44 @@
     e.preventDefault();
     openModal(a.getAttribute("data-feedback-open") || "link");
   });
+
+  // 送信済みなら30日間は帯を出さない(常連への配慮)
+  function flag(key) { try { return Number(localStorage.getItem(key) || 0); } catch (e) { return 0; } }
+  function setFlag(key) { try { localStorage.setItem(key, String(Date.now())); } catch (e) {} }
+  var DAY = 86400000;
+  var quiet = Date.now() - flag("kc_fb_done") < 30 * DAY || Date.now() - flag("kc_fb_banner_off") < 7 * DAY;
+
+  // 上部の帯(全ページ・閉じると7日非表示・送信後30日非表示)
+  if (!slot && !quiet) {
+    var bar = document.createElement("div");
+    bar.className = "fb-banner";
+    bar.setAttribute("style",
+      "display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; padding:9px 44px 9px 14px; position:relative;" +
+      "background:linear-gradient(90deg, rgba(77,216,255,.14), rgba(255,138,61,.10)); border-bottom:1px solid rgba(77,216,255,.35); color:var(--text,#e6eef5); font-size:13px;");
+    bar.innerHTML =
+      '<span><strong>作りかけのサイトです。</strong>次に作る機能は、使ってくれているあなたの声で決めます。</span>' +
+      '<a href="/feedback/" data-feedback-open="banner" style="display:inline-flex; align-items:center; padding:6px 14px; border-radius:999px; background:#4dd8ff; color:#0b1220; font-weight:700; font-size:12.5px; white-space:nowrap;">欲しい機能を30秒で送る →</a>' +
+      '<button type="button" class="fb-banner-close" aria-label="閉じる" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:0; color:var(--muted,#9fb3c1); font-size:20px; cursor:pointer; line-height:1; padding:4px 8px;">×</button>';
+    var header = document.querySelector("header.site");
+    if (header && header.parentNode) header.parentNode.insertBefore(bar, header.nextSibling); else document.body.insertBefore(bar, document.body.firstChild);
+    bar.querySelector(".fb-banner-close").addEventListener("click", function () { bar.remove(); setFlag("kc_fb_banner_off"); ga("close_feedback_banner"); });
+  }
+
+  // 右下の固定ボタン(全ページ)。/feedback/ ページでは出さない
+  if (!slot) {
+    var fab = document.createElement("button");
+    fab.type = "button";
+    fab.setAttribute("data-feedback-open", "fab");
+    fab.setAttribute("aria-label", "ご意見箱を開く");
+    fab.setAttribute("style",
+      "position:fixed; right:14px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:900;" +
+      "display:inline-flex; align-items:center; gap:7px; padding:10px 14px 10px 12px;" +
+      "background:#0f1a24; color:var(--text,#e6eef5); border:1px solid rgba(77,216,255,.55); border-radius:999px;" +
+      "font-size:13px; font-weight:700; font-family:inherit; cursor:pointer;" +
+      "box-shadow:0 8px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.3) inset;");
+    fab.innerHTML =
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4dd8ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' +
+      '<span>ご意見箱</span>';
+    document.body.appendChild(fab);
+  }
 })();

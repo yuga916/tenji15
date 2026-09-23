@@ -1336,12 +1336,15 @@ function jumpGrid(todayRaces: Race[], base: string): string {
 <span style="color:var(--dim); font-size:11.5px; margin-left:auto;">${allDone ? "全R終了" : `次 ${next!.raceNo}R ${next!.closeTime}`}</span>
 </div>`)
     .join("\n");
-  return `<div class="card" style="margin-bottom:18px; padding:14px 16px;">
+  return `<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
+<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンは作りかけのサイトです。「この機能が欲しい」「ここが使いにくい」を30秒で送ってください。匿名・登録不要、全件読みます。</div></div>
+<a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">欲しい機能を送る →</a>
+</div>
+<div class="card" style="margin-bottom:18px; padding:14px 16px;">
 <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
 <h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切・${hmJst(BUILD_ISO)}更新</span></h2>
 <div style="display:flex; gap:12px; font-size:12px; flex-wrap:wrap;"><a href="${base}today/main-races/">各場12R本命</a><a href="${base}today/night/">ナイター</a><a href="${base}today/manshu/">万舟狙い目</a></div>
 </div>
-<p style="text-align:right; font-size:12px; color:var(--muted); margin:0 0 8px;">毎日使ってくださっている方へ: <a href="${base}feedback/" data-feedback-open="jump_grid" style="color:var(--cyan);">欲しい機能を30秒で教えてください →</a></p>
 ${rowsHtml}
 </div>`;
 }

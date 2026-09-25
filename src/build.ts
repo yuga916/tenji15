@@ -1510,6 +1510,31 @@ ${faqHtml(faq)}
   return pages;
 }
 
+/** 会場×日の要約(AIが1文で引用できる形)+レース表。会場ページの「本日」ブロックと日別ページで共用 */
+function venueDayBlock(list: Race[], base: string): { summary: string; table: string; title: string } {
+  const sorted = [...list].sort((a, b) => a.raceNo - b.raceNo);
+  const v = sorted[0];
+  const md = dateLabel(v.dateISO);
+  const now = Date.now();
+  const open = sorted.filter((r) => r.status !== "verified" && new Date(closeIso(r)).getTime() > now);
+  const done = sorted.filter((r) => r.status === "verified" && r.result);
+  const series = v.seriesTitle ? `${v.grade ? v.grade + " " : ""}${v.seriesTitle.replace(/\s+/g, " ")}` : v.name;
+  const pick = (r: Race) => { const t = topAiOf(r); return `${r.raceNo}R ${t.lane}号艇${t.name}(${Math.round(t.aiProb * 100)}%)`; };
+  let summary: string;
+  if (done.length === sorted.length && done.length > 0) {
+    const hits = done.filter((r) => topAiOf(r).lane === r.result!.finish[0]).length;
+    const manshu = done.filter((r) => r.result!.payout3t >= 10000);
+    const top = [...done].sort((a, b) => b.result!.payout3t - a.result!.payout3t)[0];
+    summary = `${md}の${v.venue}競艇(${esc(series)})は全${done.length}レース終了。AI本命の1着は${hits}/${done.length}レース、万舟は${manshu.length}本${manshu.length > 0 ? `(${manshu.map((r) => `${r.raceNo}R ¥${r.result!.payout3t.toLocaleString()}`).join("、")})` : ""}、最高配当は${top.raceNo}Rの¥${top.result!.payout3t.toLocaleString()}(${esc(top.result!.kimarite)})でした。`;
+  } else if (open.length > 0) {
+    const next = [...open].sort((a, b) => a.closeTime.localeCompare(b.closeTime))[0];
+    summary = `${md}の${v.venue}競艇(${esc(series)})は${sorted.length}レース開催、締切${sorted[0].closeTime}〜${sorted[sorted.length - 1].closeTime}。次の締切は<strong>${next.raceNo}R ${next.closeTime}</strong>。各レースのAI本命は ${sorted.map(pick).join("、")}。締切15分前の展示反映で更新されます。`;
+  } else {
+    summary = `${md}の${v.venue}競艇(${esc(series)})は全${sorted.length}レース締切済み。結果は確定後に自動反映されます。AI本命は ${sorted.map(pick).join("、")} でした。`;
+  }
+  return { summary, table: todayRaceTable(sorted, base), title: series };
+}
+
 /* ---------- main ---------- */
 async function main() {
   const races = await loadAllRaces();
@@ -1706,6 +1731,33 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
     const venueFaqHtml = venueFaq.length > 0
       ? `<section><h2>よくある質問</h2>${venueFaq.map((x) => `<h3 style="font-size:14.5px; margin:14px 0 6px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("\n")}</section>`
       : "";
+    // 本日の開催ブロック(「○○競艇 予想」の検索意図=今日の予想に直接応える)
+    const todayList = list.filter((r) => r.dateISO === currentDate);
+    const futureDates = [...new Set(list.filter((r) => r.dateISO > currentDate).map((r) => r.dateISO))].sort();
+    const pastDates = [...new Set(list.filter((r) => r.dateISO < currentDate).map((r) => r.dateISO))].sort();
+    const box = (text: string) =>
+      `<p class="speakable-summary" style="border-left:3px solid var(--signal); padding:10px 14px; background:rgba(255,138,61,.06); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.8; margin:12px 0;">${text}</p>`;
+    let todayHtml: string;
+    let metaToday: string;
+    if (todayList.length > 0) {
+      const b = venueDayBlock(todayList, venueBase);
+      todayHtml = `<section><h2>本日(${dateLabel(currentDate)})の${esc(venue)}競艇 全レースAI本命</h2>${box(b.summary)}${b.table}
+<p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※5分ごとに自動更新。詳細・直前シグナルは各レースページへ。<a href="${venueBase}races/${slug}/${currentDate}/">この日の一覧ページ</a></p></section>`;
+      metaToday = `本日${dateLabel(currentDate).replace(/^\d+年/, "")}は${todayList.length}レース開催、全レースのAI本命と締切時刻を掲載。`;
+    } else if (futureDates.length > 0) {
+      const nd = futureDates[0];
+      const nb = venueDayBlock(list.filter((r) => r.dateISO === nd), venueBase);
+      todayHtml = `<section><h2>次回開催 ${dateLabel(nd)} の${esc(venue)}競艇(番組公開済み)</h2>${box(`本日(${dateLabel(currentDate)})の${esc(venue)}競艇は開催がありません。次回は${dateLabel(nd)}(${esc(nb.title)})で、番組表ベースの事前評価を先行公開しています。`)}${nb.table}</section>`;
+      metaToday = `本日は開催なし、次回${dateLabel(nd).replace(/^\d+年/, "")}の事前評価を先行公開。`;
+    } else {
+      const ld = pastDates[pastDates.length - 1];
+      todayHtml = `<section><h2>本日の${esc(venue)}競艇</h2>${box(`本日(${dateLabel(currentDate)})の${esc(venue)}競艇は開催がありません。直近の開催は${dateLabel(ld)}(<a href="${venueBase}races/${slug}/${ld}/">結果一覧</a>)。次回開催の番組が公開され次第、事前評価を掲載します。`)}</section>`;
+      metaToday = `本日は開催なし。`;
+    }
+    // 開催日カレンダー(直近30日分の日別ページへ)
+    const dayLinks = [...pastDates.slice(-30).reverse(), ...futureDates].sort((a, b) => b.localeCompare(a))
+      .map((d) => `<a href="${venueBase}races/${slug}/${d}/" style="display:inline-block; padding:5px 10px; border:1px solid rgba(255,255,255,.14); border-radius:8px; font-size:12px; color:${d > currentDate ? "var(--cyan)" : "var(--muted)"};">${d.slice(5).replace("-", "/")}${d > currentDate ? " 先行" : ""}</a>`)
+      .join(" ");
     const links = [...list]
       .sort((a, b) => b.dateISO.localeCompare(a.dateISO) || a.raceNo - b.raceNo)
       .slice(0, 300)
@@ -1713,7 +1765,7 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
       .join("\n");
     const html = articlePage({
       title: `${venue}競艇の予想と特徴データ(イン逃げ実測率・決まり手・平均配当)｜競艇チョクゼン`,
-      metaDesc: `${venue}競艇(ボートレース${venue})のイン逃げ実測率・決まり手分布・平均払戻を確定レースの結果から自動集計。全レースの直前予想と結果の一覧つき。`,
+      metaDesc: `${venue}競艇(ボートレース${venue})の直前予想と特徴データ。${metaToday}イン逃げ実測率・決まり手分布・平均払戻を公式結果から自動集計。`,
       path: `races/${slug}/`,
       base: venueBase,
       crumbs: [["ホーム", venueBase], [`${venue}競艇`]],
@@ -1725,7 +1777,9 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
           }]
         : undefined,
       bodyHtml: `<h1>${esc(venue)}競艇場の特徴データと直前予想</h1>
-<p style="color:var(--muted);">当サイトの結果アーカイブから、${esc(venue)}の実測傾向を毎日自動更新しています。</p>
+<p style="color:var(--muted);">${esc(venue)}競艇の今日の予想(全レースAI本命・締切時刻)と、結果アーカイブから毎日自動更新する実測傾向をまとめたページです。</p>
+${todayHtml}
+<section><h2>開催日別の予想・結果</h2><div style="display:flex; flex-wrap:wrap; gap:6px;">${dayLinks}</div></section>
 <section><h2>実測データ</h2>${venueStatsHtml(venue, list, venueBase)}</section>
 ${venueHistoryHtml(history, slug, venueBase)}
 ${venueFaqHtml}
@@ -1741,15 +1795,32 @@ ${venueFaqHtml}
       dl.push(r);
       byDate.set(r.dateISO, dl);
     }
+    const allDates = [...byDate.keys()].sort();
     for (const [dateISO, dl] of byDate) {
       const dayBase = baseFor(3);
-      const dayLinks = dl
-        .map((r) => `<li style="margin-bottom:8px;"><a href="${dayBase}${racePath(r)}">第${r.raceNo}R ${esc(r.name)} 締切${r.closeTime}</a></li>`)
-        .join("\n");
-      const dayHtml = stubPage(`${venue}競艇 ${dateLabel(dateISO)} 全レースの直前予想・結果`, "", dayBase).replace(
-        "<p><a",
-        `<ul style="list-style:none;">${dayLinks}</ul><p><a`
-      );
+      const b = venueDayBlock(dl, dayBase);
+      const idx = allDates.indexOf(dateISO);
+      const prev = idx > 0 ? allDates[idx - 1] : null;
+      const next = idx < allDates.length - 1 ? allDates[idx + 1] : null;
+      const isToday = dateISO === currentDate;
+      const dayTitle = `${venue}競艇 ${dateLabel(dateISO)} 全レースの直前予想・結果`;
+      const dayHtml = articlePage({
+        title: `${dayTitle} - 競艇チョクゼン`,
+        metaDesc: `${dateLabel(dateISO)}の${venue}競艇(${b.title.replace(/<[^>]+>/g, "")})全${dl.length}レースのAI本命・締切時刻・結果と3連単配当を一覧掲載。${isToday ? "5分ごとに自動更新中。" : ""}`,
+        path: `races/${slug}/${dateISO}/`,
+        base: dayBase,
+        crumbs: [["ホーム", dayBase], [`${venue}競艇`, `${dayBase}races/${slug}/`], [dateLabel(dateISO)]],
+        bodyHtml: `<h1>${esc(dayTitle)}</h1>
+${box(b.summary)}
+<div style="display:flex; justify-content:space-between; font-size:12.5px; margin:6px 0 12px;">
+<span>${prev ? `<a href="${dayBase}races/${slug}/${prev}/">← ${dateLabel(prev)}</a>` : ""}</span>
+<span><a href="${dayBase}races/${slug}/">${esc(venue)}競艇の特徴データ</a></span>
+<span>${next ? `<a href="${dayBase}races/${slug}/${next}/">${dateLabel(next)} →</a>` : ""}</span>
+</div>
+${b.table}
+<p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI本命は事前評価。締切15分前の展示反映で各レースページの評価が更新されます。的中を保証するものではありません。</p>
+${isToday ? `<p style="font-size:12.5px; color:var(--muted);">当日まとめ: <a href="${dayBase}today/main-races/">各場12R本命</a> / <a href="${dayBase}today/night/">ナイター</a> / <a href="${dayBase}today/manshu/">万舟狙い目</a> / <a href="${dayBase}">全レース一覧(トップ)</a></p>` : ""}`,
+      });
       const dayDir = path.join(DIST, "races", slug, dateISO);
       await mkdir(dayDir, { recursive: true });
       await writeFile(path.join(dayDir, "index.html"), dayHtml, "utf-8");

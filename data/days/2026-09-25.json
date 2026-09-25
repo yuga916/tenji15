@@ -3379,21 +3379,21 @@
     "name": "予選",
     "grade": "SG",
     "seriesTitle": "第13回ヤングダービー",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "20:40",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 3,
+    "wave": 3,
     "inEscapeProbPre": 58,
-    "inEscapeProb": 58,
-    "inNote": "若松の基準値(56%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inEscapeProb": 54,
+    "inNote": "事前58%から展示反映で54%に更新。1号艇の展示偏差は-0.2σ。",
     "kimarite": {
-      "nige": 0.58,
-      "makuri": 0.19,
-      "sashi": 0.18,
-      "other": 0.05
+      "nige": 0.54,
+      "makuri": 0.21,
+      "sashi": 0.19,
+      "other": 0.06
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "進入変化を反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -3404,7 +3404,12 @@
         "natWinRate": 7.02,
         "motorRate": 30.3,
         "preProb": 0.656,
-        "aiProb": 0.656
+        "aiProb": 0.567,
+        "exTime": 6.92,
+        "exDev": -0.2,
+        "course": 1,
+        "exSt": 0.22,
+        "marketProb": 0.307
       },
       {
         "lane": 2,
@@ -3415,7 +3420,12 @@
         "natWinRate": 6.77,
         "motorRate": 33.85,
         "preProb": 0.198,
-        "aiProb": 0.198
+        "aiProb": 0.261,
+        "exTime": 6.87,
+        "exDev": 1,
+        "course": 2,
+        "exSt": 0.11,
+        "marketProb": 0.387
       },
       {
         "lane": 3,
@@ -3426,7 +3436,12 @@
         "natWinRate": 6.29,
         "motorRate": 30.16,
         "preProb": 0.052,
-        "aiProb": 0.052
+        "aiProb": 0.042,
+        "exTime": 6.93,
+        "exDev": -0.4,
+        "course": 3,
+        "exSt": 0.09,
+        "marketProb": 0.121
       },
       {
         "lane": 4,
@@ -3437,7 +3452,12 @@
         "natWinRate": 6.16,
         "motorRate": 30.81,
         "preProb": 0.035,
-        "aiProb": 0.035
+        "aiProb": 0.005,
+        "exTime": 6.99,
+        "exDev": -1.8,
+        "course": 6,
+        "exSt": 0.15,
+        "marketProb": 0.089
       },
       {
         "lane": 5,
@@ -3448,7 +3468,12 @@
         "natWinRate": 6.31,
         "motorRate": 33.33,
         "preProb": 0.032,
-        "aiProb": 0.032
+        "aiProb": 0.075,
+        "exTime": 6.86,
+        "exDev": 1.2,
+        "course": 4,
+        "exSt": 0.08,
+        "marketProb": 0.048
       },
       {
         "lane": 6,
@@ -3459,13 +3484,55 @@
         "natWinRate": 6.75,
         "motorRate": 32.98,
         "preProb": 0.026,
-        "aiProb": 0.026
+        "aiProb": 0.05,
+        "exTime": 6.91,
+        "exDev": 0.1,
+        "course": 5,
+        "exSt": 0.22,
+        "marketProb": 0.048
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 若松のイン逃げ確率は58%想定。本命候補は1号艇・平川香織(A2・事前勝率66%)、対抗は2号艇・澤田尚也(同20%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-25T11:10:23.185Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "20:15",
+        "type": "extime",
+        "impact": "down",
+        "text": "4号艇・篠原晟弥の展示タイムがレース内偏差-1.8σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "20:15",
+        "type": "formation",
+        "impact": "neutral",
+        "text": "進入が枠なりから変化(4号艇→6コース、5号艇→4コース、6号艇→5コース)。全艇の勝率をコース基準で再計算しました。"
+      },
+      {
+        "time": "20:15",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・平川香織: AI評価57%に対し市場は31%。+26ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "20:15",
+        "type": "gap",
+        "impact": "down",
+        "text": "2号艇・澤田尚也: 市場39%に対しAI評価は26%。過剰人気の可能性。"
+      },
+      {
+        "time": "20:15",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・山本梨菜: 市場12%に対しAI評価は4%。過剰人気の可能性。"
+      },
+      {
+        "time": "20:15",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・篠原晟弥: 市場9%に対しAI評価は1%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・平川香織(展示反映後AI勝率57%)。妙味は1号艇・平川香織(歪み+26pt)。イン逃げ確率は54%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-25T11:15:37.013Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "shimonoseki-2026-09-25-1",
@@ -4546,8 +4613,8 @@
     "status": "signal",
     "closeTime": "20:30",
     "windDir": "曇",
-    "windSpeed": 1,
-    "wave": 1,
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 77,
     "inEscapeProb": 77,
     "inNote": "事前77%から展示反映で77%に更新。1号艇の展示偏差は-0.1σ。",
@@ -4573,7 +4640,7 @@
         "exDev": -0.1,
         "course": 1,
         "exSt": 0.05,
-        "marketProb": 0.73
+        "marketProb": 0.619
       },
       {
         "lane": 2,
@@ -4589,7 +4656,7 @@
         "exDev": -0.4,
         "course": 2,
         "exSt": 0.08,
-        "marketProb": 0.026
+        "marketProb": 0.071
       },
       {
         "lane": 3,
@@ -4605,7 +4672,7 @@
         "exDev": -1.6,
         "course": 3,
         "exSt": 0.13,
-        "marketProb": 0.052
+        "marketProb": 0.077
       },
       {
         "lane": 4,
@@ -4621,7 +4688,7 @@
         "exDev": 1.1,
         "course": 4,
         "exSt": 0.03,
-        "marketProb": 0.043
+        "marketProb": 0.056
       },
       {
         "lane": 5,
@@ -4637,7 +4704,7 @@
         "exDev": -0.4,
         "course": 5,
         "exSt": -0.03,
-        "marketProb": 0.052
+        "marketProb": 0.056
       },
       {
         "lane": 6,
@@ -4653,25 +4720,31 @@
         "exDev": 1.4,
         "course": 6,
         "exSt": -0.07,
-        "marketProb": 0.096
+        "marketProb": 0.12
       }
     ],
     "signals": [
       {
-        "time": "20:10",
+        "time": "20:15",
         "type": "extime",
         "impact": "down",
         "text": "3号艇・上野秀和の展示タイムがレース内偏差-1.6σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "20:10",
+        "time": "20:15",
         "type": "extime",
         "impact": "up",
         "text": "6号艇・横田貴満の展示タイムがレース内偏差+1.4σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "20:15",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・稲田浩二: AI評価78%に対し市場は62%。+17ptの歪み(市場が織り込んでいない可能性)。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・稲田浩二(展示反映後AI勝率78%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は77%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-25T11:10:27.134Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・稲田浩二(展示反映後AI勝率78%)。妙味は1号艇・稲田浩二(歪み+17pt)。イン逃げ確率は77%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-25T11:15:30.289Z",
     "modelVersion": "v0.3.0-live"
   },
   {
@@ -13792,7 +13865,7 @@
         "motorRate": 34.31,
         "preProb": 0.298,
         "aiProb": 0.298,
-        "marketProb": 0.725
+        "marketProb": 0.73
       },
       {
         "lane": 2,
@@ -13804,7 +13877,7 @@
         "motorRate": 34.74,
         "preProb": 0.164,
         "aiProb": 0.164,
-        "marketProb": 0.075
+        "marketProb": 0.073
       },
       {
         "lane": 3,
@@ -13816,7 +13889,7 @@
         "motorRate": 33.49,
         "preProb": 0.324,
         "aiProb": 0.324,
-        "marketProb": 0.099
+        "marketProb": 0.096
       },
       {
         "lane": 4,
@@ -13828,7 +13901,7 @@
         "motorRate": 35.26,
         "preProb": 0.08,
         "aiProb": 0.08,
-        "marketProb": 0.037
+        "marketProb": 0.035
       },
       {
         "lane": 5,
@@ -13840,7 +13913,7 @@
         "motorRate": 38.31,
         "preProb": 0.119,
         "aiProb": 0.119,
-        "marketProb": 0.034
+        "marketProb": 0.037
       },
       {
         "lane": 6,
@@ -13852,37 +13925,37 @@
         "motorRate": 46.1,
         "preProb": 0.015,
         "aiProb": 0.015,
-        "marketProb": 0.03
+        "marketProb": 0.028
       }
     ],
     "signals": [
       {
-        "time": "20:10",
+        "time": "20:15",
         "type": "gap",
         "impact": "down",
         "text": "1号艇・北村寧々: 市場73%に対しAI評価は30%。過剰人気の可能性。"
       },
       {
-        "time": "20:10",
+        "time": "20:15",
         "type": "gap",
         "impact": "up",
-        "text": "2号艇・大豆生蒼: AI評価16%に対し市場は8%。+9ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "2号艇・大豆生蒼: AI評価16%に対し市場は7%。+9ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "20:10",
+        "time": "20:15",
         "type": "gap",
         "impact": "up",
         "text": "3号艇・松尾夏海: AI評価32%に対し市場は10%。+23ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "20:10",
+        "time": "20:15",
         "type": "gap",
         "impact": "up",
-        "text": "5号艇・若狭奈美: AI評価12%に対し市場は3%。+9ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "5号艇・若狭奈美: AI評価12%に対し市場は4%。+8ptの歪み(市場が織り込んでいない可能性)。"
       }
     ],
     "verdict": "直前最終評価: 本命候補は3号艇・松尾夏海(展示反映後AI勝率32%)。妙味は3号艇・松尾夏海(歪み+23pt)。イン逃げ確率は30%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-25T11:10:30.633Z",
+    "updatedAt": "2026-09-25T11:15:33.622Z",
     "modelVersion": "v0.3.0-live"
   }
 ]

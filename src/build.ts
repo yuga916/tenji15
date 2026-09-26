@@ -41,21 +41,26 @@ function gaSnippet(): string {
 (function(){
   if (typeof window.gtag !== 'function') return;
   // ① 要素が画面に入ったら1回だけ発火([data-ev]付き要素)
-  try {
-    var seen = new WeakSet();
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if (e.isIntersecting && !seen.has(e.target)) {
-          seen.add(e.target);
-          var name = e.target.getAttribute('data-ev');
-          var params = {};
-          if (e.target.getAttribute('data-race-status')) params.race_status = e.target.getAttribute('data-race-status');
-          window.gtag('event', name, params);
-        }
-      });
-    }, { threshold: 0.5 });
-    document.querySelectorAll('[data-ev]').forEach(function(el){ io.observe(el); });
-  } catch(_) {}
+  // ※このスクリプトは<head>で実行されるため、本文の解析完了(DOMContentLoaded)を待ってから要素を探す。
+  //   (2026-09-26修正: 以前は本文が無い時点で探しており、view_bet_suggestionが一度も送られていなかった)
+  function observeEv(){
+    try {
+      var seen = new WeakSet();
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if (e.isIntersecting && !seen.has(e.target)) {
+            seen.add(e.target);
+            var name = e.target.getAttribute('data-ev');
+            var params = {};
+            if (e.target.getAttribute('data-race-status')) params.race_status = e.target.getAttribute('data-race-status');
+            window.gtag('event', name, params);
+          }
+        });
+      }, { threshold: 0.3 });
+      document.querySelectorAll('[data-ev]').forEach(function(el){ io.observe(el); });
+    } catch(_) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', observeEv); else observeEv();
   // ② レース詳細ページへの遷移クリックを計測(トップの注目・一覧・会場ページ等から)
   document.addEventListener('click', function(ev){
     var a = ev.target.closest ? ev.target.closest('a[href]') : null;

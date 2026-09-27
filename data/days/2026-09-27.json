@@ -1502,21 +1502,21 @@
     "raceNo": 4,
     "name": "サンライズY 進入固定",
     "seriesTitle": "オールレディース マクール杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:02",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 88,
     "inEscapeProb": 88,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前88%から展示反映で88%に更新。",
     "kimarite": {
       "nige": 0.88,
       "makuri": 0.05,
       "sashi": 0.05,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -1527,7 +1527,8 @@
         "natWinRate": 7.29,
         "motorRate": 37.86118,
         "preProb": 0.883,
-        "aiProb": 0.883
+        "aiProb": 0.883,
+        "marketProb": 0.465
       },
       {
         "lane": 2,
@@ -1538,7 +1539,8 @@
         "natWinRate": 5.49,
         "motorRate": 40.74149,
         "preProb": 0.054,
-        "aiProb": 0.054
+        "aiProb": 0.054,
+        "marketProb": 0.046
       },
       {
         "lane": 3,
@@ -1549,7 +1551,8 @@
         "natWinRate": 3.39,
         "motorRate": 39.62161,
         "preProb": 0.017,
-        "aiProb": 0.017
+        "aiProb": 0.017,
+        "marketProb": 0.093
       },
       {
         "lane": 4,
@@ -1560,7 +1563,8 @@
         "natWinRate": 4.27,
         "motorRate": 28.74169,
         "preProb": 0.02,
-        "aiProb": 0.02
+        "aiProb": 0.02,
+        "marketProb": 0.162
       },
       {
         "lane": 5,
@@ -1571,7 +1575,8 @@
         "natWinRate": 3.49,
         "motorRate": 45.79132,
         "preProb": 0.009,
-        "aiProb": 0.009
+        "aiProb": 0.01,
+        "marketProb": 0.093
       },
       {
         "lane": 6,
@@ -1582,13 +1587,45 @@
         "natWinRate": 6.02,
         "motorRate": 40.00129,
         "preProb": 0.016,
-        "aiProb": 0.016
+        "aiProb": 0.016,
+        "marketProb": 0.14
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は88%想定。本命候補は1号艇・三浦永理(A1・事前勝率88%)、対抗は2号艇・今井裕梨(同5%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-27T00:30:24.674Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・三浦永理: AI評価88%に対し市場は47%。+42ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・佐藤ほの: 市場9%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・福岡泉水: 市場16%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・田中博子: 市場9%に対しAI評価は1%。過剰人気の可能性。"
+      },
+      {
+        "time": "09:40",
+        "type": "gap",
+        "impact": "down",
+        "text": "6号艇・山口真喜: 市場14%に対しAI評価は2%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・三浦永理(展示反映後AI勝率88%)。妙味は1号艇・三浦永理(歪み+42pt)。イン逃げ確率は88%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-27T00:40:30.753Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "ashiya-2026-09-27-5",
@@ -6137,11 +6174,11 @@
     "status": "signal",
     "closeTime": "09:50",
     "windDir": "曇",
-    "windSpeed": 2,
-    "wave": 2,
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 37,
     "inEscapeProb": 37,
-    "inNote": "事前37%から展示反映で37%に更新。",
+    "inNote": "事前37%から展示反映で37%に更新。1号艇の展示偏差は+0.1σ。",
     "kimarite": {
       "nige": 0.37,
       "makuri": 0.28,
@@ -6159,10 +6196,12 @@
         "natWinRate": 5.09,
         "motorRate": 39.56,
         "preProb": 0.506,
-        "aiProb": 0.505,
-        "marketProb": 0.286,
+        "aiProb": 0.484,
+        "marketProb": 0.349,
         "course": 1,
-        "exSt": 0.14
+        "exSt": 0.14,
+        "exTime": 6.79,
+        "exDev": 0.1
       },
       {
         "lane": 2,
@@ -6173,10 +6212,12 @@
         "natWinRate": 5.72,
         "motorRate": 35.63,
         "preProb": 0.167,
-        "aiProb": 0.167,
-        "marketProb": 0.286,
+        "aiProb": 0.117,
+        "marketProb": 0.112,
         "course": 2,
-        "exSt": 0.13
+        "exSt": 0.13,
+        "exTime": 6.82,
+        "exDev": -0.8
       },
       {
         "lane": 3,
@@ -6187,10 +6228,12 @@
         "natWinRate": 4.24,
         "motorRate": 25.93,
         "preProb": 0.036,
-        "aiProb": 0.036,
-        "marketProb": 0.143,
+        "aiProb": 0.042,
+        "marketProb": 0.17,
         "course": 3,
-        "exSt": 0.41
+        "exSt": 0.41,
+        "exTime": 6.77,
+        "exDev": 0.7
       },
       {
         "lane": 4,
@@ -6201,10 +6244,12 @@
         "natWinRate": 6.13,
         "motorRate": 33,
         "preProb": 0.151,
-        "aiProb": 0.151,
-        "marketProb": 0.143,
+        "aiProb": 0.198,
+        "marketProb": 0.112,
         "course": 4,
-        "exSt": 0.11
+        "exSt": 0.11,
+        "exTime": 6.76,
+        "exDev": 1
       },
       {
         "lane": 5,
@@ -6215,10 +6260,12 @@
         "natWinRate": 6.39,
         "motorRate": 34.74,
         "preProb": 0.131,
-        "aiProb": 0.131,
-        "marketProb": 0.143,
+        "aiProb": 0.155,
+        "marketProb": 0.112,
         "course": 5,
-        "exSt": 0.06
+        "exSt": 0.06,
+        "exTime": 6.77,
+        "exDev": 0.7
       },
       {
         "lane": 6,
@@ -6229,33 +6276,48 @@
         "natWinRate": 4.54,
         "motorRate": 26.32,
         "preProb": 0.009,
-        "aiProb": 0.01,
+        "aiProb": 0.005,
         "course": 6,
-        "exSt": 0.13
+        "exSt": 0.13,
+        "exTime": 6.85,
+        "exDev": -1.8,
+        "marketProb": 0.146
       }
     ],
     "signals": [
       {
-        "time": "09:35",
+        "time": "09:40",
+        "type": "extime",
+        "impact": "down",
+        "text": "6号艇・富永夏哉の展示タイムがレース内偏差-1.8σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "09:40",
         "type": "gap",
         "impact": "up",
-        "text": "1号艇・室田泰史: AI評価51%に対し市場は29%。+22ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・室田泰史: AI評価48%に対し市場は35%。+14ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "09:35",
+        "time": "09:40",
         "type": "gap",
         "impact": "down",
-        "text": "2号艇・大平誉史: 市場29%に対しAI評価は17%。過剰人気の可能性。"
+        "text": "3号艇・松下誉士: 市場17%に対しAI評価は4%。過剰人気の可能性。"
       },
       {
-        "time": "09:35",
+        "time": "09:40",
+        "type": "gap",
+        "impact": "up",
+        "text": "4号艇・山地正樹: AI評価20%に対し市場は11%。+9ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "09:40",
         "type": "gap",
         "impact": "down",
-        "text": "3号艇・松下誉士: 市場14%に対しAI評価は4%。過剰人気の可能性。"
+        "text": "6号艇・富永夏哉: 市場15%に対しAI評価は1%。過剰人気の可能性。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・室田泰史(展示反映後AI勝率51%)。妙味は1号艇・室田泰史(歪み+22pt)。イン逃げ確率は37%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-27T00:35:29.636Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・室田泰史(展示反映後AI勝率48%)。妙味は1号艇・室田泰史(歪み+14pt)。イン逃げ確率は37%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-27T00:40:27.393Z",
     "modelVersion": "v0.3.0-live"
   },
   {

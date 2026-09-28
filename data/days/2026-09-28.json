@@ -1531,21 +1531,21 @@
     "raceNo": 5,
     "name": "サンライズZ",
     "seriesTitle": "オールレディース マクール杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:32",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 66,
     "inEscapeProb": 66,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前66%から展示反映で66%に更新。",
     "kimarite": {
       "nige": 0.66,
       "makuri": 0.15,
       "sashi": 0.14,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -1556,7 +1556,8 @@
         "natWinRate": 6.46,
         "motorRate": 38.00113,
         "preProb": 0.786,
-        "aiProb": 0.786
+        "aiProb": 0.786,
+        "marketProb": 0.509
       },
       {
         "lane": 2,
@@ -1578,7 +1579,8 @@
         "natWinRate": 6.02,
         "motorRate": 40.00129,
         "preProb": 0.09,
-        "aiProb": 0.09
+        "aiProb": 0.09,
+        "marketProb": 0.113
       },
       {
         "lane": 4,
@@ -1589,7 +1591,8 @@
         "natWinRate": 4.76,
         "motorRate": 39.39127,
         "preProb": 0.033,
-        "aiProb": 0.033
+        "aiProb": 0.033,
+        "marketProb": 0.013
       },
       {
         "lane": 5,
@@ -1600,7 +1603,8 @@
         "natWinRate": 4.6,
         "motorRate": 25.9616,
         "preProb": 0.012,
-        "aiProb": 0.012
+        "aiProb": 0.012,
+        "marketProb": 0.34
       },
       {
         "lane": 6,
@@ -1611,13 +1615,27 @@
         "natWinRate": 6.47,
         "motorRate": 45.87137,
         "preProb": 0.044,
-        "aiProb": 0.044
+        "aiProb": 0.044,
+        "marketProb": 0.025
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は66%想定。本命候補は1号艇・寺田千恵(A2・事前勝率79%)、対抗は3号艇・山口真喜(同9%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-28T01:05:35.084Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:10",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・寺田千恵: AI評価79%に対し市場は51%。+28ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:10",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・木村紗友: 市場34%に対しAI評価は1%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・寺田千恵(展示反映後AI勝率79%)。妙味は1号艇・寺田千恵(歪み+28pt)。イン逃げ確率は66%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-28T01:10:28.788Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "ashiya-2026-09-28-6",
@@ -6181,7 +6199,7 @@
         "exDev": 0.5,
         "course": 1,
         "exSt": 0.01,
-        "marketProb": 0.147
+        "marketProb": 0.355
       },
       {
         "lane": 2,
@@ -6197,7 +6215,7 @@
         "exDev": 0.9,
         "course": 3,
         "exSt": 0.09,
-        "marketProb": 0.036
+        "marketProb": 0.028
       },
       {
         "lane": 3,
@@ -6213,7 +6231,7 @@
         "exDev": 0.9,
         "course": 4,
         "exSt": 0.04,
-        "marketProb": 0.221
+        "marketProb": 0.028
       },
       {
         "lane": 4,
@@ -6229,7 +6247,7 @@
         "exDev": -1.4,
         "course": 5,
         "exSt": 0.03,
-        "marketProb": 0.119
+        "marketProb": 0.014
       },
       {
         "lane": 5,
@@ -6245,7 +6263,7 @@
         "exDev": 0.5,
         "course": 6,
         "exSt": 0.02,
-        "marketProb": 0.073
+        "marketProb": 0.028
       },
       {
         "lane": 6,
@@ -6261,49 +6279,43 @@
         "exDev": -1.4,
         "course": 2,
         "exSt": 0.04,
-        "marketProb": 0.405
+        "marketProb": 0.546
       }
     ],
     "signals": [
       {
-        "time": "10:05",
+        "time": "10:10",
         "type": "extime",
         "impact": "down",
         "text": "4号艇・坂元浩仁の展示タイムがレース内偏差-1.4σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "10:05",
+        "time": "10:10",
         "type": "extime",
         "impact": "down",
         "text": "6号艇・西島義則の展示タイムがレース内偏差-1.4σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "10:05",
+        "time": "10:10",
         "type": "formation",
         "impact": "neutral",
         "text": "進入が枠なりから変化(2号艇→3コース、3号艇→4コース、4号艇→5コース、5号艇→6コース、6号艇→2コース)。全艇の勝率をコース基準で再計算しました。"
       },
       {
-        "time": "10:05",
+        "time": "10:10",
         "type": "gap",
         "impact": "up",
-        "text": "1号艇・津久井拓: AI評価57%に対し市場は15%。+42ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・津久井拓: AI評価57%に対し市場は36%。+21ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "10:05",
+        "time": "10:10",
         "type": "gap",
         "impact": "down",
-        "text": "3号艇・長谷川暖: 市場22%に対しAI評価は4%。過剰人気の可能性。"
-      },
-      {
-        "time": "10:05",
-        "type": "gap",
-        "impact": "down",
-        "text": "6号艇・西島義則: 市場41%に対しAI評価は23%。過剰人気の可能性。"
+        "text": "6号艇・西島義則: 市場55%に対しAI評価は23%。過剰人気の可能性。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・津久井拓(展示反映後AI勝率57%)。妙味は1号艇・津久井拓(歪み+42pt)。イン逃げ確率は33%。オッズは締切まで変動します。",
-    "updatedAt": "2026-09-28T01:05:37.236Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・津久井拓(展示反映後AI勝率57%)。妙味は1号艇・津久井拓(歪み+21pt)。イン逃げ確率は33%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-28T01:10:25.353Z",
     "modelVersion": "v0.3.0-live"
   },
   {
@@ -8126,21 +8138,21 @@
     "raceNo": 1,
     "name": "ツッキーレー",
     "seriesTitle": "ボートレース 津 9月28日 DMM．com杯争奪 第 7日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:33",
-    "windDir": "—",
+    "windDir": "晴",
     "windSpeed": 0,
     "wave": 0,
     "inEscapeProbPre": 79,
     "inEscapeProb": 79,
-    "inNote": "津の基準値(54%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前79%から展示反映で79%に更新。",
     "kimarite": {
       "nige": 0.79,
       "makuri": 0.09,
       "sashi": 0.09,
       "other": 0.03
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -8151,7 +8163,8 @@
         "natWinRate": 5.61,
         "motorRate": 30.59,
         "preProb": 0.709,
-        "aiProb": 0.709
+        "aiProb": 0.705,
+        "marketProb": 0.462
       },
       {
         "lane": 2,
@@ -8162,7 +8175,8 @@
         "natWinRate": 4.66,
         "motorRate": 30.99,
         "preProb": 0.108,
-        "aiProb": 0.108
+        "aiProb": 0.107,
+        "marketProb": 0.017
       },
       {
         "lane": 3,
@@ -8173,7 +8187,8 @@
         "natWinRate": 4.84,
         "motorRate": 33.33,
         "preProb": 0.084,
-        "aiProb": 0.084
+        "aiProb": 0.083,
+        "marketProb": 0.256
       },
       {
         "lane": 4,
@@ -8184,7 +8199,8 @@
         "natWinRate": 3.97,
         "motorRate": 41.03,
         "preProb": 0.069,
-        "aiProb": 0.069
+        "aiProb": 0.069,
+        "marketProb": 0.256
       },
       {
         "lane": 5,
@@ -8206,13 +8222,39 @@
         "natWinRate": 1.49,
         "motorRate": 36.23,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "marketProb": 0.008
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 津のイン逃げ確率は79%想定。本命候補は1号艇・杉山貴博(A2・事前勝率71%)、対抗は2号艇・高山智至(同11%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-09-28T01:05:35.084Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:10",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・杉山貴博: AI評価71%に対し市場は46%。+24ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:10",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・高山智至: AI評価11%に対し市場は2%。+9ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:10",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・上之晃弘: 市場26%に対しAI評価は8%。過剰人気の可能性。"
+      },
+      {
+        "time": "10:10",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・多田有佑: 市場26%に対しAI評価は7%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・杉山貴博(展示反映後AI勝率71%)。妙味は1号艇・杉山貴博(歪み+24pt)。イン逃げ確率は79%。オッズは締切まで変動します。",
+    "updatedAt": "2026-09-28T01:10:32.201Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "tsu-2026-09-28-2",

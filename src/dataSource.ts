@@ -44,8 +44,16 @@ export class MockDataSource implements BoatDataSource {
 /** 節タイトルからグレードを判定(SG/G1/G2/G3。一般・女子戦等はundefined) */
 export function gradeOf(title?: string): string | undefined {
   if (!title) return undefined;
-  if (/SG|グランプリ|クラシック|オールスター|メモリアル|ダービー|チャレンジカップ|グランドチャンピオン/.test(title)) return "SG";
-  if (/PG[1Ⅰ]|G[Ⅰ1](?![ⅠⅡⅢ0-9])|周年記念/.test(title)) return "G1";
+  // 場外発売所(BTS・オラレ・ボートピア等)の周年記念や冠協賛は一般戦。グレード扱いしない(2026-09-29修正)
+  if (/BTS|オラレ|ボートピア|チャンスセンター|倶楽部|ドリームスクエア/.test(title)) return undefined;
+  // プレミアムG1(ヤングダービー・レディースチャンピオン等)はSGではなくG1
+  if (/PG[1Ⅰ]|ヤングダービー|レディースチャンピオン|クイーンズクライマックス|マスターズチャンピオン|BBCトーナメント|スピードクイーン/.test(title)) return "G1";
+  // SGは正式名称で判定(「○○ダービー」等の冠名称の誤検出を避ける)
+  if (/SG|グランプリ|ボートレースクラシック|総理大臣杯|オールスター|笹川賞|グランドチャンピオン|オーシャンカップ|ボートレースメモリアル|ボートレースダービー|全日本選手権|チャレンジカップ/.test(title)) return "SG";
+  if (/G[Ⅰ1](?![ⅠⅡⅢ0-9])/.test(title)) return "G1";
+  // 競艇場の周年記念(G1)は開設60〜70年超。場外発売所の周年(一桁〜30年台、末尾BT等)は一般戦
+  const anniv = title.match(/開設(\d+)周年記念/);
+  if (anniv && Number(anniv[1]) >= 40 && !/周年記念\s*BT/.test(title)) return "G1";
   if (/G[Ⅱ2]/.test(title)) return "G2";
   if (/G[Ⅲ3]/.test(title)) return "G3";
   return undefined;

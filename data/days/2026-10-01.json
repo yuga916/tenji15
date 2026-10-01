@@ -904,21 +904,21 @@
     "dateISO": "2026-10-01",
     "raceNo": 10,
     "name": "準優勝戦",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "21:51",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 3,
+    "wave": 2,
     "inEscapeProbPre": 78,
     "inEscapeProb": 78,
-    "inNote": "大村の基準値(65%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前78%から展示反映で78%に更新。",
     "kimarite": {
       "nige": 0.78,
       "makuri": 0.1,
       "sashi": 0.09,
       "other": 0.03
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -929,7 +929,8 @@
         "natWinRate": 6.33,
         "motorRate": 40,
         "preProb": 0.75,
-        "aiProb": 0.75
+        "aiProb": 0.75,
+        "marketProb": 0.536
       },
       {
         "lane": 2,
@@ -940,7 +941,8 @@
         "natWinRate": 5.6,
         "motorRate": 47.22,
         "preProb": 0.105,
-        "aiProb": 0.105
+        "aiProb": 0.105,
+        "marketProb": 0.055
       },
       {
         "lane": 3,
@@ -951,7 +953,8 @@
         "natWinRate": 4.21,
         "motorRate": 28.57,
         "preProb": 0.013,
-        "aiProb": 0.013
+        "aiProb": 0.013,
+        "marketProb": 0.298
       },
       {
         "lane": 4,
@@ -962,7 +965,8 @@
         "natWinRate": 6.24,
         "motorRate": 41.03,
         "preProb": 0.072,
-        "aiProb": 0.072
+        "aiProb": 0.072,
+        "marketProb": 0.055
       },
       {
         "lane": 5,
@@ -984,13 +988,27 @@
         "natWinRate": 6.62,
         "motorRate": 22.86,
         "preProb": 0.027,
-        "aiProb": 0.027
+        "aiProb": 0.027,
+        "marketProb": 0.055
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 大村のイン逃げ確率は78%想定。本命候補は1号艇・榎幸司(A2・事前勝率75%)、対抗は2号艇・鶴本崇文(同10%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-01T12:15:27.652Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "21:30",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・榎幸司: AI評価75%に対し市場は54%。+21ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:30",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・日笠勝弘: 市場30%に対しAI評価は1%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・榎幸司(展示反映後AI勝率75%)。妙味は1号艇・榎幸司(歪み+21pt)。イン逃げ確率は78%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-01T12:30:38.116Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "omura-2026-10-01-11",

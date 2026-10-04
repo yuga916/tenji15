@@ -2893,15 +2893,15 @@
     "windSpeed": 3,
     "wave": 3,
     "inEscapeProbPre": 70,
-    "inEscapeProb": 70,
-    "inNote": "事前70%から展示反映で70%に更新。",
+    "inEscapeProb": 72,
+    "inNote": "事前70%から展示反映で72%に更新。1号艇の展示偏差は+1.2σ。",
     "kimarite": {
-      "nige": 0.7,
-      "makuri": 0.14,
-      "sashi": 0.13,
+      "nige": 0.72,
+      "makuri": 0.13,
+      "sashi": 0.12,
       "other": 0.04
     },
-    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
+    "kimariteNote": "進入変化を反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -2912,8 +2912,12 @@
         "natWinRate": 6.04,
         "motorRate": 42.86,
         "preProb": 0.76,
-        "aiProb": 0.759,
-        "marketProb": 0.436
+        "aiProb": 0.853,
+        "marketProb": 0.385,
+        "exTime": 6.73,
+        "exDev": 1.2,
+        "course": 1,
+        "exSt": 0.08
       },
       {
         "lane": 2,
@@ -2924,8 +2928,12 @@
         "natWinRate": 5.19,
         "motorRate": 32.32,
         "preProb": 0.065,
-        "aiProb": 0.065,
-        "marketProb": 0.014
+        "aiProb": 0.055,
+        "marketProb": 0.06,
+        "exTime": 6.78,
+        "exDev": 0.4,
+        "course": 2,
+        "exSt": 0.09
       },
       {
         "lane": 3,
@@ -2936,8 +2944,12 @@
         "natWinRate": 3.34,
         "motorRate": 35.56,
         "preProb": 0.033,
-        "aiProb": 0.033,
-        "marketProb": 0.109
+        "aiProb": 0.021,
+        "marketProb": 0.08,
+        "exTime": 6.83,
+        "exDev": -0.4,
+        "course": 3,
+        "exSt": 0.01
       },
       {
         "lane": 4,
@@ -2948,8 +2960,12 @@
         "natWinRate": 6.9,
         "motorRate": 33.68,
         "preProb": 0.123,
-        "aiProb": 0.123,
-        "marketProb": 0.277
+        "aiProb": 0.047,
+        "marketProb": 0.199,
+        "exTime": 6.93,
+        "exDev": -1.9,
+        "course": 4,
+        "exSt": 0.04
       },
       {
         "lane": 5,
@@ -2960,7 +2976,12 @@
         "natWinRate": 2.1,
         "motorRate": 40,
         "preProb": 0.009,
-        "aiProb": 0.01
+        "aiProb": 0.003,
+        "exTime": 6.82,
+        "exDev": -0.2,
+        "course": 6,
+        "exSt": -0.01,
+        "marketProb": 0.096
       },
       {
         "lane": 6,
@@ -2971,38 +2992,54 @@
         "natWinRate": 4,
         "motorRate": 39.58,
         "preProb": 0.01,
-        "aiProb": 0.01,
-        "marketProb": 0.165
+        "aiProb": 0.02,
+        "marketProb": 0.18,
+        "exTime": 6.75,
+        "exDev": 0.9,
+        "course": 5,
+        "exSt": 0.19
       }
     ],
     "signals": [
       {
-        "time": "17:55",
+        "time": "18:00",
+        "type": "extime",
+        "impact": "down",
+        "text": "4号艇・平山智加の展示タイムがレース内偏差-1.9σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "18:00",
+        "type": "formation",
+        "impact": "neutral",
+        "text": "進入が枠なりから変化(5号艇→6コース、6号艇→5コース)。全艇の勝率をコース基準で再計算しました。"
+      },
+      {
+        "time": "18:00",
         "type": "gap",
         "impact": "up",
-        "text": "1号艇・関野文: AI評価76%に対し市場は44%。+32ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・関野文: AI評価85%に対し市場は39%。+47ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "gap",
         "impact": "down",
-        "text": "3号艇・森陽多: 市場11%に対しAI評価は3%。過剰人気の可能性。"
+        "text": "4号艇・平山智加: 市場20%に対しAI評価は5%。過剰人気の可能性。"
       },
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "gap",
         "impact": "down",
-        "text": "4号艇・平山智加: 市場28%に対しAI評価は12%。過剰人気の可能性。"
+        "text": "5号艇・三松直美: 市場10%に対しAI評価は0%。過剰人気の可能性。"
       },
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "gap",
         "impact": "down",
-        "text": "6号艇・赤井星璃: 市場17%に対しAI評価は1%。過剰人気の可能性。"
+        "text": "6号艇・赤井星璃: 市場18%に対しAI評価は2%。過剰人気の可能性。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・関野文(展示反映後AI勝率76%)。妙味は1号艇・関野文(歪み+32pt)。イン逃げ確率は70%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-04T08:55:34.913Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・関野文(展示反映後AI勝率85%)。妙味は1号艇・関野文(歪み+47pt)。イン逃げ確率は72%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-04T09:00:31.682Z",
     "modelVersion": "v0.3.0-live"
   },
   {
@@ -6461,21 +6498,21 @@
     "dateISO": "2026-10-04",
     "raceNo": 8,
     "name": "予選",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "18:23",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 2,
+    "wave": 1,
     "inEscapeProbPre": 77,
     "inEscapeProb": 77,
-    "inNote": "住之江の基準値(56%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前77%から展示反映で77%に更新。",
     "kimarite": {
       "nige": 0.77,
       "makuri": 0.1,
       "sashi": 0.1,
       "other": 0.03
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -6486,7 +6523,7 @@
         "natWinRate": 6.3,
         "motorRate": 46.36,
         "preProb": 0.771,
-        "aiProb": 0.771
+        "aiProb": 0.767
       },
       {
         "lane": 2,
@@ -6541,13 +6578,13 @@
         "natWinRate": 4.46,
         "motorRate": 16.81,
         "preProb": 0.005,
-        "aiProb": 0.005
+        "aiProb": 0.01
       }
     ],
     "signals": [],
-    "verdict": "事前評価: 住之江のイン逃げ確率は77%想定。本命候補は1号艇・江夏満(A1・事前勝率77%)、対抗は4号艇・前沢丈史(同10%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-04T08:55:29.494Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "verdict": "直前最終評価: 本命候補は1号艇・江夏満(展示反映後AI勝率77%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は77%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-04T09:00:35.017Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "suminoe-2026-10-04-9",
@@ -11004,7 +11041,7 @@
         "exDev": -0.2,
         "course": 1,
         "exSt": -0.15,
-        "marketProb": 0.252
+        "marketProb": 0.297
       },
       {
         "lane": 2,
@@ -11020,7 +11057,7 @@
         "exDev": -0.3,
         "course": 2,
         "exSt": -0.08,
-        "marketProb": 0.039
+        "marketProb": 0.084
       },
       {
         "lane": 3,
@@ -11036,7 +11073,7 @@
         "exDev": 0.7,
         "course": 3,
         "exSt": -0.12,
-        "marketProb": 0.116
+        "marketProb": 0.138
       },
       {
         "lane": 4,
@@ -11052,7 +11089,7 @@
         "exDev": 1.8,
         "course": 4,
         "exSt": 0.24,
-        "marketProb": 0.403
+        "marketProb": 0.413
       },
       {
         "lane": 5,
@@ -11068,7 +11105,7 @@
         "exDev": -0.7,
         "course": 5,
         "exSt": -0.01,
-        "marketProb": 0.168
+        "marketProb": 0.038
       },
       {
         "lane": 6,
@@ -11084,43 +11121,37 @@
         "exDev": -1.3,
         "course": 6,
         "exSt": -0.03,
-        "marketProb": 0.023
+        "marketProb": 0.03
       }
     ],
     "signals": [
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "extime",
         "impact": "up",
         "text": "4号艇・酒井俊弘の展示タイムがレース内偏差+1.8σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "extime",
         "impact": "down",
         "text": "6号艇・羽野諒の展示タイムがレース内偏差-1.3σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "gap",
         "impact": "up",
-        "text": "1号艇・百武翔: AI評価74%に対し市場は25%。+49ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・百武翔: AI評価74%に対し市場は30%。+44ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "17:55",
+        "time": "18:00",
         "type": "gap",
         "impact": "down",
-        "text": "4号艇・酒井俊弘: 市場40%に対しAI評価は5%。過剰人気の可能性。"
-      },
-      {
-        "time": "17:55",
-        "type": "gap",
-        "impact": "down",
-        "text": "5号艇・三浦裕貴: 市場17%に対しAI評価は1%。過剰人気の可能性。"
+        "text": "4号艇・酒井俊弘: 市場41%に対しAI評価は5%。過剰人気の可能性。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・百武翔(展示反映後AI勝率74%)。妙味は1号艇・百武翔(歪み+49pt)。イン逃げ確率は73%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-04T08:55:31.458Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・百武翔(展示反映後AI勝率74%)。妙味は1号艇・百武翔(歪み+44pt)。イン逃げ確率は73%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-04T09:00:28.317Z",
     "modelVersion": "v0.3.0-live"
   },
   {

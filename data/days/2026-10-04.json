@@ -3230,21 +3230,21 @@
     "raceNo": 10,
     "name": "一般特賞",
     "seriesTitle": "ヴィーナスシリーズ第14戦 スターダム杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "19:47",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 3,
+    "wave": 3,
     "inEscapeProbPre": 70,
-    "inEscapeProb": 70,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inEscapeProb": 72,
+    "inNote": "事前70%から展示反映で72%に更新。1号艇の展示偏差は+0.5σ。",
     "kimarite": {
-      "nige": 0.7,
-      "makuri": 0.14,
-      "sashi": 0.13,
+      "nige": 0.72,
+      "makuri": 0.13,
+      "sashi": 0.12,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -3255,7 +3255,12 @@
         "natWinRate": 6.28,
         "motorRate": 38,
         "preProb": 0.783,
-        "aiProb": 0.783
+        "aiProb": 0.808,
+        "exTime": 6.77,
+        "exDev": 0.5,
+        "course": 1,
+        "exSt": 0.21,
+        "marketProb": 0.561
       },
       {
         "lane": 2,
@@ -3266,7 +3271,12 @@
         "natWinRate": 4.13,
         "motorRate": 52.04,
         "preProb": 0.044,
-        "aiProb": 0.044
+        "aiProb": 0.052,
+        "exTime": 6.76,
+        "exDev": 0.9,
+        "course": 2,
+        "exSt": 0.08,
+        "marketProb": 0.155
       },
       {
         "lane": 3,
@@ -3277,7 +3287,12 @@
         "natWinRate": 5.34,
         "motorRate": 41.05,
         "preProb": 0.069,
-        "aiProb": 0.069
+        "aiProb": 0.042,
+        "exTime": 6.81,
+        "exDev": -1,
+        "course": 3,
+        "exSt": 0.08,
+        "marketProb": 0.085
       },
       {
         "lane": 4,
@@ -3288,7 +3303,12 @@
         "natWinRate": 4.23,
         "motorRate": 34.41,
         "preProb": 0.024,
-        "aiProb": 0.024
+        "aiProb": 0.013,
+        "exTime": 6.82,
+        "exDev": -1.4,
+        "course": 4,
+        "exSt": 0.33,
+        "marketProb": 0.071
       },
       {
         "lane": 5,
@@ -3299,7 +3319,12 @@
         "natWinRate": 5.48,
         "motorRate": 41.05,
         "preProb": 0.041,
-        "aiProb": 0.041
+        "aiProb": 0.032,
+        "exTime": 6.79,
+        "exDev": -0.3,
+        "course": 5,
+        "exSt": 0.22,
+        "marketProb": 0.014
       },
       {
         "lane": 6,
@@ -3310,13 +3335,43 @@
         "natWinRate": 6.23,
         "motorRate": 36.73,
         "preProb": 0.039,
-        "aiProb": 0.039
+        "aiProb": 0.053,
+        "exTime": 6.75,
+        "exDev": 1.3,
+        "course": 6,
+        "exSt": 0.21,
+        "marketProb": 0.114
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は70%想定。本命候補は1号艇・原田佑実(A2・事前勝率78%)、対抗は3号艇・渡邉真奈(同7%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-04T10:05:33.395Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "19:25",
+        "type": "extime",
+        "impact": "down",
+        "text": "4号艇・水野望美の展示タイムがレース内偏差-1.4σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "19:25",
+        "type": "extime",
+        "impact": "up",
+        "text": "6号艇・高田ひかの展示タイムがレース内偏差+1.3σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "19:25",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・原田佑実: AI評価81%に対し市場は56%。+25ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "19:25",
+        "type": "gap",
+        "impact": "down",
+        "text": "2号艇・村上奈穂: 市場16%に対しAI評価は5%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・原田佑実(展示反映後AI勝率81%)。妙味は1号艇・原田佑実(歪み+25pt)。イン逃げ確率は72%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-04T10:25:32.615Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "shimonoseki-2026-10-04-11",
@@ -11375,7 +11430,7 @@
         "exDev": 0.9,
         "course": 1,
         "exSt": -0.03,
-        "marketProb": 0.611
+        "marketProb": 0.714
       },
       {
         "lane": 2,
@@ -11391,7 +11446,7 @@
         "exDev": -0.9,
         "course": 2,
         "exSt": 0,
-        "marketProb": 0.156
+        "marketProb": 0.087
       },
       {
         "lane": 3,
@@ -11407,7 +11462,7 @@
         "exDev": -0.3,
         "course": 3,
         "exSt": 0.17,
-        "marketProb": 0.052
+        "marketProb": 0.037
       },
       {
         "lane": 4,
@@ -11423,7 +11478,7 @@
         "exDev": 1.8,
         "course": 4,
         "exSt": 0.07,
-        "marketProb": 0.026
+        "marketProb": 0.037
       },
       {
         "lane": 5,
@@ -11439,7 +11494,7 @@
         "exDev": -0.6,
         "course": 5,
         "exSt": 0.11,
-        "marketProb": 0.052
+        "marketProb": 0.05
       },
       {
         "lane": 6,
@@ -11455,43 +11510,19 @@
         "exDev": -0.8,
         "course": 6,
         "exSt": 0.22,
-        "marketProb": 0.103
+        "marketProb": 0.074
       }
     ],
     "signals": [
       {
-        "time": "19:20",
+        "time": "19:25",
         "type": "extime",
         "impact": "up",
         "text": "4号艇・三宅健太の展示タイムがレース内偏差+1.8σ。当日気配が上向きのサイン。"
-      },
-      {
-        "time": "19:20",
-        "type": "gap",
-        "impact": "up",
-        "text": "1号艇・北山康介: AI評価75%に対し市場は61%。+14ptの歪み(市場が織り込んでいない可能性)。"
-      },
-      {
-        "time": "19:20",
-        "type": "gap",
-        "impact": "down",
-        "text": "2号艇・水摩敦: 市場16%に対しAI評価は6%。過剰人気の可能性。"
-      },
-      {
-        "time": "19:20",
-        "type": "gap",
-        "impact": "up",
-        "text": "4号艇・三宅健太: AI評価10%に対し市場は3%。+8ptの歪み(市場が織り込んでいない可能性)。"
-      },
-      {
-        "time": "19:20",
-        "type": "gap",
-        "impact": "down",
-        "text": "6号艇・島田一生: 市場10%に対しAI評価は1%。過剰人気の可能性。"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・北山康介(展示反映後AI勝率75%)。妙味は1号艇・北山康介(歪み+14pt)。イン逃げ確率は65%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-04T10:20:33.004Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・北山康介(展示反映後AI勝率75%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は65%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-04T10:25:29.269Z",
     "modelVersion": "v0.3.0-live"
   },
   {

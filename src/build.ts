@@ -684,7 +684,7 @@ ${opts.bodyHtml}
 <div class="age-note"><strong>20歳未満の方は舟券を購入できません。</strong>分析情報は的中を保証するものではありません。無理のない金額で計画的にお楽しみください。</div>
 </main>
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
-<script defer src="${opts.base}assets/feedback.js?v=20260923b"></script>
+<script defer src="${opts.base}assets/feedback.js?v=20260930"></script>
 </body></html>`;
 }
 
@@ -1446,8 +1446,8 @@ function jumpGrid(todayRaces: Race[], base: string): string {
 </div>`)
     .join("\n");
   return `<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
-<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。「この機能が欲しい」「ここが使いにくい」を30秒で送ってください。匿名・登録不要、全件読みます。</div></div>
-<a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">欲しい機能を送る →</a>
+<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。欲しい機能をタップするだけで送れます(匿名・入力不要)。多かったものから作ります。</div></div>
+<a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">欲しい機能をタップで送る →</a>
 </div>
 <div class="card" style="margin-bottom:18px; padding:14px 16px;">
 <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
@@ -1766,12 +1766,12 @@ async function main() {
     await mkdir(path.join(DIST, "feedback"), { recursive: true });
     await writeFile(path.join(DIST, "feedback", "index.html"), articlePage({
       title: "ご意見箱 — 欲しい機能・改善案を教えてください｜競艇チョクゼン",
-      metaDesc: "競艇チョクゼンへのご意見・欲しい機能・不具合報告を匿名で送れます(所要30秒)。いただいた声は次の改善に反映します。",
+      metaDesc: "競艇チョクゼンへのご意見・欲しい機能・不具合報告をタップするだけで匿名で送れます。いただいた声は次の改善に反映します。",
       path: "feedback/",
       base: fbBase,
       crumbs: [["ホーム", fbBase], ["ご意見箱"]],
       bodyHtml: `<h1>ご意見箱</h1>
-<p style="color:var(--muted);">毎日使ってくださっている方の声が、いちばん確かな改善のヒントです。匿名・30秒で送れます。</p>
+<p style="color:var(--muted);">毎日使ってくださっている方の声が、いちばん確かな改善のヒントです。欲しいものをタップするだけで送れます(匿名・入力不要)。</p>
 <div id="feedback-slot"><noscript><p>JavaScriptが無効のため、<a href="${FEEDBACK_FORM_URL}" rel="nofollow noopener" target="_blank">フォーム版</a>からお送りください。</p></noscript></div>
 <section><h2>最近の改善(ご意見の反映例)</h2><p style="color:var(--muted);">トップの会場×Rジャンプグリッド、全レース5分ごとの自動更新と更新時刻の表示、「前回見たレースのその後」、当日の12R・ナイター・万舟狙い目まとめページ。次はあなたの声から。</p></section>`,
     }), "utf-8");

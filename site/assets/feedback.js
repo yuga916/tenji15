@@ -43,7 +43,7 @@
       '<div style="display:flex; justify-content:flex-end; margin-top:8px;"><button type="submit" style="background:var(--cyan,#4dd8ff); color:#0b1220; border:0; border-radius:10px; padding:8px 16px; font-weight:700; font-size:13.5px; cursor:pointer;">送信する</button></div>' +
       '<p class="fb-msg" style="font-size:12.5px; margin:8px 0 0; min-height:1.2em;"></p>' +
       '</form></details>' +
-      '<p style="color:var(--dim,#6b7c89); font-size:11px; margin:10px 0 0;">送信されるのは選んだ内容と閲覧中のページ名だけです。うまく送れない場合は<a href="' + FORM + '/viewform" target="_blank" rel="nofollow noopener" style="color:var(--muted,#9fb3c1);">フォーム版</a>からどうぞ。</p>' +
+      '<p style="color:var(--dim,#6b7c89); font-size:11px; margin:10px 0 0;">送信されるのは選んだ内容と閲覧中のページ名だけです。内容は個人が特定されない形で公開する場合があります(<a href="/feedback/#voices" style="color:var(--muted,#9fb3c1);">みなさんの声と対応</a>)。うまく送れない場合は<a href="' + FORM + '/viewform" target="_blank" rel="nofollow noopener" style="color:var(--muted,#9fb3c1);">フォーム版</a>からどうぞ。</p>' +
       '</div>';
   }
 

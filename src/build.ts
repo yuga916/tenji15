@@ -35,6 +35,52 @@ const GA_ID = process.env.GA_MEASUREMENT_ID ?? "";
 /** ご意見箱(Googleフォーム・匿名) */
 const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfMY46L7RjktI-R9kf9Y950HT8-jA6-C0OydswF3xTqRYDs5w/viewform";
 
+/* ---------- みなさんの声と対応(content/voices.json) ---------- */
+interface VoiceItem { id: string; date: string; question?: string; voice: string; reply: string; status: "検討中" | "対応済み" | "見送り"; links?: { label: string; href: string }[] }
+interface Voices { votes?: { updated?: string; counts?: Record<string, number> }; items: VoiceItem[] }
+async function loadVoices(): Promise<Voices> {
+  try {
+    const v = JSON.parse(await readFile(path.join(ROOT, "content", "voices.json"), "utf-8")) as Voices;
+    return { votes: v.votes ?? {}, items: Array.isArray(v.items) ? v.items : [] };
+  } catch {
+    return { votes: {}, items: [] };
+  }
+}
+const VOICE_STATUS_COLOR: Record<string, string> = { "検討中": "#e8b04b", "対応済み": "#3ddc97", "見送り": "#7a8a96" };
+function voiceLinkHref(href: string, base: string): string {
+  return /^https?:\/\//.test(href) ? href : `${base}${href.replace(/^\//, "")}`;
+}
+function voicesSectionHtml(v: Voices, base: string): string {
+  const counts = Object.entries(v.votes?.counts ?? {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+  const max = counts.length > 0 ? counts[0][1] : 0;
+  const ranking = counts.length === 0 ? "" : `<div class="card" style="margin-bottom:14px;"><h3 style="font-size:15px; margin:0 0 10px;">要望の多い順(ワンタップ投票)</h3>
+${counts.map(([label, n], i) => `<div style="display:flex; align-items:center; gap:10px; margin:6px 0; font-size:13px;"><span style="width:18px; color:var(--dim);">${i + 1}</span><span style="flex:0 0 46%;">${esc(label)}</span><span style="flex:1; height:8px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden;"><span style="display:block; height:100%; width:${Math.round((100 * n) / max)}%; background:var(--cyan);"></span></span><span style="width:42px; text-align:right; color:var(--muted);">${n}票</span></div>`).join("")}
+${v.votes?.updated ? `<p style="color:var(--dim); font-size:11.5px; margin:8px 0 0;">${dateLabel(v.votes.updated)}時点の集計</p>` : ""}</div>`;
+  const items = v.items.map((it) => `<article id="voice-${esc(it.id)}" class="card" style="margin-bottom:12px;">
+<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+<span style="color:var(--dim); font-size:12px;">${dateLabel(it.date)} にいただいた声</span>
+<span style="border:1px solid ${VOICE_STATUS_COLOR[it.status] ?? "#7a8a96"}; color:${VOICE_STATUS_COLOR[it.status] ?? "#7a8a96"}; border-radius:20px; padding:2px 10px; font-size:11.5px;">${esc(it.status)}</span>
+</div>
+<p style="margin:0 0 10px; font-size:14px;"><span style="color:var(--dim); font-size:12px;">いただいた声</span><br><strong>${esc(it.voice)}</strong></p>
+<p style="margin:0; font-size:13.5px; color:#cfdde6; line-height:1.8;"><span style="color:var(--dim); font-size:12px;">運営からの回答</span><br>${esc(it.reply)}</p>
+${it.links && it.links.length > 0 ? `<p style="margin:10px 0 0; font-size:12.5px;">${it.links.map((l) => `<a href="${voiceLinkHref(l.href, base)}">${esc(l.label)} →</a>`).join("　")}</p>` : ""}
+</article>`).join("\n");
+  return `<section id="voices"><h2>みなさんの声と対応</h2>
+<p style="color:var(--muted); font-size:13px;">ご意見箱に届いた声と、運営からの回答・対応状況です(内容は個人が特定されない形に要約しています)。状況は「検討中・対応済み・見送り」の3段階で表示します。</p>
+${ranking}
+${items || `<p style="color:var(--muted);">まだ掲載できる声はありません。最初のひと言をお待ちしています。</p>`}
+</section>`;
+}
+function voicesFaqLd(v: Voices): object | null {
+  const qs = v.items.filter((it) => it.question);
+  if (qs.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: qs.map((it) => ({ "@type": "Question", name: it.question, acceptedAnswer: { "@type": "Answer", text: it.reply } })),
+  };
+}
+
 /** GA4スニペット(測定ID未設定なら空=タグを出さない) */
 function gaSnippet(): string {
   if (!/^G-[A-Z0-9]+$/.test(GA_ID)) return "";
@@ -684,7 +730,7 @@ ${opts.bodyHtml}
 <div class="age-note"><strong>20歳未満の方は舟券を購入できません。</strong>分析情報は的中を保証するものではありません。無理のない金額で計画的にお楽しみください。</div>
 </main>
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
-<script defer src="${opts.base}assets/feedback.js?v=20260930"></script>
+<script defer src="${opts.base}assets/feedback.js?v=20261005"></script>
 </body></html>`;
 }
 
@@ -1416,7 +1462,7 @@ const groupByVenue = (races: Race[]) => {
 const isNightVenue = (list: Race[]) => list.length > 0 && [...list].sort((a, b) => a.raceNo - b.raceNo)[0].closeTime >= "14:00";
 const isMidnightVenue = (list: Race[]) => list.length > 0 && [...list].sort((a, b) => b.raceNo - a.raceNo)[0].closeTime >= "22:20";
 
-function jumpGrid(todayRaces: Race[], base: string): string {
+function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): string {
   if (todayRaces.length === 0) return "";
   const now = Date.now();
   const rows = [...groupByVenue(todayRaces).values()]
@@ -1446,7 +1492,8 @@ function jumpGrid(todayRaces: Race[], base: string): string {
 </div>`)
     .join("\n");
   return `<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
-<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。欲しい機能をタップするだけで送れます(匿名・入力不要)。多かったものから作ります。</div></div>
+<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。欲しい機能をタップするだけで送れます(匿名・入力不要)。多かったものから作ります。</div>${latestVoice ? `
+<div style="margin-top:8px; font-size:12.5px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.12);"><span style="color:var(--dim);">最新の回答:</span> <a href="${base}feedback/#voice-${esc(latestVoice.id)}" style="color:var(--text);">${esc(latestVoice.question ?? latestVoice.voice)}</a> <span style="color:${VOICE_STATUS_COLOR[latestVoice.status] ?? "#7a8a96"}; font-size:11.5px;">[${esc(latestVoice.status)}]</span> <a href="${base}feedback/#voices" style="font-size:12px;">声と対応の一覧 →</a></div>` : ""}</div>
 <a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">欲しい機能をタップで送る →</a>
 </div>
 <div class="card" style="margin-bottom:18px; padding:14px 16px;">
@@ -1695,11 +1742,13 @@ async function main() {
     }
   }
 
+  const voices = await loadVoices();
+
   // トップページ(マーカー置換をfillより先に)
   const indexBase = baseFor(0);
   let indexHtml = await readFile(path.join(ROOT, "site", "index.html"), "utf-8");
   indexHtml = indexHtml
-    .replace("<!--{{JUMP_GRID}}-->", jumpGrid(todayRaces, indexBase))
+    .replace("<!--{{JUMP_GRID}}-->", jumpGrid(todayRaces, indexBase, voices.items[0]))
     .replace("<!--{{DAILY_DIGEST}}-->", dailyDigest(races, todayRaces, currentDate, indexBase))
     .replace("<!--{{NEXT_RACE_PANEL}}-->", nextRacePanel(todayRaces, indexBase))
     .replace("<!--{{SIGNAL_RACES}}-->", signalRaces(todayRaces, indexBase))
@@ -1770,10 +1819,12 @@ async function main() {
       path: "feedback/",
       base: fbBase,
       crumbs: [["ホーム", fbBase], ["ご意見箱"]],
+      jsonLd: voicesFaqLd(voices) ? [voicesFaqLd(voices)!] : undefined,
       bodyHtml: `<h1>ご意見箱</h1>
-<p style="color:var(--muted);">毎日使ってくださっている方の声が、いちばん確かな改善のヒントです。欲しいものをタップするだけで送れます(匿名・入力不要)。</p>
+<p style="color:var(--muted);">毎日使ってくださっている方の声が、いちばん確かな改善のヒントです。欲しいものをタップするだけで送れます(匿名・入力不要)。届いた内容は、個人が特定されない形に要約して下の「みなさんの声と対応」で公開する場合があります。</p>
 <div id="feedback-slot"><noscript><p>JavaScriptが無効のため、<a href="${FEEDBACK_FORM_URL}" rel="nofollow noopener" target="_blank">フォーム版</a>からお送りください。</p></noscript></div>
-<section><h2>最近の改善(ご意見の反映例)</h2><p style="color:var(--muted);">トップの会場×Rジャンプグリッド、全レース5分ごとの自動更新と更新時刻の表示、「前回見たレースのその後」、当日の12R・ナイター・万舟狙い目まとめページ。次はあなたの声から。</p></section>`,
+${voicesSectionHtml(voices, fbBase)}
+<section><h2>これまでの主な改善</h2><p style="color:var(--muted);">トップの会場×Rジャンプグリッド、全レース5分ごとの自動更新と更新時刻の表示、「前回見たレースのその後」、当日の12R・ナイター・万舟狙い目まとめページ。次はあなたの声から。</p></section>`,
     }), "utf-8");
   }
 

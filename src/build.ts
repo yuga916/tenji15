@@ -89,7 +89,24 @@ function gaSnippet(): string {
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', '${GA_ID}');
+  // 運営者の端末を内部トラフィックとして除外(?kc_internal=on で登録、?kc_internal=off で解除。端末ごとに保存)
+  var kcInternal = false, kcSwitch = null;
+  try {
+    kcSwitch = new URLSearchParams(location.search).get('kc_internal');
+    if (kcSwitch === 'on') localStorage.setItem('kc_internal', '1');
+    if (kcSwitch === 'off') localStorage.removeItem('kc_internal');
+    kcInternal = localStorage.getItem('kc_internal') === '1';
+  } catch (e) {}
+  gtag('config', '${GA_ID}', kcInternal ? { traffic_type: 'internal' } : {});
+  if (kcSwitch === 'on' || kcSwitch === 'off') {
+    document.addEventListener('DOMContentLoaded', function () {
+      var d = document.createElement('div');
+      d.textContent = kcInternal ? 'この端末を「内部(運営者)」として計測から除外しました' : 'この端末の除外設定を解除しました';
+      d.setAttribute('style', 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:2000;background:#0f1a24;color:#e6eef5;border:1px solid #4dd8ff;border-radius:10px;padding:10px 16px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.5);');
+      document.body.appendChild(d);
+      setTimeout(function () { d.remove(); }, 6000);
+    });
+  }
 </script>
 <script>
 // カスタムイベント計測: サイトの価値提供の瞬間をキーイベント候補として送る

@@ -6260,21 +6260,21 @@
     "name": "予選",
     "grade": "G1",
     "seriesTitle": "松茂町ほか二町ボートレース事業組合開設58周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:27",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 28,
-    "inEscapeProb": 28,
-    "inNote": "鳴門の基準値(50%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inEscapeProb": 33,
+    "inNote": "事前28%から展示反映で33%に更新。1号艇の展示偏差は+1.2σ。",
     "kimarite": {
-      "nige": 0.28,
-      "makuri": 0.32,
-      "sashi": 0.3,
+      "nige": 0.33,
+      "makuri": 0.3,
+      "sashi": 0.28,
       "other": 0.09
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -6285,7 +6285,12 @@
         "natWinRate": 4.41,
         "motorRate": 33.96,
         "preProb": 0.225,
-        "aiProb": 0.225
+        "aiProb": 0.3,
+        "exTime": 6.74,
+        "exDev": 1.2,
+        "course": 1,
+        "exSt": 0.13,
+        "marketProb": 0.409
       },
       {
         "lane": 2,
@@ -6296,7 +6301,12 @@
         "natWinRate": 5.09,
         "motorRate": 47.52,
         "preProb": 0.234,
-        "aiProb": 0.234
+        "aiProb": 0.312,
+        "exTime": 6.74,
+        "exDev": 1.2,
+        "course": 2,
+        "exSt": -0.01,
+        "marketProb": 0.066
       },
       {
         "lane": 3,
@@ -6307,7 +6317,12 @@
         "natWinRate": 5.81,
         "motorRate": 36.46,
         "preProb": 0.261,
-        "aiProb": 0.261
+        "aiProb": 0.135,
+        "exTime": 6.87,
+        "exDev": -1.5,
+        "course": 3,
+        "exSt": -0.02,
+        "marketProb": 0.263
       },
       {
         "lane": 4,
@@ -6318,7 +6333,12 @@
         "natWinRate": 5.7,
         "motorRate": 31.91,
         "preProb": 0.186,
-        "aiProb": 0.186
+        "aiProb": 0.187,
+        "exTime": 6.78,
+        "exDev": 0.4,
+        "course": 4,
+        "exSt": 0.14,
+        "marketProb": 0.131
       },
       {
         "lane": 5,
@@ -6329,7 +6349,12 @@
         "natWinRate": 4.09,
         "motorRate": 40.86,
         "preProb": 0.025,
-        "aiProb": 0.025
+        "aiProb": 0.018,
+        "exTime": 6.83,
+        "exDev": -0.6,
+        "course": 5,
+        "exSt": 0.21,
+        "marketProb": 0.066
       },
       {
         "lane": 6,
@@ -6340,13 +6365,43 @@
         "natWinRate": 5.94,
         "motorRate": 35.35,
         "preProb": 0.068,
-        "aiProb": 0.068
+        "aiProb": 0.048,
+        "exTime": 6.83,
+        "exDev": -0.6,
+        "course": 6,
+        "exSt": 0.23,
+        "marketProb": 0.066
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 鳴門のイン逃げ確率は28%想定。本命候補は3号艇・山田晃大(A2・事前勝率26%)、対抗は2号艇・岡谷健吾(同23%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-06T00:48:54.386Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:05",
+        "type": "extime",
+        "impact": "down",
+        "text": "3号艇・山田晃大の展示タイムがレース内偏差-1.5σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "down",
+        "text": "1号艇・安藤裕貴: 市場41%に対しAI評価は30%。過剰人気の可能性。"
+      },
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・岡谷健吾: AI評価31%に対し市場は7%。+25ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・山田晃大: 市場26%に対しAI評価は14%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は2号艇・岡谷健吾(展示反映後AI勝率31%)。妙味は2号艇・岡谷健吾(歪み+25pt)。イン逃げ確率は33%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-06T01:05:29.801Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "naruto-2026-10-06-6",
@@ -9327,21 +9382,21 @@
     "raceNo": 1,
     "name": "予選",
     "seriesTitle": "ボートレースびわこ 10月 6日 第3回浪乃音酒造杯 第 4日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:30",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 27,
     "inEscapeProb": 27,
-    "inNote": "びわこの基準値(49%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前27%から展示反映で27%に更新。",
     "kimarite": {
       "nige": 0.27,
       "makuri": 0.33,
       "sashi": 0.31,
       "other": 0.09
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -9352,7 +9407,8 @@
         "natWinRate": 2.72,
         "motorRate": 42.24,
         "preProb": 0.183,
-        "aiProb": 0.183
+        "aiProb": 0.183,
+        "marketProb": 0.221
       },
       {
         "lane": 2,
@@ -9363,7 +9419,8 @@
         "natWinRate": 3.63,
         "motorRate": 36.36,
         "preProb": 0.144,
-        "aiProb": 0.144
+        "aiProb": 0.144,
+        "marketProb": 0.221
       },
       {
         "lane": 3,
@@ -9374,7 +9431,8 @@
         "natWinRate": 3.89,
         "motorRate": 45.76,
         "preProb": 0.168,
-        "aiProb": 0.168
+        "aiProb": 0.168,
+        "marketProb": 0.151
       },
       {
         "lane": 4,
@@ -9385,7 +9443,8 @@
         "natWinRate": 4.52,
         "motorRate": 36.84,
         "preProb": 0.234,
-        "aiProb": 0.234
+        "aiProb": 0.234,
+        "marketProb": 0.151
       },
       {
         "lane": 5,
@@ -9396,7 +9455,8 @@
         "natWinRate": 5.5,
         "motorRate": 29.06,
         "preProb": 0.249,
-        "aiProb": 0.249
+        "aiProb": 0.249,
+        "marketProb": 0.255
       },
       {
         "lane": 6,
@@ -9410,10 +9470,23 @@
         "aiProb": 0.024
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: びわこのイン逃げ確率は27%想定。本命候補は5号艇・川上剛(A1・事前勝率25%)、対抗は4号艇・小畑実成(同23%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-06T00:48:54.386Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "down",
+        "text": "2号艇・須藤隆雄: 市場22%に対しAI評価は14%。過剰人気の可能性。"
+      },
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "up",
+        "text": "4号艇・小畑実成: AI評価23%に対し市場は15%。+8ptの歪み(市場が織り込んでいない可能性)。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は5号艇・川上剛(展示反映後AI勝率25%)。妙味は4号艇・小畑実成(歪み+8pt)。イン逃げ確率は27%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-06T01:05:33.208Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "biwako-2026-10-06-2",
@@ -11733,20 +11806,20 @@
     ],
     "signals": [
       {
-        "time": "10:01",
+        "time": "10:05",
         "type": "gap",
         "impact": "down",
         "text": "1号艇・廣中智紗: 市場72%に対しAI評価は63%。過剰人気の可能性。"
       },
       {
-        "time": "10:01",
+        "time": "10:05",
         "type": "gap",
         "impact": "up",
         "text": "3号艇・山下夏鈴: AI評価10%に対し市場は3%。+8ptの歪み(市場が織り込んでいない可能性)。"
       }
     ],
     "verdict": "直前最終評価: 本命候補は1号艇・廣中智紗(展示反映後AI勝率63%)。妙味は3号艇・山下夏鈴(歪み+8pt)。イン逃げ確率は58%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-06T01:01:06.398Z",
+    "updatedAt": "2026-10-06T01:05:26.397Z",
     "modelVersion": "v0.3.0-live"
   },
   {

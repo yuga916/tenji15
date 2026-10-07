@@ -1316,21 +1316,21 @@
     "raceNo": 2,
     "name": "モー2ング戦",
     "seriesTitle": "第17回虹の松原カップ",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "09:13",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 88,
     "inEscapeProb": 88,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前88%から展示反映で88%に更新。",
     "kimarite": {
       "nige": 0.88,
       "makuri": 0.05,
       "sashi": 0.05,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -1341,7 +1341,8 @@
         "natWinRate": 6.81,
         "motorRate": 44.44,
         "preProb": 0.866,
-        "aiProb": 0.866
+        "aiProb": 0.866,
+        "marketProb": 0.432
       },
       {
         "lane": 2,
@@ -1352,7 +1353,8 @@
         "natWinRate": 4.84,
         "motorRate": 11.76,
         "preProb": 0.041,
-        "aiProb": 0.041
+        "aiProb": 0.041,
+        "marketProb": 0.011
       },
       {
         "lane": 3,
@@ -1363,7 +1365,8 @@
         "natWinRate": 5.03,
         "motorRate": 50,
         "preProb": 0.051,
-        "aiProb": 0.051
+        "aiProb": 0.051,
+        "marketProb": 0.144
       },
       {
         "lane": 4,
@@ -1374,7 +1377,8 @@
         "natWinRate": 3.64,
         "motorRate": 50,
         "preProb": 0.019,
-        "aiProb": 0.019
+        "aiProb": 0.019,
+        "marketProb": 0.144
       },
       {
         "lane": 5,
@@ -1385,7 +1389,8 @@
         "natWinRate": 4.33,
         "motorRate": 33.33,
         "preProb": 0.013,
-        "aiProb": 0.013
+        "aiProb": 0.013,
+        "marketProb": 0.27
       },
       {
         "lane": 6,
@@ -1399,10 +1404,35 @@
         "aiProb": 0.01
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は88%想定。本命候補は1号艇・村岡賢人(A1・事前勝率87%)、対抗は3号艇・後藤隼之(同5%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-07T23:45:26.465Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:50",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・村岡賢人: AI評価87%に対し市場は43%。+43ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "08:50",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・後藤隼之: 市場14%に対しAI評価は5%。過剰人気の可能性。"
+      },
+      {
+        "time": "08:50",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・竹田広樹: 市場14%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "08:50",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・萩原知哉: 市場27%に対しAI評価は1%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・村岡賢人(展示反映後AI勝率87%)。妙味は1号艇・村岡賢人(歪み+43pt)。イン逃げ確率は88%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-07T23:50:31.452Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "karatsu-2026-10-08-3",
@@ -4800,7 +4830,9 @@
         "motorRate": 41.76,
         "preProb": 0.393,
         "aiProb": 0.393,
-        "marketProb": 0.524
+        "marketProb": 0.524,
+        "course": 1,
+        "exSt": 0.13
       },
       {
         "lane": 2,
@@ -4812,7 +4844,9 @@
         "motorRate": 32.22,
         "preProb": 0.348,
         "aiProb": 0.348,
-        "marketProb": 0.103
+        "marketProb": 0.103,
+        "course": 2,
+        "exSt": 0.06
       },
       {
         "lane": 3,
@@ -4823,7 +4857,9 @@
         "natWinRate": 4.34,
         "motorRate": 34.07,
         "preProb": 0.069,
-        "aiProb": 0.069
+        "aiProb": 0.069,
+        "course": 3,
+        "exSt": 0.03
       },
       {
         "lane": 4,
@@ -4835,7 +4871,9 @@
         "motorRate": 40.2,
         "preProb": 0.044,
         "aiProb": 0.044,
-        "marketProb": 0.156
+        "marketProb": 0.156,
+        "course": 4,
+        "exSt": -0.09
       },
       {
         "lane": 5,
@@ -4847,7 +4885,9 @@
         "motorRate": 35.35,
         "preProb": 0.102,
         "aiProb": 0.102,
-        "marketProb": 0.026
+        "marketProb": 0.026,
+        "course": 5,
+        "exSt": 0.09
       },
       {
         "lane": 6,
@@ -4859,43 +4899,45 @@
         "motorRate": 47.52,
         "preProb": 0.045,
         "aiProb": 0.045,
-        "marketProb": 0.192
+        "marketProb": 0.192,
+        "course": 6,
+        "exSt": -0.03
       }
     ],
     "signals": [
       {
-        "time": "08:45",
+        "time": "08:50",
         "type": "gap",
         "impact": "down",
         "text": "1号艇・大塚康雅: 市場52%に対しAI評価は39%。過剰人気の可能性。"
       },
       {
-        "time": "08:45",
+        "time": "08:50",
         "type": "gap",
         "impact": "up",
         "text": "2号艇・井内将太: AI評価35%に対し市場は10%。+25ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "08:45",
+        "time": "08:50",
         "type": "gap",
         "impact": "down",
         "text": "4号艇・渡邉健: 市場16%に対しAI評価は4%。過剰人気の可能性。"
       },
       {
-        "time": "08:45",
+        "time": "08:50",
         "type": "gap",
         "impact": "up",
         "text": "5号艇・原田秀弥: AI評価10%に対し市場は3%。+8ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "08:45",
+        "time": "08:50",
         "type": "gap",
         "impact": "down",
         "text": "6号艇・岡谷健吾: 市場19%に対しAI評価は5%。過剰人気の可能性。"
       }
     ],
     "verdict": "直前最終評価: 本命候補は1号艇・大塚康雅(展示反映後AI勝率39%)。妙味は2号艇・井内将太(歪み+25pt)。イン逃げ確率は32%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-07T23:45:31.912Z",
+    "updatedAt": "2026-10-07T23:50:27.923Z",
     "modelVersion": "v0.3.0-live"
   },
   {

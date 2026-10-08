@@ -36,7 +36,7 @@ const GA_ID = process.env.GA_MEASUREMENT_ID ?? "";
 const FEEDBACK_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfMY46L7RjktI-R9kf9Y950HT8-jA6-C0OydswF3xTqRYDs5w/viewform";
 
 /* ---------- みなさんの声と対応(content/voices.json) ---------- */
-interface VoiceItem { id: string; date: string; question?: string; voice: string; reply: string; status: "検討中" | "対応済み" | "見送り"; links?: { label: string; href: string }[] }
+interface VoiceItem { id: string; date: string; question?: string; voice: string; reply: string; status: "検討中" | "対応中" | "対応済み" | "見送り"; links?: { label: string; href: string }[] }
 interface Voices { votes?: { updated?: string; counts?: Record<string, number> }; items: VoiceItem[] }
 async function loadVoices(): Promise<Voices> {
   try {
@@ -46,7 +46,7 @@ async function loadVoices(): Promise<Voices> {
     return { votes: {}, items: [] };
   }
 }
-const VOICE_STATUS_COLOR: Record<string, string> = { "検討中": "#e8b04b", "対応済み": "#3ddc97", "見送り": "#7a8a96" };
+const VOICE_STATUS_COLOR: Record<string, string> = { "検討中": "#e8b04b", "対応中": "#4dd8ff", "対応済み": "#3ddc97", "見送り": "#7a8a96" };
 function voiceLinkHref(href: string, base: string): string {
   return /^https?:\/\//.test(href) ? href : `${base}${href.replace(/^\//, "")}`;
 }
@@ -66,7 +66,7 @@ ${v.votes?.updated ? `<p style="color:var(--dim); font-size:11.5px; margin:8px 0
 ${it.links && it.links.length > 0 ? `<p style="margin:10px 0 0; font-size:12.5px;">${it.links.map((l) => `<a href="${voiceLinkHref(l.href, base)}">${esc(l.label)} →</a>`).join("　")}</p>` : ""}
 </article>`).join("\n");
   return `<section id="voices"><h2>みなさんの声と対応</h2>
-<p style="color:var(--muted); font-size:13px;">ご意見箱に届いた声と、運営からの回答・対応状況です(内容は個人が特定されない形に要約しています)。状況は「検討中・対応済み・見送り」の3段階で表示します。</p>
+<p style="color:var(--muted); font-size:13px;">ご意見箱に届いた声と、運営からの回答・対応状況です(内容は個人が特定されない形に要約しています)。状況は「検討中・対応中・対応済み・見送り」で表示します。</p>
 ${ranking}
 ${items || `<p style="color:var(--muted);">まだ掲載できる声はありません。最初のひと言をお待ちしています。</p>`}
 </section>`;

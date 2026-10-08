@@ -166,18 +166,24 @@ async function updateRacecards(today: string): Promise<void> {
   await saveDay(today, []);
 }
 
-/** 既存データとのマージ: verified済みは残し、それ以外は新データで更新 */
-function mergeDay(existing: Race[] | null, fresh: Race[]): Race[] {
+/**
+ * 既存データとのマージ: verified済み・直前評価済み(signal)は残し、それ以外(事前評価)は新データで更新。
+ * 2026-10-08修正: 以前はverifiedのみ保持していたため、20分ごとの番組表再取得で
+ * 展示反映後の直前評価(status=signal, aiProb, marketProb, signals)が事前評価で上書きされ、
+ * 確定時に直前評価がほぼ残っていなかった(14,221レース中24レース)。
+ */
+export function mergeDay(existing: Race[] | null, fresh: Race[]): Race[] {
   if (!existing || existing.length === 0) return fresh;
   const byId = new Map(existing.map((r) => [r.raceId, r]));
+  const keep = (r: Race | undefined): r is Race => !!r && (r.status === "verified" || r.status === "signal");
   const merged = fresh.map((f) => {
     const old = byId.get(f.raceId);
-    return old && old.status === "verified" ? old : f;
+    return keep(old) ? old : f;
   });
-  // 新データに存在しない既存レース(番組変更等)もverifiedなら残す
+  // 新データに存在しない既存レース(番組変更等)も確定・直前評価済みなら残す
   const freshIds = new Set(fresh.map((r) => r.raceId));
   for (const old of existing) {
-    if (!freshIds.has(old.raceId) && old.status === "verified") merged.push(old);
+    if (!freshIds.has(old.raceId) && keep(old)) merged.push(old);
   }
   return merged;
 }

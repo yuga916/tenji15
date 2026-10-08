@@ -174,4 +174,18 @@ assert(live.windSpeed === 4 && live.wave === 3, `live: 気象をRaceへ反映`);
 const biBad = parseBeforeInfo("<html><body>メンテナンス中</body></html>");
 assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTMLで警告のみ(クラッシュなし)`);
 
+// ---- 番組表の再取得で直前評価(signal)が上書きされないこと(2026-10-08の不具合の回帰テスト) ----
+{
+  const { mergeDay } = await import("./pipeline.ts");
+  const mk = (id: string, status: string, ai: number) => ({ raceId: id, status, entries: [{ lane: 1, aiProb: ai, preProb: 0.5 }] }) as any;
+  const existing = [mk("a", "signal", 0.8), mk("b", "pre", 0.5), mk("c", "verified", 0.7), mk("d", "signal", 0.6)];
+  const fresh = [mk("a", "pre", 0.5), mk("b", "pre", 0.55), mk("c", "pre", 0.5)];
+  const m = mergeDay(existing, fresh);
+  const get = (id: string) => m.find((r: any) => r.raceId === id);
+  assert(get("a")?.status === "signal" && get("a")?.entries[0].aiProb === 0.8, `merge: 直前評価(signal)を番組表再取得で上書きしない`);
+  assert(get("b")?.entries[0].aiProb === 0.55, `merge: 事前評価(pre)は新しい番組表で更新する`);
+  assert(get("c")?.status === "verified", `merge: 確定済み(verified)は保持`);
+  assert(get("d")?.status === "signal", `merge: 新データに無い直前評価済みレースも保持`);
+}
+
 console.log(process.exitCode ? "\nテスト失敗があります" : "\n全テスト通過");

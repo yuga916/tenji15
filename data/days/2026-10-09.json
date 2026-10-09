@@ -5347,21 +5347,21 @@
     "name": "一般",
     "grade": "G1",
     "seriesTitle": "松茂町ほか二町ボートレース事業組合開設58周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:27",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 32,
-    "inEscapeProb": 32,
-    "inNote": "鳴門の基準値(50%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inEscapeProb": 36,
+    "inNote": "事前32%から展示反映で36%に更新。1号艇の展示偏差は+1.8σ。",
     "kimarite": {
-      "nige": 0.32,
-      "makuri": 0.31,
-      "sashi": 0.29,
-      "other": 0.09
+      "nige": 0.36,
+      "makuri": 0.29,
+      "sashi": 0.27,
+      "other": 0.08
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "進入変化を反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -5372,7 +5372,12 @@
         "natWinRate": 4.59,
         "motorRate": 32.98,
         "preProb": 0.425,
-        "aiProb": 0.425
+        "aiProb": 0.596,
+        "exTime": 6.68,
+        "exDev": 1.8,
+        "course": 1,
+        "exSt": 0.15,
+        "marketProb": 0.44
       },
       {
         "lane": 2,
@@ -5383,7 +5388,12 @@
         "natWinRate": 4.7,
         "motorRate": 35.16,
         "preProb": 0.138,
-        "aiProb": 0.138
+        "aiProb": 0.136,
+        "exTime": 6.72,
+        "exDev": 0.8,
+        "course": 2,
+        "exSt": 0.11,
+        "marketProb": 0.107
       },
       {
         "lane": 3,
@@ -5394,7 +5404,12 @@
         "natWinRate": 4.61,
         "motorRate": 44.95,
         "preProb": 0.166,
-        "aiProb": 0.166
+        "aiProb": 0.081,
+        "exTime": 6.8,
+        "exDev": -1.2,
+        "course": 3,
+        "exSt": 0.15,
+        "marketProb": 0.107
       },
       {
         "lane": 4,
@@ -5405,7 +5420,12 @@
         "natWinRate": 6.14,
         "motorRate": 32.22,
         "preProb": 0.24,
-        "aiProb": 0.24
+        "aiProb": 0.15,
+        "exTime": 6.77,
+        "exDev": -0.5,
+        "course": 4,
+        "exSt": 0.14,
+        "marketProb": 0.345
       },
       {
         "lane": 5,
@@ -5416,7 +5436,11 @@
         "natWinRate": 1.68,
         "motorRate": 21.35,
         "preProb": 0.008,
-        "aiProb": 0.008
+        "aiProb": 0.003,
+        "exTime": 6.78,
+        "exDev": -0.7,
+        "course": 6,
+        "exSt": 0.39
       },
       {
         "lane": 6,
@@ -5427,13 +5451,42 @@
         "natWinRate": 4.41,
         "motorRate": 33.96,
         "preProb": 0.024,
-        "aiProb": 0.024
+        "aiProb": 0.033,
+        "exTime": 6.76,
+        "exDev": -0.2,
+        "course": 5,
+        "exSt": 0.22
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 鳴門のイン逃げ確率は32%想定。本命候補は1号艇・松田隆司(B1・事前勝率42%)、対抗は4号艇・井内将太(同24%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-09T00:55:26.292Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:05",
+        "type": "extime",
+        "impact": "up",
+        "text": "1号艇・松田隆司の展示タイムがレース内偏差+1.8σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "10:05",
+        "type": "formation",
+        "impact": "neutral",
+        "text": "進入が枠なりから変化(5号艇→6コース、6号艇→5コース)。全艇の勝率をコース基準で再計算しました。"
+      },
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・松田隆司: AI評価60%に対し市場は44%。+16ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:05",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・井内将太: 市場35%に対しAI評価は15%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・松田隆司(展示反映後AI勝率60%)。妙味は1号艇・松田隆司(歪み+16pt)。イン逃げ確率は36%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-09T01:05:40.157Z",
+    "modelVersion": "v0.3.0-live"
   },
   {
     "raceId": "naruto-2026-10-09-6",
@@ -7376,7 +7429,7 @@
     ],
     "signals": [],
     "verdict": "直前最終評価: 本命候補は1号艇・高田明(展示反映後AI勝率74%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は85%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-09T01:00:32.696Z",
+    "updatedAt": "2026-10-09T01:05:36.766Z",
     "modelVersion": "v0.3.0-live"
   },
   {

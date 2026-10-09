@@ -298,11 +298,12 @@ function betSuggestion(r: Race): string {
   if (hotEx) reasons.push(`${hotEx.lane}号艇の展示偏差+${hotEx.exDev}σ(当日気配が上向き)`);
   if (gapBoat) reasons.push(`${gapBoat.lane}号艇に+${Math.round((gapBoat.aiProb - gapBoat.marketProb!) * 100)}ptの歪み(市場が過小評価)→3着候補に`);
 
+  const lt = liveTime(r);
   const statusNote =
     r.status === "signal"
-      ? `<span class="status status-signal" style="font-size:11px;">展示反映済み</span>`
+      ? `<span class="status status-signal" style="font-size:11px;">${r.entries.some((e) => e.exTime !== undefined) ? "展示後の最新予想" : "直前オッズ反映・展示タイム公開待ち"}${lt ? `(${esc(lt)})` : ""}・${pickChangeLabel(r)}</span>`
       : r.status === "pre"
-        ? `<span class="status status-pre" style="font-size:11px;">展示前の暫定</span>`
+        ? `<span class="status status-pre" style="font-size:11px;">展示前の予想(締切15分前ごろ更新)</span>`
         : `<span class="status status-verified" style="font-size:11px;">締切時点の最終評価</span>`;
 
   // 結果確定後は買い目セクションを表示しない(結果データページとして中立に保つ)
@@ -325,6 +326,114 @@ function betSuggestion(r: Race): string {
       <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。オッズは締切まで変動します。算出方法の詳細は<a href="${baseFor(4)}guide/ai-yosou/">競艇のAI予想とは</a>をご覧ください。</p>
     </div>
   </section>`;
+}
+
+/* ---------- 展示前 → 展示後の比較(変動の根拠つき) ---------- */
+/** 展示(直前)情報が反映されているか */
+function hasLiveData(r: Race): boolean {
+  return (r.signals?.length ?? 0) > 0 || r.entries.some((e) => e.exDev !== undefined || e.course !== undefined);
+}
+/** 展示反映の時刻(シグナル生成時刻)。無ければ空 */
+function liveTime(r: Race): string {
+  return r.signals?.[0]?.time ?? "";
+}
+function topBy(r: Race, key: "preProb" | "aiProb"): Entry[] {
+  return [...r.entries].sort((a, b) => b[key] - a[key]);
+}
+/** 本命の変化の短い説明(バッジ用) */
+function pickChangeLabel(r: Race): string {
+  const pre = topBy(r, "preProb")[0];
+  const post = topBy(r, "aiProb")[0];
+  if (!pre || !post) return "";
+  return pre.lane === post.lane ? "本命変わらず" : `本命が${pre.lane}→${post.lane}号艇に変更`;
+}
+
+/** スタート展示での進入コース。確定後はcourseが実際の進入で上書きされるため、exCourse→(未確定ならcourse)→保存済みシグナル文の順で復元 */
+function exhibitionCourse(r: Race, e: Entry): number | undefined {
+  if (e.exCourse !== undefined) return e.exCourse;
+  if (r.status !== "verified") return e.course;
+  const f = r.signals?.find((s) => s.type === "formation");
+  if (f) {
+    const m = f.text.match(new RegExp(`${e.lane}号艇→(\\d)コース`));
+    return m ? Number(m[1]) : e.lane;
+  }
+  return e.exTime !== undefined ? e.lane : undefined;
+}
+
+function prePostSection(r: Race): string {
+  if (!hasLiveData(r)) return "";
+  const preOrder = topBy(r, "preProb");
+  const postOrder = topBy(r, "aiProb");
+  const pre1 = preOrder[0], post1 = postOrder[0];
+  const t = liveTime(r);
+  const pct = (v: number) => Math.round(v * 100);
+  // 展示タイムの順位(速い順)
+  const timed = r.entries.filter((e) => e.exTime !== undefined).sort((a, b) => (a.exTime ?? 0) - (b.exTime ?? 0));
+  const exRank = (e: Entry) => (e.exTime === undefined ? 0 : timed.findIndex((x) => x.lane === e.lane) + 1);
+  const anyCourseChange = r.entries.some((e) => { const c = exhibitionCourse(r, e); return c !== undefined && c !== e.lane; });
+
+  const hasExTime = timed.length > 0;
+  const reasonOf = (e: Entry): string => {
+    const d = e.aiProb - e.preProb;
+    const parts: string[] = [];
+    const xc = exhibitionCourse(r, e);
+    const moved = xc !== undefined && xc !== e.lane;
+    if (moved) parts.push(`展示の進入で${xc}コースへ(枠は${e.lane}号艇)`);
+    if (e.exDev !== undefined && e.exTime !== undefined) {
+      const rk = exRank(e);
+      const desc = e.exDev >= 1.0 ? "と速い" : e.exDev <= -1.0 ? "と遅い" : "";
+      parts.push(`展示タイム${e.exTime.toFixed(2)}秒(レース内${rk}位${desc})`);
+    }
+    if (Math.abs(d) >= 0.02 && !moved && !(e.exDev !== undefined && Math.abs(e.exDev) >= 1.0)) {
+      parts.push(d > 0 ? "他艇の展示が振るわず相対的に上昇" : "他艇の展示が良く相対的に低下");
+    }
+    if (parts.length === 0) return `<span style="color:var(--dim);">${hasExTime ? "大きな変化なし" : "展示タイム公開待ち"}</span>`;
+    return parts.map(esc).join("、");
+  };
+
+  const rows = [...r.entries].sort((a, b) => a.lane - b.lane).map((e) => {
+    const d = pct(e.aiProb) - pct(e.preProb);
+    const color = d >= 2 ? "#3ddc97" : d <= -2 ? "#ff8a3d" : "var(--muted)";
+    const arrow = d >= 2 ? "▲" : d <= -2 ? "▼" : "→";
+    const isPost1 = e.lane === post1.lane;
+    return `<tr${isPost1 ? ' style="background:rgba(77,216,255,.06);"' : ""}>
+<td style="padding:7px 6px; white-space:nowrap;"><span class="boat boat-${e.lane}" style="width:22px; height:22px; font-size:12px;">${e.lane}</span></td>
+<td style="padding:7px 6px; font-size:12.5px; white-space:nowrap;">${esc(e.name)}${isPost1 ? ' <span style="color:var(--cyan); font-size:11px;">◎</span>' : ""}</td>
+<td style="padding:7px 6px; text-align:right; color:var(--muted);">${pct(e.preProb)}%</td>
+<td style="padding:7px 6px; text-align:right; font-weight:700;">${pct(e.aiProb)}%</td>
+<td style="padding:7px 6px; text-align:right; color:${color}; white-space:nowrap;">${arrow} ${d > 0 ? "+" : ""}${d}pt</td>
+<td style="padding:7px 6px; font-size:12px; color:#cfdde6; line-height:1.6;">${reasonOf(e)}</td>
+</tr>`;
+  }).join("");
+
+  const liveApplied = hasExTime || r.entries.some((e) => exhibitionCourse(r, e) !== undefined);
+  const headline = pre1.lane === post1.lane
+    ? `${liveApplied ? "展示後も" : "現時点でも"}本命は<strong>${post1.lane}号艇・${esc(post1.name)}</strong>で変わらず(AI勝率 ${pct(pre1.preProb)}% → ${pct(post1.aiProb)}%)。`
+    : `展示を受けて本命が<strong>${pre1.lane}号艇 → ${post1.lane}号艇・${esc(post1.name)}</strong>に変わりました(${post1.lane}号艇のAI勝率 ${pct(post1.preProb)}% → ${pct(post1.aiProb)}%)。`;
+  const pendingNote = hasExTime ? "" : `<p style="color:var(--signal); font-size:12.5px; margin:0 0 8px;">展示タイムはまだ公開されていません(公開後、5分以内に再計算して更新します)。現在は${r.entries.some((e) => exhibitionCourse(r, e) !== undefined) ? "進入と" : ""}直前オッズのみ反映しています。</p>`;
+  const lineTxt = (o: Entry[]) => o.slice(0, 3).map((e) => e.lane).join("-");
+  const lineChanged = lineTxt(preOrder) !== lineTxt(postOrder);
+
+  let resultLine = "";
+  if (r.status === "verified" && r.result) {
+    const w = r.result.finish[0];
+    const mark = (e: Entry) => (e.lane === w ? `<span style="color:#3ddc97;">1着</span>` : r.result!.finish.slice(0, 3).includes(e.lane) ? `${r.result!.finish.indexOf(e.lane) + 1}着` : "着外");
+    const actualDiff = anyCourseChange && r.entries.every((e) => e.course !== undefined) && r.entries.some((e) => e.course !== exhibitionCourse(r, e));
+    resultLine = `<p style="font-size:12.5px; margin:10px 0 0; color:#cfdde6;">結果 ${r.result.finish.join("-")}: 展示前の本命(${pre1.lane}号艇)は${mark(pre1)}、展示後の本命(${post1.lane}号艇)は${mark(post1)}。${actualDiff ? `<br><span style="color:var(--muted);">※本番の進入は展示と異なり、${r.entries.every((e) => e.course === e.lane) ? "枠なり" : [...r.entries].sort((a, b) => (a.course ?? 9) - (b.course ?? 9)).map((e) => e.lane).join("")}でした。</span>` : ""}</p>`;
+  }
+
+  return `<section>
+<h2>展示前 → 展示後で、予想はどう変わったか</h2>
+<div class="card">
+${pendingNote}<p style="font-size:13.5px; margin:0 0 6px; line-height:1.8;">${headline}</p>
+<p style="color:var(--muted); font-size:12.5px; margin:0 0 10px;">本線(AI評価上位3艇): 展示前 ${lineTxt(preOrder)} → 展示後 <strong style="color:var(--text);">${lineTxt(postOrder)}</strong>${lineChanged ? "" : "(変わらず)"}${t ? ` ・ 展示反映 ${esc(t)}` : ""}</p>
+<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:13px;">
+<thead><tr style="color:var(--dim); font-size:11px; text-align:left; border-bottom:1px solid rgba(255,255,255,.12);"><th style="padding:6px;">艇</th><th style="padding:6px;">選手</th><th style="padding:6px; text-align:right;">展示前</th><th style="padding:6px; text-align:right;">展示後</th><th style="padding:6px; text-align:right;">変化</th><th style="padding:6px;">変動の根拠</th></tr></thead>
+<tbody>${rows}</tbody></table></div>
+${resultLine}
+<p style="color:var(--dim); font-size:11.5px; margin:10px 0 0; line-height:1.7;">※数値はAI勝率。展示後の値は、展示航走(本番前の試運転)のタイムをレース内で比べた速さと、スタート展示の進入コースで更新しています${anyCourseChange ? "(今回は進入の変化あり)" : ""}。オッズはAI勝率には含めず、「歪み」の判定にのみ使っています。</p>
+</div>
+</section>`;
 }
 
 /** 結果の振り返り文(中立的な事実のみ。保存済みの旧文言は使わずビルド時に生成) */
@@ -668,7 +777,7 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
         : `事前 ${r.inEscapeProbPre}% → ${inDelta > 0 ? "+" : ""}${inDelta}pt`,
     IN_NOTE: esc(r.inNote),
     SIGNAL_FEED: signalFeed(r),
-    BET_SECTION: betSuggestion(r),
+    BET_SECTION: betSuggestion(r) + prePostSection(r),
     VENUE_SECTION: venueSectionHtml(r, vStats.get(r.venueSlug), venueBySlug.get(r.venueSlug)?.inEscapeBase, base),
     KIMARITE_BAR: kimariteBar(r),
     KIMARITE_NOTE: esc(r.kimariteNote),

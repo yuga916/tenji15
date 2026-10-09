@@ -14,7 +14,8 @@ export interface Entry {
   stAvg: number;           // 平均ST
   natWinRate: number;      // 全国勝率
   motorRate: number;       // モーター2連率 %
-  course?: number;         // 進入コース(スタート展示後に確定)
+  course?: number;         // 進入コース(展示後は展示の進入、確定後はKファイルの実際の進入で上書き)
+  exCourse?: number;       // スタート展示での進入コース(確定後も保持。展示前→後の比較用)
   exTime?: number;         // 展示タイム
   exDev?: number;          // 展示偏差値(当日分布・節間自己比の合成)
   exSt?: number;           // 展示ST

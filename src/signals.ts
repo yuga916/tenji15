@@ -59,6 +59,7 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
       if (e.course !== undefined && e.course !== course) courseChanged = true;
       if (e.lane !== course) courseChanged = true;
       e.course = course;
+      e.exCourse = course;
       const st = before.exSts.get(lane);
       if (st !== undefined) e.exSt = st;
     });

@@ -19,6 +19,12 @@ export interface Entry {
   exTime?: number;         // 展示タイム
   exDev?: number;          // 展示偏差値(当日分布・節間自己比の合成)
   exSt?: number;           // 展示ST
+  weight?: number;         // 番組表(前検時)の体重kg
+  exWeight?: number;       // 当日の体重kg(直前情報)
+  tilt?: number;           // チルト角度(直前情報)
+  parts?: string[];        // 部品交換(直前情報。例: "リング×1")
+  newProp?: boolean;       // 新プロペラに交換
+  liveNotes?: string[];    // 部品交換・チルト・体重による補正の内訳(表示用)
   preProb: number;         // 事前AI勝率 0-1
   aiProb: number;          // 展示反映後AI勝率 0-1
   marketProb?: number;     // 直前オッズ逆算の市場勝率 0-1

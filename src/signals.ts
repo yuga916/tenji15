@@ -16,12 +16,62 @@ const LANE_BASE: Record<number, number> = { 1: 0.55, 2: 0.14, 3: 0.12, 4: 0.10, 
 const GAP_THRESHOLD = 0.07;   // 歪みシグナル点灯の閾値
 const EXDEV_THRESHOLD = 1.3;  // 展示偏差シグナルの閾値(σ)
 const EX_COEF = 0.35;         // 展示偏差のAI勝率への影響係数
+// 調整情報(部品交換・チルト・体重)の補正。検証前のため控えめな係数にとどめ、
+// 生データは全レース保存して実績で再調整する(2026-10-09 導入)。
+const MAJOR_PARTS = /キャブ|ピストン|リング|シリンダ|クランク|ギヤ|ギア|電気|キャリ/;
+const PARTS_MULT = 0.96;      // 主要部品の交換=足に不満があり手を入れたサイン
+const NEW_PROP_MULT = 0.97;   // 新プロペラ=まだ合っていない可能性
+const TILT_OUT_MULT = 1.05;   // チルト+0.5以上(伸び型)× 4〜6コース=まくり狙いの調整
+const TILT_OUT_STRONG = 1.08; // チルト+1.5以上 × 4〜6コース
+const TILT_IN_MULT = 0.96;    // チルト+0.5以上 × 1〜2コース=出足を捨てた調整はイン戦で不利
+const WEIGHT_DOWN_MULT = 1.03; // 体重が番組表より1kg以上減
+const WEIGHT_UP_MULT = 0.97;   // 体重が番組表より1kg以上増
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000;
 
 function jstNowHHMM(): string {
   const d = new Date(Date.now() + 9 * 3600 * 1000);
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+}
+
+/** 体重・チルト・プロペラ・部品交換による補正倍率と、その内訳(表示用の短文) */
+export function adjustFactor(e: Entry): { mult: number; notes: string[] } {
+  let mult = 1;
+  const notes: string[] = [];
+  const major = (e.parts ?? []).filter((x) => MAJOR_PARTS.test(x));
+  if (major.length > 0) {
+    mult *= PARTS_MULT;
+    notes.push(`部品交換(${major.join("・")})=足に不満があり手を入れたサインでマイナス`);
+  } else if (e.parts && e.parts.length > 0) {
+    notes.push(`部品交換(${e.parts.join("・")})`);
+  }
+  if (e.newProp) {
+    mult *= NEW_PROP_MULT;
+    notes.push("新プロペラに交換=まだ合っていない可能性でマイナス");
+  }
+  const course = e.course ?? e.lane;
+  if (e.tilt !== undefined && e.tilt >= 0.5) {
+    if (course >= 4) {
+      mult *= e.tilt >= 1.5 ? TILT_OUT_STRONG : TILT_OUT_MULT;
+      notes.push(`チルト+${e.tilt.toFixed(1)}(伸び重視の調整)×${course}コース=まくり狙いでプラス`);
+    } else if (course <= 2) {
+      mult *= TILT_IN_MULT;
+      notes.push(`チルト+${e.tilt.toFixed(1)}(伸び重視の調整)×${course}コース=出足が落ちやすくマイナス`);
+    } else {
+      notes.push(`チルト+${e.tilt.toFixed(1)}(伸び重視の調整)`);
+    }
+  }
+  if (e.exWeight !== undefined && e.weight !== undefined) {
+    const diff = Math.round((e.exWeight - e.weight) * 10) / 10;
+    if (diff <= -1.0) {
+      mult *= WEIGHT_DOWN_MULT;
+      notes.push(`体重が番組表より${Math.abs(diff).toFixed(1)}kg減(${e.weight}→${e.exWeight}kg)=軽量化でプラス`);
+    } else if (diff >= 1.0) {
+      mult *= WEIGHT_UP_MULT;
+      notes.push(`体重が番組表より${diff.toFixed(1)}kg増(${e.weight}→${e.exWeight}kg)でマイナス`);
+    }
+  }
+  return { mult, notes };
 }
 
 /** 直前情報をRaceへ適用。何かしら反映できたらtrue */
@@ -66,14 +116,27 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
     applied = true;
   }
 
-  // ---- 4) AI勝率の再計算(コース基準 × 展示偏差) ----
+  // ---- 3.5) 調整情報(体重・チルト・プロペラ・部品交換) ----
+  for (const e of race.entries) {
+    const w = before.weights?.get(e.lane);
+    if (w !== undefined) e.exWeight = w;
+    const t = before.tilts?.get(e.lane);
+    if (t !== undefined) e.tilt = t;
+    const p = before.parts?.get(e.lane);
+    e.parts = p && p.length > 0 ? p : undefined;
+    e.newProp = before.newProps?.has(e.lane) || undefined;
+  }
+
+  // ---- 4) AI勝率の再計算(コース基準 × 展示偏差 × 調整情報) ----
   const raw = race.entries.map((e) => {
     const base = LANE_BASE[e.course ?? e.lane] ?? 0.05;
     const pre = Math.max(e.preProb, 0.01);
     const laneBasePre = LANE_BASE[e.lane] ?? 0.05;
     const skill = pre / laneBasePre; // 事前評価が枠基準に対して持つ個人力
     const exBoost = e.exDev !== undefined ? Math.exp(EX_COEF * Math.max(-2.5, Math.min(2.5, e.exDev))) : 1;
-    return base * skill * exBoost;
+    const { mult, notes } = adjustFactor(e);
+    e.liveNotes = notes.length > 0 ? notes : undefined;
+    return base * skill * exBoost * mult;
   });
   const sum = raw.reduce((a, b) => a + b, 0);
   race.entries.forEach((e, i) => (e.aiProb = round3(raw[i] / sum)));
@@ -131,6 +194,18 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
     }
   }
 
+  for (const e of race.entries) {
+    if (!e.liveNotes || e.liveNotes.length === 0) continue;
+    const up = e.liveNotes.some((n) => n.includes("プラス"));
+    const down = e.liveNotes.some((n) => n.includes("マイナス"));
+    signals.push({
+      time,
+      type: "parts",
+      impact: up && !down ? "up" : down && !up ? "down" : "neutral",
+      text: `${e.lane}号艇・${e.name}: ${e.liveNotes.join("／")}`,
+    });
+  }
+
   // ---- 7) イン逃げ確率・展開確率・結論の更新 ----
   const lane1 = race.entries.find((e) => e.lane === 1);
   if (lane1) {
@@ -175,7 +250,7 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
     race.signals = signals;
     race.status = "signal";
     race.updatedAt = new Date().toISOString();
-    race.modelVersion = "v0.3.0-live";
+    race.modelVersion = "v0.4.0-live";
   }
   return applied;
 }

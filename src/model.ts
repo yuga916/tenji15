@@ -112,6 +112,7 @@ export function toEntries(race: ParsedRace, probs: number[]): Entry[] {
     stAvg: 0, // BファイルにSTはないため0(展示フェーズ・選手マスタで補完予定)
     natWinRate: r.natWinRate,
     motorRate: r.motorRate,
+    weight: r.weight || undefined,
     preProb: round3(probs[i]),
     aiProb: round3(probs[i]), // 展示前はpre=ai
   }));

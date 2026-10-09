@@ -16,6 +16,16 @@ export interface LiveBeforeInfo {
   weather?: string;
   windSpeed?: number;             // m
   wave?: number;                  // cm
+  /** 艇番 → 当日体重(kg) */
+  weights?: Map<number, number>;
+  /** 艇番 → チルト角度(未公開なら無し) */
+  tilts?: Map<number, number>;
+  /** 艇番 → 部品交換の一覧(例: ["リング×1"]) */
+  parts?: Map<number, string[]>;
+  /** 新プロペラに交換した艇番 */
+  newProps?: Set<number>;
+  /** 艇番 → 調整重量(kg) */
+  adjWeights?: Map<number, number>;
   warnings: string[];
 }
 
@@ -88,6 +98,38 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
     warnings.push(`スタート展示の進入検出が${courses.length}艇(6艇期待)`);
   }
 
+  // 2.5) 体重・チルト・プロペラ・部品交換・調整重量(艇ごとの tbody 単位で寛容パース)
+  //  公式の表は「枠 / 写真 / 氏名 / 体重 / 展示タイム / チルト / プロペラ / 部品交換 …」。
+  //  列位置の変化に強くするため、展示タイムのセルを基準に「次のセル=チルト、その次=プロペラ」と読む。
+  const weights = new Map<number, number>();
+  const tilts = new Map<number, number>();
+  const parts = new Map<number, string[]>();
+  const newProps = new Set<number>();
+  const adjWeights = new Map<number, number>();
+  const z2h = (t: string) => t.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/×/g, "×");
+  for (const tb of html.split(/<tbody/i).slice(1)) {
+    const body = tb.split(/<\/tbody>/i)[0];
+    const mLane = body.match(/is-boatColor([1-6])/);
+    if (!mLane) continue;
+    const lane = Number(mLane[1]);
+    const rows = body.split(/<\/tr>/i);
+    const cells = [...(rows[0] ?? "").matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => stripTags(m[1]).replace(/&nbsp;/g, " ").trim());
+    const w = cells.map((c) => c.match(/^(\d{2,3}\.\d)\s*kg$/)).find(Boolean);
+    if (w) weights.set(lane, Number(w[1]));
+    const exIdx = cells.findIndex((c) => /^[5-7]\.\d{2}$/.test(c) && Number(c) >= 5.8 && Number(c) <= 7.8);
+    if (exIdx >= 0) {
+      const tilt = cells[exIdx + 1];
+      if (tilt !== undefined && /^-?\d\.\d$/.test(tilt)) tilts.set(lane, Number(tilt));
+      const prop = cells[exIdx + 2];
+      if (prop && /新/.test(prop)) newProps.add(lane);
+    }
+    const ps = [...body.matchAll(/class="label\d[^"]*"[^>]*>([^<]+)</g)].map((m) => z2h(m[1].trim())).filter(Boolean);
+    if (ps.length > 0) parts.set(lane, ps);
+    // 調整重量: 3行目先頭のセル(数値)
+    const r3 = rows[2] ? [...rows[2].matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => stripTags(m[1]).trim()) : [];
+    if (r3[0] && /^\d+(\.\d)?$/.test(r3[0])) adjWeights.set(lane, Number(r3[0]));
+  }
+
   // 3) 気象
   const text = stripTags(html);
   const wind = text.match(/風速\s*(\d+)\s*m/) ?? text.match(/\b(\d+)m\b/);
@@ -101,6 +143,11 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
     weather: weather?.[1],
     windSpeed: wind ? Number(wind[1]) : undefined,
     wave: wave ? Number(wave[1]) : undefined,
+    weights,
+    tilts,
+    parts,
+    newProps,
+    adjWeights,
     warnings,
   };
 }

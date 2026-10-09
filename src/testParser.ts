@@ -174,6 +174,29 @@ assert(live.windSpeed === 4 && live.wave === 3, `live: 気象をRaceへ反映`);
 const biBad = parseBeforeInfo("<html><body>メンテナンス中</body></html>");
 assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTMLで警告のみ(クラッシュなし)`);
 
+// ---- 実際の公式ページ構造: 体重・チルト・プロペラ・部品交換・調整重量(2026-10-09追加) ----
+{
+  const real = await readFile(path.join(__dirname, "..", "fixtures", "beforeinfo-real-sample.html"), "utf-8");
+  const bi = parseBeforeInfo(real);
+  assert(bi.exTimes.size === 6 && bi.exTimes.get(1) === 6.69, `real: 展示タイム6艇 (実際: ${bi.exTimes.size})`);
+  assert(bi.weights?.get(1) === 51.5 && bi.weights?.get(5) === 50.1, `real: 体重 (実際: ${bi.weights?.get(1)}, ${bi.weights?.get(5)})`);
+  assert(bi.tilts?.get(4) === 1.0 && bi.tilts?.get(2) === -0.5, `real: チルト (実際: ${bi.tilts?.get(4)}, ${bi.tilts?.get(2)})`);
+  assert(bi.newProps?.has(2) === true && bi.newProps?.has(1) === false, `real: 新プロペラ検出`);
+  assert(JSON.stringify(bi.parts?.get(3)) === JSON.stringify(["リング×1"]), `real: 部品交換(全角数字→半角) (実際: ${JSON.stringify(bi.parts?.get(3))})`);
+  assert((bi.parts?.get(4) ?? []).length === 2 && !bi.parts?.has(1), `real: 複数部品・交換なし`);
+  assert(bi.adjWeights?.get(1) === 0.5 && bi.adjWeights?.get(5) === 1.0, `real: 調整重量`);
+  assert(bi.courses.length === 6, `real: 進入6艇`);
+
+  const { adjustFactor } = await import("./signals.ts");
+  const base = { lane: 4, name: "x", racerClass: "A1", stAvg: 0, natWinRate: 6, motorRate: 40, preProb: 0.2, aiProb: 0.2 };
+  const a1 = adjustFactor({ ...base, parts: ["キャブレター"], tilt: 1.0, course: 4 } as any);
+  assert(Math.abs(a1.mult - 0.96 * 1.05) < 1e-9 && a1.notes.length === 2, `adjust: 主要部品交換×チルト外 (実際: ${a1.mult})`);
+  const a2 = adjustFactor({ ...base, lane: 1, tilt: 1.0, course: 1, weight: 52, exWeight: 50.5 } as any);
+  assert(Math.abs(a2.mult - 0.96 * 1.03) < 1e-9, `adjust: チルト高×イン、体重減 (実際: ${a2.mult})`);
+  const a3 = adjustFactor({ ...base, tilt: -0.5, weight: 52, exWeight: 52.3 } as any);
+  assert(a3.mult === 1 && a3.notes.length === 0, `adjust: 標準チルト・体重変化小は補正なし`);
+}
+
 // ---- 番組表の再取得で直前評価(signal)が上書きされないこと(2026-10-08の不具合の回帰テスト) ----
 {
   const { mergeDay } = await import("./pipeline.ts");

@@ -259,8 +259,8 @@ function factorChips(status: RaceStatus): string {
   const base = ["全国勝率", "当地勝率", "2連率", "モーター", "ボート", "級別", "コース×会場イン強度"].map((f) => chip(f)).join("");
   const live =
     status === "signal"
-      ? ["展示タイム", "進入", "直前オッズ"].map((f) => chip(`${f}✓反映済`, true)).join("")
-      : ["展示タイム", "進入", "直前オッズ"].map((f) => chip(`${f}(展示後に反映)`, true)).join("");
+      ? ["展示タイム", "進入", "部品交換・チルト・体重", "直前オッズ"].map((f) => chip(`${f}✓反映済`, true)).join("")
+      : ["展示タイム", "進入", "部品交換・チルト・体重", "直前オッズ"].map((f) => chip(`${f}(展示後に反映)`, true)).join("");
   return `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; align-items:center;">
     <span style="color:var(--dim); font-size:11px;">算出ファクター:</span>${base}${live}
   </div>`;
@@ -384,7 +384,9 @@ function prePostSection(r: Race): string {
       const desc = e.exDev >= 1.0 ? "と速い" : e.exDev <= -1.0 ? "と遅い" : "";
       parts.push(`展示タイム${e.exTime.toFixed(2)}秒(レース内${rk}位${desc})`);
     }
-    if (Math.abs(d) >= 0.02 && !moved && !(e.exDev !== undefined && Math.abs(e.exDev) >= 1.0)) {
+    const adj = (e.liveNotes ?? []).filter((n) => /プラス|マイナス/.test(n));
+    for (const n of e.liveNotes ?? []) parts.push(n);
+    if (Math.abs(d) >= 0.02 && !moved && adj.length === 0 && !(e.exDev !== undefined && Math.abs(e.exDev) >= 1.0)) {
       parts.push(d > 0 ? "他艇の展示が振るわず相対的に上昇" : "他艇の展示が良く相対的に低下");
     }
     if (parts.length === 0) return `<span style="color:var(--dim);">${hasExTime ? "大きな変化なし" : "展示タイム公開待ち"}</span>`;
@@ -431,7 +433,7 @@ ${pendingNote}<p style="font-size:13.5px; margin:0 0 6px; line-height:1.8;">${he
 <thead><tr style="color:var(--dim); font-size:11px; text-align:left; border-bottom:1px solid rgba(255,255,255,.12);"><th style="padding:6px;">艇</th><th style="padding:6px;">選手</th><th style="padding:6px; text-align:right;">展示前</th><th style="padding:6px; text-align:right;">展示後</th><th style="padding:6px; text-align:right;">変化</th><th style="padding:6px;">変動の根拠</th></tr></thead>
 <tbody>${rows}</tbody></table></div>
 ${resultLine}
-<p style="color:var(--dim); font-size:11.5px; margin:10px 0 0; line-height:1.7;">※数値はAI勝率。展示後の値は、展示航走(本番前の試運転)のタイムをレース内で比べた速さと、スタート展示の進入コースで更新しています${anyCourseChange ? "(今回は進入の変化あり)" : ""}。オッズはAI勝率には含めず、「歪み」の判定にのみ使っています。</p>
+<p style="color:var(--dim); font-size:11.5px; margin:10px 0 0; line-height:1.7;">※数値はAI勝率。展示後の値は、展示航走(本番前の試運転)のタイムをレース内で比べた速さ、スタート展示の進入コース、公式の直前情報にある部品交換・チルト角度・体重の変化で更新しています${anyCourseChange ? "(今回は進入の変化あり)" : ""}。オッズはAI勝率には含めず、「歪み」の判定にのみ使っています。</p>
 </div>
 </section>`;
 }
@@ -2647,7 +2649,7 @@ ${body}`,
       jsonLd: statsArticleLd("データの集計方法と運営方針", "競艇チョクゼンのデータ処理過程・更新頻度・制限事項の明文化。", "/stats/methodology/"),
       bodyHtml: `<h1>データの集計方法と運営方針</h1>
 <p class="speakable-summary" style="color:var(--muted);">競艇チョクゼンの全データは、ボートレース公式が配布する番組表・競走成績ファイルを自動取得・自動集計して作られています。手入力は行わず、集計期間と母数を全ページに明記し、予想成績も外れを含めて全件公開します。</p>
-<section><h2>データ源</h2><p>①番組表(通称Bファイル: 出走選手・級別・勝率・モーター/ボート2連率)、②競走成績(通称Kファイル: 着順・決まり手・払戻・進入・ST・気象)。いずれもボートレース公式がダウンロード用に配布している一次データです。展示タイム・進入・直前オッズは公式サイトの公開情報を締切前の限られた回数だけ参照します。</p></section>
+<section><h2>データ源</h2><p>①番組表(通称Bファイル: 出走選手・級別・勝率・モーター/ボート2連率)、②競走成績(通称Kファイル: 着順・決まり手・払戻・進入・ST・気象)。いずれもボートレース公式がダウンロード用に配布している一次データです。展示タイム・進入・部品交換・チルト角度・体重・直前オッズは公式サイトの公開情報を締切前の限られた回数だけ参照します。</p></section>
 <section><h2>処理の流れ</h2><p>毎朝の番組確定後にレースページを自動生成 → 開催時間帯は5分ごとに直前情報を反映 → レース確定後の夜に競走成績で結果を照合し、同じURLに追記します。並行して、過去分の競走成績を毎晩さかのぼって取得し、<a href="${statsBase}stats/">統計ページ</a>の母数を拡充しています(目標: 過去3年分)。</p></section>
 <section><h2>AI評価の中身</h2><p>事前評価は級別・全国勝率・当地勝率・全国2連率・モーター2連率・ボート2連率の6ファクターをレース内で相対化し、会場ごとのコース別基準値に重ねたものです。展示航走後は展示タイムの偏差・進入変化・直前オッズとの乖離で評価を更新します。詳細は<a href="${statsBase}guide/ai-yosou/">競艇のAI予想とは</a>へ。</p></section>
 <section><h2>数値の限界と免責</h2><p>払戻の一部が取得できないレースや、中止・不成立レースは集計から除外されます。回収率等は「過去の実測」であり将来の結果を保証しません。当サイトは的中保証・断定表現を行わず、舟券の販売・購入代行も行いません。</p></section>

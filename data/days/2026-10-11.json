@@ -6218,21 +6218,21 @@
     "raceNo": 9,
     "name": "予選",
     "seriesTitle": "MNBR下関5th ケーブルネット下関杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "21:25",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 48,
     "inEscapeProb": 48,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前48%から展示反映で48%に更新。",
     "kimarite": {
       "nige": 0.48,
       "makuri": 0.23,
       "sashi": 0.22,
       "other": 0.07
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -6244,7 +6244,12 @@
         "motorRate": 34.23,
         "weight": 54,
         "preProb": 0.622,
-        "aiProb": 0.622
+        "aiProb": 0.63,
+        "exWeight": 52.7,
+        "liveNotes": [
+          "体重が番組表より1.3kg減(54→52.7kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.5
       },
       {
         "lane": 2,
@@ -6256,7 +6261,9 @@
         "motorRate": 41.41,
         "weight": 53,
         "preProb": 0.249,
-        "aiProb": 0.249
+        "aiProb": 0.245,
+        "exWeight": 53.8,
+        "marketProb": 0.125
       },
       {
         "lane": 3,
@@ -6268,7 +6275,9 @@
         "motorRate": 42.06,
         "weight": 52,
         "preProb": 0.07,
-        "aiProb": 0.07
+        "aiProb": 0.069,
+        "exWeight": 52,
+        "marketProb": 0.125
       },
       {
         "lane": 4,
@@ -6280,7 +6289,8 @@
         "motorRate": 26,
         "weight": 52,
         "preProb": 0.022,
-        "aiProb": 0.022
+        "aiProb": 0.022,
+        "exWeight": 52
       },
       {
         "lane": 5,
@@ -6292,7 +6302,9 @@
         "motorRate": 37,
         "weight": 46,
         "preProb": 0.015,
-        "aiProb": 0.015
+        "aiProb": 0.015,
+        "exWeight": 46.5,
+        "marketProb": 0.125
       },
       {
         "lane": 6,
@@ -6304,13 +6316,46 @@
         "motorRate": 25.47,
         "weight": 49,
         "preProb": 0.021,
-        "aiProb": 0.021
+        "aiProb": 0.021,
+        "exWeight": 49,
+        "marketProb": 0.125
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は48%想定。本命候補は1号艇・上原健次(A2・事前勝率62%)、対抗は2号艇・石渡翔一(同25%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-11T11:50:26.597Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・上原健次: AI評価63%に対し市場は50%。+13ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・石渡翔一: AI評価25%に対し市場は13%。+12ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・中村紋夕: 市場13%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "down",
+        "text": "6号艇・藤丸光一: 市場13%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・上原健次: 体重が番組表より1.3kg減(54→52.7kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・上原健次(展示反映後AI勝率63%)。妙味は1号艇・上原健次(歪み+13pt)。イン逃げ確率は48%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-11T12:00:27.077Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "shimonoseki-2026-10-11-10",

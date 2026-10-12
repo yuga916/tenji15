@@ -6127,21 +6127,21 @@
     "raceNo": 1,
     "name": "とるならなる",
     "seriesTitle": "ボートレース鳴 門 10月13日 スカパー！・JLC杯 第 2日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 86,
     "inEscapeProb": 86,
-    "inNote": "鳴門の基準値(50%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前86%から展示反映で86%に更新。",
     "kimarite": {
       "nige": 0.86,
       "makuri": 0.06,
       "sashi": 0.06,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -6153,7 +6153,11 @@
         "motorRate": 29.67,
         "weight": 55,
         "preProb": 0.846,
-        "aiProb": 0.846
+        "aiProb": 0.846,
+        "exWeight": 52.2,
+        "liveNotes": [
+          "体重が番組表より2.8kg減(55→52.2kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 2,
@@ -6165,7 +6169,8 @@
         "motorRate": 31.19,
         "weight": 53,
         "preProb": 0.075,
-        "aiProb": 0.075
+        "aiProb": 0.073,
+        "exWeight": 52.3
       },
       {
         "lane": 3,
@@ -6177,7 +6182,8 @@
         "motorRate": 23.71,
         "weight": 51,
         "preProb": 0.036,
-        "aiProb": 0.036
+        "aiProb": 0.035,
+        "exWeight": 51.5
       },
       {
         "lane": 4,
@@ -6189,7 +6195,11 @@
         "motorRate": 26.32,
         "weight": 51,
         "preProb": 0.025,
-        "aiProb": 0.025
+        "aiProb": 0.024,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(51→52kg)でマイナス"
+        ]
       },
       {
         "lane": 5,
@@ -6201,7 +6211,8 @@
         "motorRate": 25.51,
         "weight": 52,
         "preProb": 0.014,
-        "aiProb": 0.014
+        "aiProb": 0.014,
+        "exWeight": 52
       },
       {
         "lane": 6,
@@ -6213,13 +6224,36 @@
         "motorRate": 28.26,
         "weight": 50,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.009,
+        "exWeight": 51,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(50→51kg)でマイナス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 鳴門のイン逃げ確率は86%想定。本命候補は1号艇・濱野斗馬(A1・事前勝率85%)、対抗は2号艇・村本大成(同8%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-12T23:00:23.091Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・濱野斗馬: 体重が番組表より2.8kg減(55→52.2kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "4号艇・山下心一: 体重が番組表より1.0kg増(51→52kg)でマイナス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "6号艇・高橋嗣穏: 体重が番組表より1.0kg増(50→51kg)でマイナス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・濱野斗馬(展示反映後AI勝率85%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は86%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-12T23:10:27.595Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "naruto-2026-10-13-2",

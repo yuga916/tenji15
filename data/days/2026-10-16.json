@@ -8638,21 +8638,21 @@
     "raceNo": 9,
     "name": "予選",
     "seriesTitle": "ミッドナイトボートレース下関6th 関釜フェリー杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "21:25",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 65,
     "inEscapeProb": 65,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前65%から展示反映で65%に更新。",
     "kimarite": {
       "nige": 0.65,
       "makuri": 0.16,
       "sashi": 0.15,
       "other": 0.05
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -8664,7 +8664,12 @@
         "motorRate": 34.78,
         "weight": 54,
         "preProb": 0.703,
-        "aiProb": 0.703
+        "aiProb": 0.712,
+        "exWeight": 52.8,
+        "liveNotes": [
+          "体重が番組表より1.2kg減(54→52.8kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.317
       },
       {
         "lane": 2,
@@ -8676,7 +8681,17 @@
         "motorRate": 24.27,
         "weight": 54,
         "preProb": 0.177,
-        "aiProb": 0.177
+        "aiProb": 0.167,
+        "exWeight": 53.9,
+        "parts": [
+          "ピストン×2",
+          "リング×4",
+          "シリンダ&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(ピストン×2・リング×4・シリンダ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+        ],
+        "marketProb": 0.159
       },
       {
         "lane": 3,
@@ -8688,7 +8703,12 @@
         "motorRate": 33.05,
         "weight": 56,
         "preProb": 0.053,
-        "aiProb": 0.053
+        "aiProb": 0.054,
+        "exWeight": 54.4,
+        "liveNotes": [
+          "体重が番組表より1.6kg減(56→54.4kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.159
       },
       {
         "lane": 4,
@@ -8700,7 +8720,9 @@
         "motorRate": 32.73,
         "weight": 53,
         "preProb": 0.02,
-        "aiProb": 0.02
+        "aiProb": 0.02,
+        "exWeight": 52.7,
+        "marketProb": 0.366
       },
       {
         "lane": 5,
@@ -8712,7 +8734,8 @@
         "motorRate": 22.55,
         "weight": 53,
         "preProb": 0.031,
-        "aiProb": 0.031
+        "aiProb": 0.03,
+        "exWeight": 52.6
       },
       {
         "lane": 6,
@@ -8724,13 +8747,51 @@
         "motorRate": 42.86,
         "weight": 52,
         "preProb": 0.017,
-        "aiProb": 0.017
+        "aiProb": 0.017,
+        "exWeight": 52.3
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は65%想定。本命候補は1号艇・岩永雅人(A2・事前勝率70%)、対抗は2号艇・岩津徹郎(同18%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-16T11:40:41.290Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・岩永雅人: AI評価71%に対し市場は32%。+39ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・大賀龍之: 市場16%に対しAI評価は5%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・齋藤達希: 市場37%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・岩永雅人: 体重が番組表より1.2kg減(54→52.8kg)=軽量化でプラス"
+      },
+      {
+        "time": "21:00",
+        "type": "parts",
+        "impact": "down",
+        "text": "2号艇・岩津徹郎: 部品交換(ピストン×2・リング×4・シリンダ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+      },
+      {
+        "time": "21:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・大賀龍之: 体重が番組表より1.6kg減(56→54.4kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・岩永雅人(展示反映後AI勝率71%)。妙味は1号艇・岩永雅人(歪み+39pt)。イン逃げ確率は65%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-16T12:00:32.292Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "shimonoseki-2026-10-16-10",

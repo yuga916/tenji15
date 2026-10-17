@@ -9693,21 +9693,21 @@
     "raceNo": 12,
     "name": "シーボー特選",
     "seriesTitle": "ミッドナイトボートレース下関6th 関釜フェリー杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "22:45",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 45,
     "inEscapeProb": 45,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前45%から展示反映で45%に更新。",
     "kimarite": {
       "nige": 0.45,
       "makuri": 0.25,
       "sashi": 0.23,
       "other": 0.07
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -9719,7 +9719,12 @@
         "motorRate": 32.14,
         "weight": 53,
         "preProb": 0.61,
-        "aiProb": 0.61
+        "aiProb": 0.617,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.603
       },
       {
         "lane": 2,
@@ -9731,7 +9736,12 @@
         "motorRate": 34.78,
         "weight": 54,
         "preProb": 0.058,
-        "aiProb": 0.058
+        "aiProb": 0.059,
+        "exWeight": 52.8,
+        "liveNotes": [
+          "体重が番組表より1.2kg減(54→52.8kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.052
       },
       {
         "lane": 3,
@@ -9743,7 +9753,9 @@
         "motorRate": 37.17,
         "weight": 51,
         "preProb": 0.068,
-        "aiProb": 0.068
+        "aiProb": 0.067,
+        "exWeight": 51,
+        "marketProb": 0.034
       },
       {
         "lane": 4,
@@ -9755,7 +9767,12 @@
         "motorRate": 43.75,
         "weight": 51,
         "preProb": 0.193,
-        "aiProb": 0.193
+        "aiProb": 0.184,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(51→52kg)でマイナス"
+        ],
+        "marketProb": 0.172
       },
       {
         "lane": 5,
@@ -9767,7 +9784,9 @@
         "motorRate": 29.82,
         "weight": 52,
         "preProb": 0.064,
-        "aiProb": 0.064
+        "aiProb": 0.063,
+        "exWeight": 52,
+        "marketProb": 0.086
       },
       {
         "lane": 6,
@@ -9779,13 +9798,43 @@
         "motorRate": 33.05,
         "weight": 56,
         "preProb": 0.006,
-        "aiProb": 0.006
+        "aiProb": 0.01,
+        "exWeight": 54.3,
+        "liveNotes": [
+          "体重が番組表より1.7kg減(56→54.3kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.052
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は45%想定。本命候補は1号艇・今垣光太(A1・事前勝率61%)、対抗は4号艇・山田丈(同19%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-17T12:55:29.790Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "22:20",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・今垣光太: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
+      },
+      {
+        "time": "22:20",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・岩永雅人: 体重が番組表より1.2kg減(54→52.8kg)=軽量化でプラス"
+      },
+      {
+        "time": "22:20",
+        "type": "parts",
+        "impact": "down",
+        "text": "4号艇・山田丈: 体重が番組表より1.0kg増(51→52kg)でマイナス"
+      },
+      {
+        "time": "22:20",
+        "type": "parts",
+        "impact": "up",
+        "text": "6号艇・大賀龍之: 体重が番組表より1.7kg減(56→54.3kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・今垣光太(展示反映後AI勝率62%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は45%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-17T13:20:27.098Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "kojima-2026-10-17-1",

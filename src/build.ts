@@ -53,7 +53,7 @@ function voiceLinkHref(href: string, base: string): string {
 function voicesSectionHtml(v: Voices, base: string): string {
   const counts = Object.entries(v.votes?.counts ?? {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
   const max = counts.length > 0 ? counts[0][1] : 0;
-  const ranking = counts.length === 0 ? "" : `<div class="card" style="margin-bottom:14px;"><h3 style="font-size:15px; margin:0 0 10px;">要望の多い順(ワンタップ投票)</h3>
+  const ranking = counts.length === 0 ? "" : `<div class="card" style="margin-bottom:14px;"><h3 style="font-size:15px; margin:0 0 10px;">要望の多い順(これまでの投票)</h3>
 ${counts.map(([label, n], i) => `<div style="display:flex; align-items:center; gap:10px; margin:6px 0; font-size:13px;"><span style="width:18px; color:var(--dim);">${i + 1}</span><span style="flex:0 0 46%;">${esc(label)}</span><span style="flex:1; height:8px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden;"><span style="display:block; height:100%; width:${Math.round((100 * n) / max)}%; background:var(--cyan);"></span></span><span style="width:42px; text-align:right; color:var(--muted);">${n}票</span></div>`).join("")}
 ${v.votes?.updated ? `<p style="color:var(--dim); font-size:11.5px; margin:8px 0 0;">${dateLabel(v.votes.updated)}時点の集計</p>` : ""}</div>`;
   const items = v.items.map((it) => `<article id="voice-${esc(it.id)}" class="card" style="margin-bottom:12px;">
@@ -858,7 +858,7 @@ ${opts.bodyHtml}
 <div class="age-note"><strong>20歳未満の方は舟券を購入できません。</strong>分析情報は的中を保証するものではありません。無理のない金額で計画的にお楽しみください。</div>
 </main>
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
-<script defer src="${opts.base}assets/feedback.js?v=20261005"></script>
+<script defer src="${opts.base}assets/feedback.js?v=20261018b"></script>
 </body></html>`;
 }
 
@@ -1620,9 +1620,9 @@ function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): st
 </div>`)
     .join("\n");
   return `<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
-<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。欲しい機能をタップするだけで送れます(匿名・入力不要)。多かったものから作ります。</div>${latestVoice ? `
+<div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。欲しい機能や不満を匿名で送れます。届いた声はすべて読んで、次に作るものを決めます。</div>${latestVoice ? `
 <div style="margin-top:8px; font-size:12.5px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.12);"><span style="color:var(--dim);">最新の回答:</span> <a href="${base}feedback/#voice-${esc(latestVoice.id)}" style="color:var(--text);">${esc(latestVoice.question ?? latestVoice.voice)}</a> <span style="color:${VOICE_STATUS_COLOR[latestVoice.status] ?? "#7a8a96"}; font-size:11.5px;">[${esc(latestVoice.status)}]</span> <a href="${base}feedback/#voices" style="font-size:12px;">声と対応の一覧 →</a></div>` : ""}</div>
-<a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">欲しい機能をタップで送る →</a>
+<a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">意見を送る →</a>
 </div>
 <div class="card" style="margin-bottom:18px; padding:14px 16px;">
 <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
@@ -1943,13 +1943,13 @@ async function main() {
     await mkdir(path.join(DIST, "feedback"), { recursive: true });
     await writeFile(path.join(DIST, "feedback", "index.html"), articlePage({
       title: "ご意見箱 — 欲しい機能・改善案を教えてください｜競艇チョクゼン",
-      metaDesc: "競艇チョクゼンへのご意見・欲しい機能・不具合報告をタップするだけで匿名で送れます。いただいた声は次の改善に反映します。",
+      metaDesc: "競艇チョクゼンへのご意見・欲しい機能・不具合報告を匿名で送れます。いただいた声は次の改善に反映します。",
       path: "feedback/",
       base: fbBase,
       crumbs: [["ホーム", fbBase], ["ご意見箱"]],
       jsonLd: voicesFaqLd(voices) ? [voicesFaqLd(voices)!] : undefined,
       bodyHtml: `<h1>ご意見箱</h1>
-<p style="color:var(--muted);">毎日使ってくださっている方の声が、いちばん確かな改善のヒントです。欲しいものをタップするだけで送れます(匿名・入力不要)。届いた内容は、個人が特定されない形に要約して下の「みなさんの声と対応」で公開する場合があります。</p>
+<p style="color:var(--muted);">毎日使ってくださっている方の声が、いちばん確かな改善のヒントです。欲しい機能や不満を匿名で送れます。「どんな場面で」「何に困ったか」を書いていただけると、改善に活かしやすくなります。届いた内容は、個人が特定されない形に要約して下の「みなさんの声と対応」で公開する場合があります。</p>
 <div id="feedback-slot"><noscript><p>JavaScriptが無効のため、<a href="${FEEDBACK_FORM_URL}" rel="nofollow noopener" target="_blank">フォーム版</a>からお送りください。</p></noscript></div>
 ${voicesSectionHtml(voices, fbBase)}
 <section><h2>これまでの主な改善</h2><p style="color:var(--muted);">トップの会場×Rジャンプグリッド、全レース5分ごとの自動更新と更新時刻の表示、「前回見たレースのその後」、当日の12R・ナイター・万舟狙い目まとめページ。次はあなたの声から。</p></section>`,

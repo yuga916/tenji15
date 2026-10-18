@@ -12,38 +12,25 @@
 
   function ga(name, params) { if (typeof window.gtag === "function") window.gtag("event", name, params || {}); }
 
-  // ワンタップ候補(押した瞬間に1票として送信。何個でも押せる)
-  var CHOICES = [
-    "会場をお気に入り登録したい",
-    "締切前に通知がほしい",
-    "AIの的中実績をもっと見たい",
-    "買い目をもっと具体的に",
-    "オッズの動きを見たい",
-    "選手の詳しいデータがほしい",
-    "画面が見づらい・重い",
-    "使い方が分かりにくい"
-  ];
-  var chipStyle = "display:inline-flex; align-items:center; gap:6px; padding:9px 13px; border-radius:999px; border:1px solid rgba(77,216,255,.45); background:rgba(77,216,255,.07); color:var(--text,#e6eef5); font-size:13px; font-family:inherit; cursor:pointer; text-align:left; line-height:1.3;";
+  var PLACEHOLDER = "例: 締切5分前に展示タイムを確認したいが、スマホだと表までスクロールが長い / ナイターのレースだけ一覧で見たい";
 
   function formHtml(inline) {
     return '' +
       '<div class="fb-box" style="' + (inline ? '' : 'max-width:520px; width:calc(100% - 32px); max-height:calc(100vh - 32px); overflow-y:auto; ') + 'background:#0f1a24; border:1px solid rgba(77,216,255,.35); border-radius:14px; padding:18px 18px 14px; color:var(--text,#e6eef5); box-shadow:0 20px 60px rgba(0,0,0,.5); box-sizing:border-box;">' +
       '<div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">' +
-      '<h2 style="font-size:16px; margin:0;">欲しいものをタップしてください</h2>' +
+      '<h2 style="font-size:16px; margin:0;">欲しい機能・不満を教えてください</h2>' +
       (inline ? '' : '<button type="button" class="fb-close" aria-label="閉じる" style="background:none; border:0; color:var(--muted,#9fb3c1); font-size:20px; cursor:pointer; line-height:1;">×</button>') +
       '</div>' +
-      '<p style="color:var(--muted,#9fb3c1); font-size:12.5px; margin:6px 0 12px;">タップした瞬間に送信されます(匿名・入力不要)。いくつ押してもOK。多かったものから作ります。</p>' +
-      '<div class="fb-chips" style="display:flex; flex-wrap:wrap; gap:8px;">' +
-      CHOICES.map(function (c, i) { return '<button type="button" class="fb-chip" data-i="' + i + '" style="' + chipStyle + '"><span class="fb-mark" style="color:#4dd8ff; font-weight:700;">+</span><span>' + c + '</span></button>'; }).join("") +
+      '<p style="color:var(--muted,#9fb3c1); font-size:12.5px; margin:6px 0 10px;">匿名で送れます。「どんな場面で」「何に困ったか」を書いていただけると、改善に活かしやすくなります。届いた声はすべて読んで、次に作るものを決めます。</p>' +
+      '<form class="fb-form">' +
+      '<textarea name="text" maxlength="' + MAX + '" rows="4" placeholder="' + PLACEHOLDER + '" style="width:100%; box-sizing:border-box; background:#0b1220; color:var(--text,#e6eef5); border:1px solid rgba(77,216,255,.35); border-radius:10px; padding:10px 12px; font-size:16px; line-height:1.6; resize:vertical; font-family:inherit;"></textarea>' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px;">' +
+      '<span class="fb-count" style="color:var(--dim,#6b7c89); font-size:11.5px;"></span>' +
+      '<button type="submit" disabled style="background:var(--cyan,#4dd8ff); color:#0b1220; border:0; border-radius:10px; padding:9px 18px; font-weight:700; font-size:14px; cursor:pointer; opacity:.45;">送信する</button>' +
       '</div>' +
-      '<p class="fb-thanks" style="display:none; color:var(--cyan,#4dd8ff); font-size:12.5px; font-weight:700; margin:10px 0 0;"></p>' +
-      '<details class="fb-more" style="margin-top:14px;"><summary style="cursor:pointer; color:var(--muted,#9fb3c1); font-size:12.5px;">ほかにあれば一言(任意)</summary>' +
-      '<form class="fb-form" style="margin-top:8px;">' +
-      '<textarea name="text" maxlength="' + MAX + '" rows="3" placeholder="例: 展示タイムの見方が分かりにくい / 〇〇場の予想も見たい" style="width:100%; box-sizing:border-box; background:#0b1220; color:var(--text,#e6eef5); border:1px solid rgba(255,255,255,.18); border-radius:10px; padding:10px 12px; font-size:14px; line-height:1.6; resize:vertical; font-family:inherit;"></textarea>' +
-      '<div style="display:flex; justify-content:flex-end; margin-top:8px;"><button type="submit" style="background:var(--cyan,#4dd8ff); color:#0b1220; border:0; border-radius:10px; padding:8px 16px; font-weight:700; font-size:13.5px; cursor:pointer;">送信する</button></div>' +
       '<p class="fb-msg" style="font-size:12.5px; margin:8px 0 0; min-height:1.2em;"></p>' +
-      '</form></details>' +
-      '<p style="color:var(--dim,#6b7c89); font-size:11px; margin:10px 0 0;">送信されるのは選んだ内容と閲覧中のページ名だけです。内容は個人が特定されない形で公開する場合があります(<a href="/feedback/#voices" style="color:var(--muted,#9fb3c1);">みなさんの声と対応</a>)。うまく送れない場合は<a href="' + FORM + '/viewform" target="_blank" rel="nofollow noopener" style="color:var(--muted,#9fb3c1);">フォーム版</a>からどうぞ。</p>' +
+      '</form>' +
+      '<p style="color:var(--dim,#6b7c89); font-size:11px; margin:6px 0 0;">送信されるのは書いた内容と閲覧中のページ名だけです。内容は個人が特定されない形で公開する場合があります(<a href="/feedback/#voices" style="color:var(--muted,#9fb3c1);">みなさんの声と対応</a>)。うまく送れない場合は<a href="' + FORM + '/viewform" target="_blank" rel="nofollow noopener" style="color:var(--muted,#9fb3c1);">フォーム版</a>からどうぞ。</p>' +
       '</div>';
   }
 
@@ -61,52 +48,46 @@
   }
 
   function wire(root, place) {
-    var sent = 0;
-    var thanks = root.querySelector(".fb-thanks");
-    // ① ワンタップ送信
-    root.querySelectorAll(".fb-chip").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        if (btn.disabled) return;
-        var label = CHOICES[Number(btn.getAttribute("data-i"))];
-        btn.disabled = true;
-        btn.style.cursor = "default";
-        btn.style.background = "rgba(77,216,255,.22)";
-        btn.style.borderColor = "#4dd8ff";
-        btn.querySelector(".fb-mark").textContent = "✓";
-        post("[タップ] " + label, place)
-          .then(function () {
-            sent++;
-            thanks.style.display = "block";
-            thanks.textContent = "送信しました(" + sent + "件)。ありがとうございます!他にもあればどうぞ。";
-            ga("submit_feedback", { place: place, type: "chip", choice: label });
-            markDone();
-          })
-          .catch(function () {
-            btn.disabled = false;
-            btn.style.cursor = "pointer";
-            btn.style.background = "rgba(77,216,255,.07)";
-            btn.querySelector(".fb-mark").textContent = "+";
-            thanks.style.display = "block";
-            thanks.style.color = "var(--signal,#ff8a3d)";
-            thanks.textContent = "送信できませんでした。通信環境をご確認ください。";
-          });
-      });
-    });
-    // ② 任意の自由記述
     var form = root.querySelector(".fb-form");
     var ta = root.querySelector("textarea");
     var msg = root.querySelector(".fb-msg");
+    var count = root.querySelector(".fb-count");
+    var btn = form.querySelector("button[type=submit]");
+    var started = false;
+    function sync() {
+      var n = ta.value.trim().length;
+      btn.disabled = n === 0;
+      btn.style.opacity = n === 0 ? ".45" : "1";
+      count.textContent = n > 0 ? n + " / " + MAX : "";
+      if (n > 0 && !started) { started = true; ga("start_feedback", { place: place }); }
+    }
+    ta.addEventListener("input", sync);
+    // Ctrl/⌘ + Enter でも送信
+    ta.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (form.requestSubmit) form.requestSubmit(); }
+    });
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var text = ta.value.trim();
       if (!text) { ta.focus(); return; }
-      var btn = form.querySelector("button[type=submit]");
       btn.disabled = true; btn.textContent = "送信中…";
       post("[自由記述] " + text, place)
         .then(function () {
-          form.innerHTML = '<p style="color:var(--cyan,#4dd8ff); font-weight:700; margin:4px 0;">送信しました。ありがとうございます!</p>';
           ga("submit_feedback", { place: place, type: "text", length: text.length });
           markDone();
+          form.innerHTML =
+            '<p style="color:var(--cyan,#4dd8ff); font-weight:700; margin:4px 0;">送信しました。ありがとうございます!</p>' +
+            '<p style="color:var(--muted,#9fb3c1); font-size:12.5px; margin:4px 0 0;">対応状況は<a href="/feedback/#voices" style="color:var(--cyan,#4dd8ff);">みなさんの声と対応</a>でお知らせします。' +
+            ' <button type="button" class="fb-again" style="background:none; border:0; padding:0; color:var(--cyan,#4dd8ff); font-size:12.5px; text-decoration:underline; cursor:pointer; font-family:inherit;">もう1件送る</button></p>';
+          var again = form.querySelector(".fb-again");
+          if (again) again.addEventListener("click", function () {
+            var box = root.querySelector(".fb-box");
+            var holder = document.createElement("div");
+            holder.innerHTML = formHtml(!root.classList.contains("fb-overlay"));
+            box.parentNode.replaceChild(holder.firstChild, box);
+            wire(root, place);
+            var t = root.querySelector("textarea"); if (t) t.focus();
+          });
         })
         .catch(function () {
           btn.disabled = false; btn.textContent = "送信する";
@@ -127,6 +108,7 @@
     ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
     document.body.appendChild(ov);
     wire(ov, place);
+    var t = ov.querySelector("textarea"); if (t) t.focus();
     ga("open_feedback", { place: place });
   }
 
@@ -160,7 +142,7 @@
       "background:linear-gradient(90deg, rgba(77,216,255,.14), rgba(255,138,61,.10)); border-bottom:1px solid rgba(77,216,255,.35); color:var(--text,#e6eef5); font-size:13px;");
     bar.innerHTML =
       '<span><strong>もっと役に立つサイトにしたい。</strong>次に作る機能は、使ってくれているあなたの声で決めます。</span>' +
-      '<a href="/feedback/" data-feedback-open="banner" style="display:inline-flex; align-items:center; padding:6px 14px; border-radius:999px; background:#4dd8ff; color:#0b1220; font-weight:700; font-size:12.5px; white-space:nowrap;">欲しい機能をタップで送る →</a>' +
+      '<a href="/feedback/" data-feedback-open="banner" style="display:inline-flex; align-items:center; padding:6px 14px; border-radius:999px; background:#4dd8ff; color:#0b1220; font-weight:700; font-size:12.5px; white-space:nowrap;">意見を送る →</a>' +
       '<button type="button" class="fb-banner-close" aria-label="閉じる" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:0; color:var(--muted,#9fb3c1); font-size:20px; cursor:pointer; line-height:1; padding:4px 8px;">×</button>';
     var header = document.querySelector("header.site");
     if (header && header.parentNode) header.parentNode.insertBefore(bar, header.nextSibling); else document.body.insertBefore(bar, document.body.firstChild);

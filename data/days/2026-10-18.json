@@ -8952,21 +8952,21 @@
     "raceNo": 11,
     "name": "予選特選",
     "seriesTitle": "ミッドナイトボートレース下関6th 関釜フェリー杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "22:18",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 85,
     "inEscapeProb": 85,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前85%から展示反映で85%に更新。",
     "kimarite": {
       "nige": 0.85,
       "makuri": 0.07,
       "sashi": 0.06,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -8978,7 +8978,12 @@
         "motorRate": 30.33,
         "weight": 54,
         "preProb": 0.808,
-        "aiProb": 0.808
+        "aiProb": 0.814,
+        "exWeight": 52.6,
+        "liveNotes": [
+          "体重が番組表より1.4kg減(54→52.6kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.43
       },
       {
         "lane": 2,
@@ -8990,7 +8995,9 @@
         "motorRate": 29.41,
         "weight": 51,
         "preProb": 0.025,
-        "aiProb": 0.025
+        "aiProb": 0.024,
+        "exWeight": 51,
+        "marketProb": 0.108
       },
       {
         "lane": 3,
@@ -9002,7 +9009,9 @@
         "motorRate": 42.61,
         "weight": 53,
         "preProb": 0.031,
-        "aiProb": 0.031
+        "aiProb": 0.03,
+        "exWeight": 52.8,
+        "marketProb": 0.098
       },
       {
         "lane": 4,
@@ -9014,7 +9023,12 @@
         "motorRate": 40.38,
         "weight": 51,
         "preProb": 0.087,
-        "aiProb": 0.087
+        "aiProb": 0.083,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(51→52kg)でマイナス"
+        ],
+        "marketProb": 0.108
       },
       {
         "lane": 5,
@@ -9026,7 +9040,9 @@
         "motorRate": 34.95,
         "weight": 54,
         "preProb": 0.03,
-        "aiProb": 0.03
+        "aiProb": 0.029,
+        "exWeight": 53.6,
+        "marketProb": 0.128
       },
       {
         "lane": 6,
@@ -9038,13 +9054,61 @@
         "motorRate": 49.07,
         "weight": 54,
         "preProb": 0.019,
-        "aiProb": 0.019
+        "aiProb": 0.019,
+        "exWeight": 52.2,
+        "liveNotes": [
+          "体重が番組表より1.8kg減(54→52.2kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.128
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は85%想定。本命候補は1号艇・永田啓二(A1・事前勝率81%)、対抗は4号艇・中村泰平(同9%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-18T12:50:37.442Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・永田啓二: AI評価81%に対し市場は43%。+38ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "down",
+        "text": "2号艇・大塚康雅: 市場11%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・武富智亮: 市場13%に対しAI評価は3%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "down",
+        "text": "6号艇・田中辰彦: 市場13%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:55",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・永田啓二: 体重が番組表より1.4kg減(54→52.6kg)=軽量化でプラス"
+      },
+      {
+        "time": "21:55",
+        "type": "parts",
+        "impact": "down",
+        "text": "4号艇・中村泰平: 体重が番組表より1.0kg増(51→52kg)でマイナス"
+      },
+      {
+        "time": "21:55",
+        "type": "parts",
+        "impact": "up",
+        "text": "6号艇・田中辰彦: 体重が番組表より1.8kg減(54→52.2kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・永田啓二(展示反映後AI勝率81%)。妙味は1号艇・永田啓二(歪み+38pt)。イン逃げ確率は85%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-18T12:55:25.927Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "shimonoseki-2026-10-18-12",

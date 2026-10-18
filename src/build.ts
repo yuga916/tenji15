@@ -17,6 +17,10 @@ import { GUIDE_TERMS } from "./guideTerms.ts";
 import { venueBySlug, VENUES } from "./venues.ts";
 import { normalizeAgg, type HistoryAgg } from "./backfill.ts";
 import { gradeOf } from "./dataSource.ts";
+import { buildTiers, collectTierStats, rates, SHIBORI_MIN, type Tiers, type TierKey, type TierStats, type Combo } from "./betTiers.ts";
+
+/** 買い目の段階別・過去成績(main()で全確定レースから集計) */
+let TIER_STATS: TierStats | null = null;
 
 /** 節タイトルの正規化: 公式データの「ボートレース三 国 9月25日 ○○ 第 6日」形式から日付・日目を除去して節名だけにする */
 export function cleanSeriesTitle(t?: string): string | undefined {
@@ -280,10 +284,8 @@ function betSuggestion(r: Race): string {
     .filter((e) => e.marketProb !== undefined && e.aiProb - e.marketProb! >= 0.07 && e.lane !== a.lane && e.lane !== b.lane)
     .sort((x, y) => (y.aiProb - (y.marketProb ?? 0)) - (x.aiProb - (x.marketProb ?? 0)))[0];
 
-  const subs: string[] = [];
-  if (d) subs.push(`3連単 ${a.lane}-${b.lane}-${d.lane}`);
-  subs.push(`3連単 ${a.lane}-${c.lane}-${b.lane}`);
-  if (r.inEscapeProb < 50 && b) subs.push(`波乱押さえ ${b.lane}-${a.lane}-${c.lane}`);
+  void d;
+  const tiers = buildTiers(r);
 
   const reasons: string[] = [];
   reasons.push(`◎${a.lane}号艇・${esc(a.name)}のAI勝率${Math.round(a.aiProb * 100)}%(2位${b.lane}号艇と${Math.round((a.aiProb - b.aiProb) * 100)}pt差)`);
@@ -309,23 +311,52 @@ function betSuggestion(r: Race): string {
   // 結果確定後は買い目セクションを表示しない(結果データページとして中立に保つ)
   if (r.status === "verified") return "";
 
+  const hasEx = r.entries.some((e) => e.exTime !== undefined);
+  const autoNote = hasEx ? "" : `<p style="color:var(--signal); font-size:12px; margin:0 0 10px;">開いたままでOK: 展示タイムが公開されて予想が更新されると、このページは自動で最新に切り替わります。</p>`;
+
   return `<section data-ev="view_bet_suggestion" data-race-status="${r.status}">
-    <h2>シンプル結論 — AI評価の高い組み合わせ</h2>
+    <h2>買い目の目安 — 本命・対抗・穴(3連単)</h2>
     <div class="card">
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
         <span style="color:var(--muted); font-size:12.5px;">本線</span>
         <span style="display:inline-flex; align-items:center; gap:4px; font-size:18px; font-weight:900;">3連単 ${line([a.lane, b.lane, c.lane])}</span>
         ${statusNote}
       </div>
-      <p style="color:var(--muted); font-size:12.5px; margin-bottom:10px;">押さえ: ${subs.map(esc).join(" / ")}${gapBoat ? ` / 歪み狙い: ${a.lane}-${b.lane}-${gapBoat.lane}` : ""}</p>
+      ${autoNote}
+      ${tiers ? tierTable(tiers, line) : ""}
+      ${gapBoat ? `<p style="color:var(--muted); font-size:12.5px; margin:0 0 10px;">歪み狙い(市場が過小評価): ${a.lane}-${b.lane}-${gapBoat.lane}</p>` : ""}
       <p style="font-size:13px; color:#cfdde6; margin-bottom:4px;">根拠:</p>
       <ul style="font-size:13px; color:#cfdde6; padding-left:18px; line-height:1.9;">
         ${reasons.map((x) => `<li>${x}</li>`).join("\n")}
       </ul>
       ${factorChips(r.status)}
-      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。オッズは締切まで変動します。算出方法の詳細は<a href="${baseFor(4)}guide/ai-yosou/">競艇のAI予想とは</a>をご覧ください。</p>
+      <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。「推定」はAI勝率から計算した目安、「過去」は当サイトの確定レースに同じ選び方を当てはめた実測です(回収率100%未満は長期的にはマイナス)。オッズは締切まで変動します。選び方は<a href="${baseFor(4)}stats/methodology/#bets">買い目の段階表示について</a>をご覧ください。</p>
     </div>
   </section>`;
+}
+
+/** 本命・対抗・穴の段階表(推定確率と過去成績つき) */
+function tierTable(t: Tiers, line: (lanes: number[]) => string): string {
+  const pct = (v: number) => (v * 100 >= 10 ? Math.round(v * 100) : Math.round(v * 1000) / 10);
+  const past = (k: TierKey) => {
+    const rt = TIER_STATS ? rates(TIER_STATS[k]) : null;
+    return rt ? `過去${TIER_STATS![k].n.toLocaleString()}レース: 的中${rt.hit.toFixed(1)}%・回収${Math.round(rt.ret)}%` : "過去成績は集計中";
+  };
+  const row = (label: string, color: string, k: TierKey, combos: Combo[], note = "") => {
+    if (combos.length === 0) return "";
+    const sum = combos.reduce((s, c) => s + c.prob, 0);
+    return `<div style="padding:10px 0; border-top:1px solid rgba(255,255,255,.08);">
+<div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:6px;"><strong style="color:${color}; font-size:14px;">${label}</strong><span style="color:var(--dim); font-size:11.5px;">${combos.length}点${note}・どれかが当たる推定 約${pct(sum)}%</span></div>
+<div style="display:flex; flex-wrap:wrap; gap:8px 14px;">${combos.map((c) => `<span style="display:inline-flex; align-items:center; gap:3px; font-size:14px; font-weight:700;">${line(c.lanes)}<span style="color:var(--dim); font-size:11px; font-weight:400; margin-left:4px;">${pct(c.prob)}%</span></span>`).join("")}</div>
+<div style="color:var(--dim); font-size:11px; margin-top:5px;">${past(k)}</div>
+</div>`;
+  };
+  return `<div style="margin:0 0 12px;">
+${row("本命", "var(--cyan)", "honmei", t.honmei, "(推定確率の上位)")}
+${row("対抗", "#3ddc97", "taikou", t.taikou, "(AI評価2位の艇が1着)")}
+${row("穴", "var(--signal)", "ana", t.ana, "(AI上位2艇以外が1着)")}
+${t.shibori ? `<div style="padding:10px 12px; border-radius:10px; background:rgba(77,216,255,.07); border:1px dashed rgba(77,216,255,.4); font-size:12.5px; color:#cfdde6;">絞るなら2点: <strong>${t.shibori.map((c) => c.lanes.join("-")).join(" / ")}</strong>(AI本命の勝率が${Math.round(SHIBORI_MIN * 100)}%以上のレースのみ表示)<br><span style="color:var(--dim); font-size:11px;">${past("shibori")}</span></div>` : ""}
+</div>`;
 }
 
 /* ---------- 展示前 → 展示後の比較(変動の根拠つき) ---------- */
@@ -412,7 +443,7 @@ function prePostSection(r: Race): string {
   const headline = pre1.lane === post1.lane
     ? `${liveApplied ? "展示後も" : "現時点でも"}本命は<strong>${post1.lane}号艇・${esc(post1.name)}</strong>で変わらず(AI勝率 ${pct(pre1.preProb)}% → ${pct(post1.aiProb)}%)。`
     : `展示を受けて本命が<strong>${pre1.lane}号艇 → ${post1.lane}号艇・${esc(post1.name)}</strong>に変わりました(${post1.lane}号艇のAI勝率 ${pct(post1.preProb)}% → ${pct(post1.aiProb)}%)。`;
-  const pendingNote = hasExTime ? "" : `<p style="color:var(--signal); font-size:12.5px; margin:0 0 8px;">展示タイムはまだ公開されていません(公開後、5分以内に再計算して更新します)。現在は${r.entries.some((e) => exhibitionCourse(r, e) !== undefined) ? "進入と" : ""}直前オッズのみ反映しています。</p>`;
+  const pendingNote = hasExTime ? "" : `<p style="color:var(--signal); font-size:12.5px; margin:0 0 8px;">展示タイムはまだ公開されていません。展示タイムは締切の15〜20分前ごろに公開され、公開後5分以内に再計算します。このページを開いたままにしておけば、反映された時点で自動で最新に切り替わります。現在は${r.entries.some((e) => exhibitionCourse(r, e) !== undefined) ? "進入と" : ""}直前オッズのみ反映しています。</p>`;
   const lineTxt = (o: Entry[]) => o.slice(0, 3).map((e) => e.lane).join("-");
   const lineChanged = lineTxt(preOrder) !== lineTxt(postOrder);
 
@@ -748,6 +779,9 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
     FRESH_TEXT: fr.text,
     CHECKED_ISO: BUILD_ISO,
     STATUS_RAW: r.status,
+    RACE_ID: esc(r.raceId),
+    UPD_ISO: esc(r.updatedAt),
+    HAS_EX: r.entries.some((e) => e.exTime !== undefined) ? "1" : "0",
     BASE: base,
     SITE_URL,
     GA_SNIPPET: gaSnippet(),
@@ -1923,7 +1957,29 @@ async function main() {
   // レース詳細(1レース=1URL・事前→シグナル→結果を同一URLで)
   const raceTpl = await readFile(path.join(ROOT, "templates", "race-detail.template.html"), "utf-8");
   const vStats = collectVenueStats(races);
+  TIER_STATS = collectTierStats(races);
+  for (const k of ["honmei", "taikou", "ana", "shibori"] as TierKey[]) {
+    const rt = rates(TIER_STATS[k]);
+    console.log(`[build] 買い目段階 ${k}: n=${TIER_STATS[k].n} ${rt ? `的中${rt.hit.toFixed(1)}% 回収${rt.ret.toFixed(1)}%` : "-"}`);
+  }
   for (const r of races) await buildRacePage(raceTpl, r, races, vStats);
+
+  // 当日のライブ状態(レースページが裏で取得し、展示反映時の自動切替・締切後の「次のレース」案内に使う)
+  {
+    await mkdir(path.join(DIST, "live"), { recursive: true });
+    const live = {
+      b: BUILD_ISO,
+      d: currentDate,
+      r: todayRaces
+        .slice()
+        .sort((x, y) => x.closeTime.localeCompare(y.closeTime))
+        .map((r) => ({
+          i: r.raceId, v: r.venueSlug, vn: r.venue, n: r.raceNo, c: closeIso(r), s: r.status,
+          x: r.entries.some((e) => e.exTime !== undefined) ? 1 : 0, u: r.updatedAt, p: racePath(r),
+        })),
+    };
+    await writeFile(path.join(DIST, "live", "now.json"), JSON.stringify(live), "utf-8");
+  }
 
   // スタブページ(深度1)
   const stubs: [string, string, string][] = [
@@ -2653,6 +2709,7 @@ ${body}`,
 <section><h2>処理の流れ</h2><p>毎朝の番組確定後にレースページを自動生成 → 開催時間帯は5分ごとに直前情報を反映 → レース確定後の夜に競走成績で結果を照合し、同じURLに追記します。並行して、過去分の競走成績を毎晩さかのぼって取得し、<a href="${statsBase}stats/">統計ページ</a>の母数を拡充しています(目標: 過去3年分)。</p></section>
 <section><h2>AI評価の中身</h2><p>事前評価は級別・全国勝率・当地勝率・全国2連率・モーター2連率・ボート2連率の6ファクターをレース内で相対化し、会場ごとのコース別基準値に重ねたものです。展示航走後は展示タイムの偏差・進入変化に加え、部品交換・チルト角度・体重の変化(<a href="${statsBase}stats/methodology/#adjust">扱いの詳細</a>)で評価を更新し、直前オッズとの乖離を検出します。詳細は<a href="${statsBase}guide/ai-yosou/">競艇のAI予想とは</a>へ。</p></section>
 <section id="adjust"><h2>直前の調整情報(部品交換・チルト・体重)の扱い</h2><p>2026年10月9日から、公式の直前情報に掲載される次の3項目を、展示航走のデータと合わせてAI勝率に反映しています。いずれも選手コメントで語られることの多い「調整の中身」を、文章ではなく事実データとして読み取るものです。</p><p>①<strong>部品交換</strong>: リング・ピストン・キャブレターなどの主要部品を交換した艇は「足に不満があって手を入れた」サインとして、わずかにマイナス。新しいプロペラへの交換も、まだ合っていない可能性としてわずかにマイナス。<br>②<strong>チルト角度</strong>: +0.5以上は伸びを重視した調整。4〜6コースではまくり狙いとしてプラス、1〜2コースでは出足が落ちやすいとしてマイナス。<br>③<strong>体重</strong>: 番組表に記載の体重と当日の体重を比べ、1kg以上の減少はプラス、1kg以上の増加はマイナス。</p><p>補正の大きさは1項目あたり数%程度にとどめています。効果は検証中で、確定したレースの結果と照合しながら見直します(検証結果はまとまり次第、このサイトで公開します)。どの艇にどの補正が入ったかは、各レースページの「展示前→展示後で、予想はどう変わったか」に表示しています。</p></section>
+<section id="bets"><h2>買い目の段階表示(本命・対抗・穴)について</h2><p>各レースページの「買い目の目安」は、AI勝率(各艇が1着になる推定確率)から3連単120通りそれぞれの推定確率を計算し(Harville式: 1着の確率×残りの艇の中で2着になる確率×残りの艇の中で3着になる確率)、次のルールで機械的に選んでいます。</p><p><strong>本命(3点)</strong>: 推定確率の上位3点。<strong>対抗(3点)</strong>: AI評価2位の艇が1着になる組み合わせの上位3点。<strong>穴(2点)</strong>: AI評価1・2位以外の艇が1着になる組み合わせの上位2点。<strong>絞るなら2点</strong>: AI本命の勝率が70%以上のレースに限り、本命の上位2点を表示します。</p><p>各段の「過去」の的中率・回収率は、当サイトに記録された確定レースすべてに同じ選び方を当てはめて毎回のビルドで再集計した実測値です(100円ずつ購入した場合の払戻合計÷購入額)。回収率が100%を下回る段は、長期的には購入額を下回ることを意味します。点数を増やすほど的中率は上がりますが、回収率が上がるとは限りません。</p></section>
 <section><h2>数値の限界と免責</h2><p>払戻の一部が取得できないレースや、中止・不成立レースは集計から除外されます。回収率等は「過去の実測」であり将来の結果を保証しません。当サイトは的中保証・断定表現を行わず、舟券の販売・購入代行も行いません。</p></section>
 <section><h2>引用について</h2><p>当サイトのデータは出典明記(「競艇チョクゼン(kyotei-chokuzen.com)調べ」等)の上で引用いただけます。機械可読データは<a href="${statsBase}data/stats.json">stats.json</a>で公開しています。</p></section>`,
     }));

@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { parseBFile } from "./officialParser.ts";
 import { venueByJcd } from "./venues.ts";
 import { computePreProbs, computeInEscape } from "./model.ts";
+import { trifectaProbs, buildTiers, collectTierStats } from "./betTiers.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -209,6 +210,27 @@ assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTML�
   assert(get("b")?.entries[0].aiProb === 0.55, `merge: 事前評価(pre)は新しい番組表で更新する`);
   assert(get("c")?.status === "verified", `merge: 確定済み(verified)は保持`);
   assert(get("d")?.status === "signal", `merge: 新データに無い直前評価済みレースも保持`);
+}
+
+/* ---------- 買い目の段階表示 ---------- */
+{
+  const c = trifectaProbs(new Map([[1, 0.5], [2, 0.2], [3, 0.1], [4, 0.1], [5, 0.05], [6, 0.05]]));
+  assert(c.length === 120, `3連単120通り (実際: ${c.length})`);
+  assert(Math.abs(c.reduce((s, x) => s + x.prob, 0) - 1) < 1e-9, "3連単の推定確率の合計=1");
+  const mk = (p: number[]) => ({ entries: p.map((v, i) => ({ lane: i + 1, aiProb: v })) }) as any;
+  const t = buildTiers(mk([0.72, 0.1, 0.08, 0.05, 0.03, 0.02]))!;
+  const key = (x: { lanes: number[] }) => x.lanes.join("-");
+  const all = [...t.honmei, ...t.taikou, ...t.ana].map(key);
+  assert(new Set(all).size === all.length, "本命・対抗・穴の組み合わせが重複しない");
+  assert(t.honmei[0] && key(t.honmei[0]) === "1-2-3", "本命の1点目=AI順の1-2-3");
+  assert(t.taikou.every((x) => x.lanes[0] === 2), "対抗=AI評価2位が1着");
+  assert(t.ana.every((x) => x.lanes[0] !== 1 && x.lanes[0] !== 2), "穴=AI上位2艇以外が1着");
+  assert(!!t.shibori && t.shibori.length === 2, "AI本命70%以上で絞り2点を出す");
+  assert(buildTiers(mk([0.5, 0.2, 0.1, 0.1, 0.05, 0.05]))!.shibori === null, "AI本命70%未満は絞り2点なし");
+  const race = { ...mk([0.72, 0.1, 0.08, 0.05, 0.03, 0.02]), status: "verified", result: { finish: [1, 2, 3], payout3t: 900 } };
+  const st = collectTierStats([race]);
+  assert(st.honmei.n === 1 && st.honmei.hit === 1 && st.honmei.ret === 900, "段階別成績: 本命的中を集計");
+  assert(st.ana.hit === 0, "段階別成績: 穴は不的中");
 }
 
 console.log(process.exitCode ? "\nテスト失敗があります" : "\n全テスト通過");

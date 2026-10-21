@@ -3691,21 +3691,21 @@
     "raceNo": 1,
     "name": "朝トク一般",
     "seriesTitle": "ボートレース徳 山 10月22日 yab山口朝日放送杯 第 5日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:47",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 3,
+    "wave": 3,
     "inEscapeProbPre": 81,
     "inEscapeProb": 81,
-    "inNote": "徳山の基準値(62%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前81%から展示反映で81%に更新。",
     "kimarite": {
       "nige": 0.81,
       "makuri": 0.09,
       "sashi": 0.08,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -3717,7 +3717,9 @@
         "motorRate": 29.85,
         "weight": 46,
         "preProb": 0.777,
-        "aiProb": 0.777
+        "aiProb": 0.773,
+        "exWeight": 46.5,
+        "marketProb": 0.774
       },
       {
         "lane": 2,
@@ -3729,7 +3731,8 @@
         "motorRate": 25.86,
         "weight": 47,
         "preProb": 0.024,
-        "aiProb": 0.024
+        "aiProb": 0.024,
+        "exWeight": 47
       },
       {
         "lane": 3,
@@ -3741,7 +3744,9 @@
         "motorRate": 27.78,
         "weight": 46,
         "preProb": 0.064,
-        "aiProb": 0.064
+        "aiProb": 0.064,
+        "exWeight": 46.5,
+        "marketProb": 0.189
       },
       {
         "lane": 4,
@@ -3753,7 +3758,9 @@
         "motorRate": 28.7,
         "weight": 50,
         "preProb": 0.076,
-        "aiProb": 0.076
+        "aiProb": 0.076,
+        "exWeight": 49.7,
+        "marketProb": 0.022
       },
       {
         "lane": 5,
@@ -3765,7 +3772,9 @@
         "motorRate": 34.65,
         "weight": 47,
         "preProb": 0.054,
-        "aiProb": 0.054
+        "aiProb": 0.054,
+        "exWeight": 47.4,
+        "marketProb": 0.015
       },
       {
         "lane": 6,
@@ -3777,13 +3786,21 @@
         "motorRate": 35.88,
         "weight": 44,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "exWeight": 44
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 徳山のイン逃げ確率は81%想定。本命候補は1号艇・山田理央(A1・事前勝率78%)、対抗は4号艇・塩崎桐加(同8%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-21T23:20:32.152Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:25",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・谷口佳蓮: 市場19%に対しAI評価は6%。過剰人気の可能性。"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・山田理央(展示反映後AI勝率77%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は81%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-21T23:25:29.480Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "tokuyama-2026-10-22-2",
@@ -7388,7 +7405,7 @@
         "exCourse": 1,
         "exSt": -0.04,
         "tilt": -0.5,
-        "marketProb": 0.75
+        "marketProb": 0.617
       },
       {
         "lane": 2,
@@ -7411,7 +7428,7 @@
         "exCourse": 2,
         "exSt": 0.13,
         "tilt": 0,
-        "marketProb": 0.083
+        "marketProb": 0.14
       },
       {
         "lane": 3,
@@ -7431,7 +7448,7 @@
         "exCourse": 3,
         "exSt": -0.01,
         "tilt": 0,
-        "marketProb": 0.042
+        "marketProb": 0.052
       },
       {
         "lane": 4,
@@ -7451,7 +7468,7 @@
         "exCourse": 4,
         "exSt": -0.04,
         "tilt": -0.5,
-        "marketProb": 0.042
+        "marketProb": 0.104
       },
       {
         "lane": 5,
@@ -7471,7 +7488,7 @@
         "exCourse": 5,
         "exSt": -0.01,
         "tilt": 0,
-        "marketProb": 0.083
+        "marketProb": 0.07
       },
       {
         "lane": 6,
@@ -7493,43 +7510,50 @@
         "course": 6,
         "exCourse": 6,
         "exSt": 0.04,
-        "tilt": -0.5
+        "tilt": -0.5,
+        "marketProb": 0.017
       }
     ],
     "signals": [
       {
-        "time": "08:20",
+        "time": "08:25",
         "type": "extime",
         "impact": "down",
         "text": "3号艇・永井亮次の展示タイムがレース内偏差-1.9σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "08:20",
+        "time": "08:25",
         "type": "extime",
         "impact": "up",
         "text": "5号艇・藤山湧太の展示タイムがレース内偏差+1.3σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "08:20",
+        "time": "08:25",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・鶴本崇文: AI評価77%に対し市場は62%。+15ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "08:25",
         "type": "parts",
         "impact": "up",
         "text": "1号艇・鶴本崇文: 体重が番組表より1.3kg減(54→52.7kg)=軽量化でプラス"
       },
       {
-        "time": "08:20",
+        "time": "08:25",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・金田大輔: 体重が番組表より1.5kg減(52→50.5kg)=軽量化でプラス"
       },
       {
-        "time": "08:20",
+        "time": "08:25",
         "type": "parts",
         "impact": "up",
         "text": "6号艇・西原明生: 体重が番組表より1.5kg減(55→53.5kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・鶴本崇文(展示反映後AI勝率77%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は82%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-21T23:20:34.295Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・鶴本崇文(展示反映後AI勝率77%)。妙味は1号艇・鶴本崇文(歪み+15pt)。イン逃げ確率は82%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-21T23:25:26.053Z",
     "modelVersion": "v0.4.0-live"
   },
   {

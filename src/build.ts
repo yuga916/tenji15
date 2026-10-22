@@ -702,6 +702,7 @@ function sportsEventJsonLd(r: Race): string {
   const event = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
+    "@id": `${SITE_URL}/${racePath(r)}#event`,
     name: `${r.venue} 第${r.raceNo}R ${r.name}`,
     description: `${r.venue}競艇(ボートレース${r.venue})第${r.raceNo}R「${r.name}」。締切予定${r.closeTime}。AI直前予想とレース結果・払戻を掲載。`,
     sport: "Motorboat racing",
@@ -732,7 +733,8 @@ function sportsEventJsonLd(r: Race): string {
     lastReviewed: BUILD_ISO,
     inLanguage: "ja",
     isPartOf: { "@type": "WebSite", name: "競艇チョクゼン", url: SITE_URL },
-    about: { "@type": "SportsEvent", name: event.name, startDate: start },
+    // 同じイベントを入れ子で重複定義すると「location等が無い不完全なEvent」と判定されるため、@idで参照する
+    about: { "@id": `${SITE_URL}/${racePath(r)}#event` },
     publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
   };
   return JSON.stringify([event, page]);
@@ -882,9 +884,13 @@ ${ldScripts}
 <link rel="icon" href="${opts.base}assets/favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="512x512" href="${opts.base}assets/favicon-512.png">
 <link rel="apple-touch-icon" href="${opts.base}assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#050b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="チョクゼン">
 <link rel="stylesheet" href="${opts.base}assets/styles.css">
 ${gaSnippet()}</head><body>
-<header class="site"><div class="wrap"><a class="logo" href="${opts.base}">競艇<span class="num">チョクゼン</span></a>
+<header class="site"><div class="wrap"><a class="logo" href="${opts.base}" title="競艇チョクゼン">競艇<span class="num">チョクゼン</span></a>
 <nav class="global"><a href="${opts.base}guide/kanzen-guide/">予想ガイド</a><a href="${opts.base}stats/">データ</a><a href="${opts.base}results/">結果まとめ</a><a href="${opts.base}racers/">選手</a><a href="${opts.base}guide/">用語</a></nav></div></header>
 <main class="wrap article">
 <nav class="breadcrumb" aria-label="パンくずリスト">${crumbHtml}</nav>
@@ -892,6 +898,7 @@ ${opts.bodyHtml}
 <div class="age-note"><strong>20歳未満の方は舟券を購入できません。</strong>分析情報は的中を保証するものではありません。無理のない金額で計画的にお楽しみください。</div>
 </main>
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
+<script defer src="${opts.base}assets/home.js?v=20261022"></script>
 <script defer src="${opts.base}assets/feedback.js?v=20261018b"></script>
 </body></html>`;
 }
@@ -1153,9 +1160,13 @@ function stubPage(title: string, body: string, base: string): string {
 <link rel="icon" href="${base}assets/favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="512x512" href="${base}assets/favicon-512.png">
 <link rel="apple-touch-icon" href="${base}assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#050b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="チョクゼン">
 <link rel="stylesheet" href="${base}assets/styles.css">
 ${gaSnippet()}</head><body>
-<header class="site"><div class="wrap"><a class="logo" href="${base}">競艇<span class="num">チョクゼン</span></a></div></header>
+<header class="site"><div class="wrap"><a class="logo" href="${base}" title="競艇チョクゼン">競艇<span class="num">チョクゼン</span></a></div></header>
 <main class="wrap article"><h1>${title}</h1><p style="color:var(--muted);">${body}</p>
 <p><a href="${base}">← トップへ戻る</a></p></main>
 <footer class="site"><div class="wrap"><div class="legal"><p>© 2026 競艇チョクゼン</p></div></div></footer></body></html>`;
@@ -2950,6 +2961,23 @@ ${faqHtml}
   await writeFile(path.join(DIST, "sitemap.xml"), xml, "utf-8");
   await writeFile(path.join(DIST, "robots.txt"), robots, "utf-8");
   await writeFile(path.join(DIST, "favicon.ico"), await readFile(path.join(ROOT, "site", "assets", "favicon.ico")));
+  // ホーム画面に追加した時の設定(アプリのように全画面で開ける)
+  await writeFile(path.join(DIST, "manifest.webmanifest"), JSON.stringify({
+    name: "競艇チョクゼン｜締切15分前のAI直前予想",
+    short_name: "チョクゼン",
+    description: "競艇(ボートレース)の直前予想を全24場・全レース無料公開。展示後5分以内に更新。",
+    start_url: "/?source=homescreen",
+    scope: "/",
+    display: "standalone",
+    background_color: "#050b12",
+    theme_color: "#050b12",
+    lang: "ja",
+    icons: [
+      { src: "/assets/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/assets/favicon-512.png", sizes: "512x512", type: "image/png" },
+      { src: "/assets/favicon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+    ],
+  }), "utf-8");
   await writeFile(path.join(DIST, ".nojekyll"), "", "utf-8");
 
   console.log(`[build] 完了: レース${races.length} / 選手${racers.size} / 結果まとめ${resultDates.length}日分 → ${DIST}`);

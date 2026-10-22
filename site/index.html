@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta property="og:title" content="競艇のAI直前予想【全場・締切15分前に自動更新】｜競艇チョクゼン">
+<meta property="og:title" content="競艇チョクゼン｜競艇のAI直前予想【全場・締切15分前に自動更新】">
 <meta property="og:description" content="展示航走と直前オッズをAIが分析し、事前予想と市場のズレ=歪みを締切15分前に更新。結果・払戻も毎レース掲載。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{{SITE_URL}}/">
@@ -13,9 +13,13 @@
 <link rel="icon" href="{{BASE}}assets/favicon.ico" sizes="48x48">
 <link rel="icon" type="image/png" sizes="512x512" href="{{BASE}}assets/favicon-512.png">
 <link rel="apple-touch-icon" href="{{BASE}}assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#050b12">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="チョクゼン">
 <link rel="alternate" type="application/rss+xml" title="競艇チョクゼン 更新フィード" href="{{SITE_URL}}/feed.xml">
-<title>競艇のAI直前予想【全場・締切15分前に自動更新】｜競艇チョクゼン</title>
-<meta name="description" content="競艇(ボートレース)の直前予想を全24場・全レース無料公開。展示航走と直前オッズをAIが分析し、事前予想と市場のズレ=歪みを締切15分前に更新。レース結果・払戻も毎レース掲載。">
+<title>競艇チョクゼン｜競艇のAI直前予想【全場・締切15分前に自動更新】</title>
+<meta name="description" content="競艇チョクゼンは、競艇(ボートレース)の直前予想を全24場・全レース無料公開するサイトです。展示航走と直前オッズをAIが分析し、事前予想と市場のズレ=歪みを締切15分前に更新。レース結果・払戻も毎レース掲載。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -26,7 +30,7 @@
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "競艇チョクゼン",
-  "alternateName": ["きょうていチョクゼン", "チョクゼン", "kyotei-chokuzen", "ボートレースチョクゼン", "競艇直前予想 チョクゼン"],
+  "alternateName": ["競艇 チョクゼン", "きょうていチョクゼン", "チョクゼン", "kyotei-chokuzen", "kyotei-chokuzen.com", "ボートレースチョクゼン", "競艇直前予想 チョクゼン"],
   "url": "{{SITE_URL}}",
   "description": "展示航走後の直前情報に特化したボートレース分析メディア",
   "sameAs": ["https://x.com/kyotei_chokuzen"],
@@ -43,7 +47,7 @@
 
 <header class="site">
   <div class="wrap">
-    <a class="logo" href="{{BASE}}">競艇<span class="num">チョクゼン</span></a>
+    <a class="logo" href="{{BASE}}" aria-label="競艇チョクゼン トップ" title="競艇チョクゼン">競艇<span class="num">チョクゼン</span></a>
     <nav class="global">
       <a href="#next">次の締切</a>
       <a href="#signals">歪みレーダー</a>
@@ -58,9 +62,10 @@
 <section class="hero">
   <div class="wrap">
     <span class="badge">EXHIBITION SIGNAL AI</span>
+    <p class="brand-line" style="margin:12px 0 0; font-size:15px; font-weight:900; letter-spacing:.04em; color:var(--cyan);">競艇チョクゼン<span style="color:var(--muted); font-weight:500; font-size:12.5px; letter-spacing:0; margin-left:8px;">(きょうていチョクゼン)｜競艇のAI直前予想サイト</span></p>
     <div class="fresh {{LIVE_CLASS}}" data-checked="{{CHECKED_ISO}}" style="margin:10px 0 6px;"><span class="dot"></span><span>{{LIVE_TEXT}}</span></div>
     <h1>締切15分前、<br>ここを見てから<em>買う</em>。</h1>
-    <p class="lead">レース直前の展示航走で、予想の答えは変わります。競艇チョクゼンはその変化をAIが全レース自動分析し、「オッズより評価が高い狙い目」を無料で表示。開催中は全レースを5分ごとに自動更新しているので、見るのは締切15分前の1回だけでOKです。</p>
+    <p class="lead">レース直前の展示航走で、予想の答えは変わります。<strong>競艇チョクゼン</strong>はその変化をAIが全レース自動分析し、「オッズより評価が高い狙い目」を無料で表示。開催中は全レースを5分ごとに自動更新しているので、見るのは締切15分前の1回だけでOKです。</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="#races">今日の無料予想を見る</a>
       <a class="btn btn-ghost" href="#how">歪み検知の仕組み</a>
@@ -247,6 +252,7 @@
 </script>
 
 <script defer src="{{BASE}}assets/recap.js"></script>
+<script defer src="{{BASE}}assets/home.js?v=20261022"></script>
 <script defer src="{{BASE}}assets/feedback.js?v=20261018b"></script>
 </body>
 </html>

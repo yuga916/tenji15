@@ -8097,21 +8097,21 @@
     "raceNo": 12,
     "name": "一般特選",
     "seriesTitle": "MNBR若松5thひめちゃん杯",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "22:54",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 6,
+    "wave": 6,
     "inEscapeProbPre": 74,
     "inEscapeProb": 74,
-    "inNote": "若松の基準値(56%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前74%から展示反映で74%に更新。",
     "kimarite": {
       "nige": 0.74,
       "makuri": 0.12,
       "sashi": 0.11,
       "other": 0.03
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -8123,7 +8123,12 @@
         "motorRate": 34.27,
         "weight": 51,
         "preProb": 0.732,
-        "aiProb": 0.732
+        "aiProb": 0.721,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(51→52kg)でマイナス"
+        ],
+        "marketProb": 0.773
       },
       {
         "lane": 2,
@@ -8135,7 +8140,12 @@
         "motorRate": 26.32,
         "weight": 54,
         "preProb": 0.046,
-        "aiProb": 0.046
+        "aiProb": 0.048,
+        "exWeight": 53,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(54→53kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.028
       },
       {
         "lane": 3,
@@ -8147,7 +8157,9 @@
         "motorRate": 37.56,
         "weight": 52,
         "preProb": 0.105,
-        "aiProb": 0.105
+        "aiProb": 0.107,
+        "exWeight": 52,
+        "marketProb": 0.085
       },
       {
         "lane": 4,
@@ -8159,7 +8171,12 @@
         "motorRate": 39.42,
         "weight": 54,
         "preProb": 0.099,
-        "aiProb": 0.099
+        "aiProb": 0.103,
+        "exWeight": 52.1,
+        "liveNotes": [
+          "体重が番組表より1.9kg減(54→52.1kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.042
       },
       {
         "lane": 5,
@@ -8171,7 +8188,9 @@
         "motorRate": 28.57,
         "weight": 53,
         "preProb": 0.007,
-        "aiProb": 0.007
+        "aiProb": 0.01,
+        "exWeight": 53.4,
+        "marketProb": 0.028
       },
       {
         "lane": 6,
@@ -8183,13 +8202,34 @@
         "motorRate": 36.32,
         "weight": 54,
         "preProb": 0.011,
-        "aiProb": 0.011
+        "aiProb": 0.011,
+        "exWeight": 53.8,
+        "marketProb": 0.042
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 若松のイン逃げ確率は74%想定。本命候補は1号艇・郷原章平(A2・事前勝率73%)、対抗は3号艇・外崎悟(同10%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-23T13:15:29.257Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "22:30",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・郷原章平: 体重が番組表より1.0kg増(51→52kg)でマイナス"
+      },
+      {
+        "time": "22:30",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・抹香雄三: 体重が番組表より1.0kg減(54→53kg)=軽量化でプラス"
+      },
+      {
+        "time": "22:30",
+        "type": "parts",
+        "impact": "up",
+        "text": "4号艇・岩崎正哉: 体重が番組表より1.9kg減(54→52.1kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・郷原章平(展示反映後AI勝率72%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は74%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-23T13:30:34.160Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "tokuyama-2026-10-23-1",

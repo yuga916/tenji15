@@ -2455,21 +2455,21 @@
     "raceNo": 1,
     "name": "サンライズV",
     "seriesTitle": "ボートレース芦 屋 10月24日 KBCラジオ杯 第 2日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:43",
-    "windDir": "—",
+    "windDir": "曇",
     "windSpeed": 0,
-    "wave": 0,
+    "wave": 1,
     "inEscapeProbPre": 73,
     "inEscapeProb": 73,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前73%から展示反映で73%に更新。",
     "kimarite": {
       "nige": 0.73,
       "makuri": 0.12,
       "sashi": 0.11,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -2481,7 +2481,15 @@
         "motorRate": 24.78126,
         "weight": 55,
         "preProb": 0.755,
-        "aiProb": 0.755
+        "aiProb": 0.743,
+        "exWeight": 55,
+        "parts": [
+          "リング×2"
+        ],
+        "liveNotes": [
+          "部品交換(リング×2)=足に不満があり手を入れたサインでマイナス"
+        ],
+        "marketProb": 0.733
       },
       {
         "lane": 2,
@@ -2493,7 +2501,9 @@
         "motorRate": 27.43121,
         "weight": 49,
         "preProb": 0.039,
-        "aiProb": 0.039
+        "aiProb": 0.04,
+        "exWeight": 48.8,
+        "marketProb": 0.089
       },
       {
         "lane": 3,
@@ -2505,7 +2515,9 @@
         "motorRate": 36.70156,
         "weight": 56,
         "preProb": 0.068,
-        "aiProb": 0.068
+        "aiProb": 0.07,
+        "exWeight": 55.4,
+        "marketProb": 0.044
       },
       {
         "lane": 4,
@@ -2517,7 +2529,9 @@
         "motorRate": 32.80151,
         "weight": 53,
         "preProb": 0.068,
-        "aiProb": 0.068
+        "aiProb": 0.07,
+        "exWeight": 52.6,
+        "marketProb": 0.044
       },
       {
         "lane": 5,
@@ -2529,7 +2543,9 @@
         "motorRate": 31.62114,
         "weight": 53,
         "preProb": 0.066,
-        "aiProb": 0.066
+        "aiProb": 0.068,
+        "exWeight": 52.5,
+        "marketProb": 0.044
       },
       {
         "lane": 6,
@@ -2541,13 +2557,22 @@
         "motorRate": 23.28122,
         "weight": 49,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "exWeight": 49.6,
+        "marketProb": 0.044
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は73%想定。本命候補は1号艇・立間充宏(A2・事前勝率75%)、対抗は4号艇・宇田川信(同7%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-23T23:00:29.390Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:20",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・立間充宏: 部品交換(リング×2)=足に不満があり手を入れたサインでマイナス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・立間充宏(展示反映後AI勝率74%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は73%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-23T23:20:33.391Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "ashiya-2026-10-24-2",
@@ -6133,12 +6158,12 @@
     "windSpeed": 1,
     "wave": 1,
     "inEscapeProbPre": 75,
-    "inEscapeProb": 75,
-    "inNote": "事前75%から展示反映で75%に更新。",
+    "inEscapeProb": 77,
+    "inNote": "事前75%から展示反映で77%に更新。1号艇の展示偏差は+0.4σ。",
     "kimarite": {
-      "nige": 0.75,
-      "makuri": 0.11,
-      "sashi": 0.11,
+      "nige": 0.77,
+      "makuri": 0.1,
+      "sashi": 0.1,
       "other": 0.03
     },
     "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
@@ -6153,11 +6178,17 @@
         "motorRate": 29.91,
         "weight": 53,
         "preProb": 0.729,
-        "aiProb": 0.73,
+        "aiProb": 0.739,
         "exWeight": 52,
         "liveNotes": [
           "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.85,
+        "exDev": 0.4,
+        "course": 1,
+        "exCourse": 1,
+        "exSt": -0.04,
+        "tilt": -0.5
       },
       {
         "lane": 2,
@@ -6169,8 +6200,14 @@
         "motorRate": 37,
         "weight": 52,
         "preProb": 0.128,
-        "aiProb": 0.124,
-        "exWeight": 52
+        "aiProb": 0.109,
+        "exWeight": 52,
+        "exTime": 6.87,
+        "exDev": 0,
+        "course": 2,
+        "exCourse": 2,
+        "exSt": 0.03,
+        "tilt": -0.5
       },
       {
         "lane": 3,
@@ -6182,8 +6219,14 @@
         "motorRate": 43.97,
         "weight": 52,
         "preProb": 0.044,
-        "aiProb": 0.043,
-        "exWeight": 52
+        "aiProb": 0.061,
+        "exWeight": 52,
+        "exTime": 6.8,
+        "exDev": 1.4,
+        "course": 3,
+        "exCourse": 3,
+        "exSt": -0.09,
+        "tilt": 0
       },
       {
         "lane": 4,
@@ -6195,11 +6238,17 @@
         "motorRate": 39.39,
         "weight": 64,
         "preProb": 0.056,
-        "aiProb": 0.056,
+        "aiProb": 0.065,
         "exWeight": 61.8,
         "liveNotes": [
           "体重が番組表より2.2kg減(64→61.8kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.83,
+        "exDev": 0.8,
+        "course": 4,
+        "exCourse": 4,
+        "exSt": 0.12,
+        "tilt": -0.5
       },
       {
         "lane": 5,
@@ -6211,8 +6260,14 @@
         "motorRate": 28.3,
         "weight": 53,
         "preProb": 0.038,
-        "aiProb": 0.037,
-        "exWeight": 52.4
+        "aiProb": 0.019,
+        "exWeight": 52.4,
+        "exTime": 6.95,
+        "exDev": -1.6,
+        "course": 5,
+        "exCourse": 5,
+        "exSt": 0.1,
+        "tilt": -0.5
       },
       {
         "lane": 6,
@@ -6224,26 +6279,44 @@
         "motorRate": 33.33,
         "weight": 57,
         "preProb": 0.005,
-        "aiProb": 0.01,
-        "exWeight": 56.7
+        "aiProb": 0.006,
+        "exWeight": 56.7,
+        "exTime": 6.91,
+        "exDev": -0.8,
+        "course": 6,
+        "exCourse": 6,
+        "exSt": 0.14,
+        "tilt": 0
       }
     ],
     "signals": [
       {
-        "time": "08:15",
+        "time": "08:20",
+        "type": "extime",
+        "impact": "up",
+        "text": "3号艇・藤山湧太の展示タイムがレース内偏差+1.4σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "08:20",
+        "type": "extime",
+        "impact": "down",
+        "text": "5号艇・永井亮次の展示タイムがレース内偏差-1.6σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "08:20",
         "type": "parts",
         "impact": "up",
         "text": "1号艇・白水勝也: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       },
       {
-        "time": "08:15",
+        "time": "08:20",
         "type": "parts",
         "impact": "up",
         "text": "4号艇・飯山晃三: 体重が番組表より2.2kg減(64→61.8kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・白水勝也(展示反映後AI勝率73%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は75%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-23T23:15:27.642Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・白水勝也(展示反映後AI勝率74%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は77%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-23T23:20:30.024Z",
     "modelVersion": "v0.4.0-live"
   },
   {

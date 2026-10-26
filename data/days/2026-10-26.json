@@ -3275,21 +3275,21 @@
     "raceNo": 5,
     "name": "サンライズZ",
     "seriesTitle": "ボートレース芦 屋 10月26日 KBCラジオ杯 第 4日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:21",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 3,
+    "wave": 3,
     "inEscapeProbPre": 81,
     "inEscapeProb": 81,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "事前81%から展示反映で81%に更新。",
     "kimarite": {
       "nige": 0.81,
       "makuri": 0.09,
       "sashi": 0.08,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -3301,7 +3301,9 @@
         "motorRate": 24.78126,
         "weight": 55,
         "preProb": 0.811,
-        "aiProb": 0.811
+        "aiProb": 0.809,
+        "exWeight": 55.2,
+        "marketProb": 0.365
       },
       {
         "lane": 2,
@@ -3313,7 +3315,12 @@
         "motorRate": 36.70156,
         "weight": 56,
         "preProb": 0.039,
-        "aiProb": 0.039
+        "aiProb": 0.04,
+        "exWeight": 54.8,
+        "liveNotes": [
+          "体重が番組表より1.2kg減(56→54.8kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.089
       },
       {
         "lane": 3,
@@ -3325,7 +3332,8 @@
         "motorRate": 23.64164,
         "weight": 58,
         "preProb": 0.041,
-        "aiProb": 0.041
+        "aiProb": 0.041,
+        "exWeight": 57.2
       },
       {
         "lane": 4,
@@ -3337,7 +3345,8 @@
         "motorRate": 43.97142,
         "weight": 50,
         "preProb": 0.028,
-        "aiProb": 0.028
+        "aiProb": 0.028,
+        "exWeight": 49.3
       },
       {
         "lane": 5,
@@ -3349,7 +3358,12 @@
         "motorRate": 31.13112,
         "weight": 56,
         "preProb": 0.052,
-        "aiProb": 0.052
+        "aiProb": 0.053,
+        "exWeight": 52.9,
+        "liveNotes": [
+          "体重が番組表より3.1kg減(56→52.9kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.089
       },
       {
         "lane": 6,
@@ -3361,13 +3375,40 @@
         "motorRate": 31.62114,
         "weight": 53,
         "preProb": 0.029,
-        "aiProb": 0.029
+        "aiProb": 0.029,
+        "exWeight": 52.1,
+        "marketProb": 0.457
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は81%想定。本命候補は1号艇・立間充宏(A2・事前勝率81%)、対抗は5号艇・松江秀徳(同5%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-26T00:55:27.574Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:00",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・立間充宏: AI評価81%に対し市場は37%。+44ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:00",
+        "type": "gap",
+        "impact": "down",
+        "text": "6号艇・鋤柄貴俊: 市場46%に対しAI評価は3%。過剰人気の可能性。"
+      },
+      {
+        "time": "10:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・松尾基成: 体重が番組表より1.2kg減(56→54.8kg)=軽量化でプラス"
+      },
+      {
+        "time": "10:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "5号艇・松江秀徳: 体重が番組表より3.1kg減(56→52.9kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・立間充宏(展示反映後AI勝率81%)。妙味は1号艇・立間充宏(歪み+44pt)。イン逃げ確率は81%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-26T01:00:34.368Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "ashiya-2026-10-26-6",
@@ -7186,7 +7227,7 @@
         "exCourse": 1,
         "exSt": 0.16,
         "tilt": -0.5,
-        "marketProb": 0.542
+        "marketProb": 0.564
       },
       {
         "lane": 2,
@@ -7206,7 +7247,7 @@
         "exCourse": 2,
         "exSt": 0.1,
         "tilt": -0.5,
-        "marketProb": 0.238
+        "marketProb": 0.293
       },
       {
         "lane": 3,
@@ -7226,7 +7267,7 @@
         "exCourse": 3,
         "exSt": 0.12,
         "tilt": -0.5,
-        "marketProb": 0.161
+        "marketProb": 0.014
       },
       {
         "lane": 4,
@@ -7246,7 +7287,7 @@
         "exCourse": 4,
         "exSt": 0.2,
         "tilt": -0.5,
-        "marketProb": 0.015
+        "marketProb": 0.028
       },
       {
         "lane": 5,
@@ -7269,7 +7310,7 @@
         "exCourse": 5,
         "exSt": 0.24,
         "tilt": -0.5,
-        "marketProb": 0.029
+        "marketProb": 0.085
       },
       {
         "lane": 6,
@@ -7292,61 +7333,49 @@
         "exCourse": 6,
         "exSt": 0.23,
         "tilt": -0.5,
-        "marketProb": 0.015
+        "marketProb": 0.014
       }
     ],
     "signals": [
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "extime",
         "impact": "up",
         "text": "2号艇・田中宏樹の展示タイムがレース内偏差+1.6σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "extime",
         "impact": "down",
         "text": "4号艇・森弘行の展示タイムがレース内偏差-1.5σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "up",
-        "text": "1号艇・後藤正宗: AI評価65%に対し市場は54%。+10ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・後藤正宗: AI評価65%に対し市場は56%。+8ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "down",
-        "text": "2号艇・田中宏樹: 市場24%に対しAI評価は13%。過剰人気の可能性。"
+        "text": "2号艇・田中宏樹: 市場29%に対しAI評価は13%。過剰人気の可能性。"
       },
       {
-        "time": "09:55",
-        "type": "gap",
-        "impact": "down",
-        "text": "3号艇・山本兼士: 市場16%に対しAI評価は3%。過剰人気の可能性。"
-      },
-      {
-        "time": "09:55",
-        "type": "gap",
-        "impact": "up",
-        "text": "5号艇・萩原秀人: AI評価15%に対し市場は3%。+12ptの歪み(市場が織り込んでいない可能性)。"
-      },
-      {
-        "time": "09:55",
+        "time": "10:00",
         "type": "parts",
         "impact": "up",
         "text": "5号艇・萩原秀人: 体重が番組表より2.5kg減(55→52.5kg)=軽量化でプラス"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "parts",
         "impact": "up",
         "text": "6号艇・小林甘寧: 体重が番組表より1.0kg減(54→53kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・後藤正宗(展示反映後AI勝率65%)。妙味は5号艇・萩原秀人(歪み+12pt)。イン逃げ確率は42%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-26T00:55:29.773Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・後藤正宗(展示反映後AI勝率65%)。妙味は1号艇・後藤正宗(歪み+8pt)。イン逃げ確率は42%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-26T01:00:27.578Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -9509,56 +9538,56 @@
     ],
     "signals": [
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "up",
         "text": "1号艇・田中辰彦: AI評価82%に対し市場は29%。+53ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "down",
         "text": "3号艇・堀本翔太: 市場16%に対しAI評価は3%。過剰人気の可能性。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "down",
         "text": "4号艇・山崎小葉: 市場16%に対しAI評価は5%。過剰人気の可能性。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "down",
         "text": "5号艇・齋藤勇: 市場16%に対しAI評価は4%。過剰人気の可能性。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "gap",
         "impact": "down",
         "text": "6号艇・岸蔭亮: 市場16%に対しAI評価は1%。過剰人気の可能性。"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "parts",
         "impact": "up",
         "text": "1号艇・田中辰彦: 体重が番組表より1.5kg減(54→52.5kg)=軽量化でプラス"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・石田勇斗: 体重が番組表より1.3kg減(54→52.7kg)=軽量化でプラス"
       },
       {
-        "time": "09:55",
+        "time": "10:00",
         "type": "parts",
         "impact": "up",
         "text": "6号艇・岸蔭亮: 体重が番組表より1.0kg減(54→53kg)=軽量化でプラス"
       }
     ],
     "verdict": "直前最終評価: 本命候補は1号艇・田中辰彦(展示反映後AI勝率82%)。妙味は1号艇・田中辰彦(歪み+53pt)。イン逃げ確率は88%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-26T00:55:33.130Z",
+    "updatedAt": "2026-10-26T01:00:30.976Z",
     "modelVersion": "v0.4.0-live"
   },
   {

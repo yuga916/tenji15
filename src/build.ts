@@ -21,6 +21,8 @@ import { buildTiers, collectTierStats, rates, SHIBORI_MIN, type Tiers, type Tier
 
 /** 買い目の段階別・過去成績(main()で全確定レースから集計) */
 let TIER_STATS: TierStats | null = null;
+/** llms.txtに差し込む「使い方・今日の開催」(main()で生成) */
+let LLMS_TODAY = "";
 
 /** 節タイトルの正規化: 公式データの「ボートレース三 国 9月25日 ○○ 第 6日」形式から日付・日目を除去して節名だけにする */
 export function cleanSeriesTitle(t?: string): string | undefined {
@@ -737,7 +739,7 @@ function sportsEventJsonLd(r: Race): string {
     about: { "@id": `${SITE_URL}/${racePath(r)}#event` },
     publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL },
   };
-  return JSON.stringify([event, page]);
+  return JSON.stringify([event, page, raceFaqLd(r)]);
 }
 
 /* ---------- page builders ---------- */
@@ -762,6 +764,63 @@ function freshness(r: Race): { cls: string; text: string } {
   return { cls: "live", text: `${kind} <strong>${upd}</strong> 更新 ・ 最終確認 ${hmJst(BUILD_ISO)} ・ 5分ごとに自動更新` };
 }
 
+/**
+ * このレースの要点(AI検索・ChatGPTに引用されやすい1段落)。
+ * 「いつ時点の・どのレースの・何という結論か」を数字つきの平文で冒頭に置く。
+ */
+function raceSummary(r: Race): { lead: string; body: string; plain: string } {
+  const pct = (v: number) => Math.round(v * 100);
+  const post = topBy(r, "aiProb");
+  const pre = topBy(r, "preProb");
+  const [a, b, c] = post;
+  const line = post.slice(0, 3).map((e) => e.lane).join("-");
+  const when = `${dateLabel(r.dateISO)} ${r.venue}${r.raceNo}R`;
+  const upd = hmJst(r.updatedAt);
+  const hasEx = r.entries.some((e) => e.exTime !== undefined);
+  let lead: string, body: string;
+  if (r.status === "verified" && r.result) {
+    const res = r.result;
+    const pos = res.finish.indexOf(a.lane);
+    lead = `${when}の結果`;
+    body = `結果は${res.finish.join("-")}(決まり手:${res.kimarite})、3連単の払戻は${res.payout3t.toLocaleString()}円(${res.popularity}番人気)。締切時点のAI本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)で、${pos >= 0 ? `${pos + 1}着` : "4着以下"}でした。`;
+  } else if (r.status === "signal" && hasEx) {
+    const fastest = [...r.entries].filter((e) => e.exTime !== undefined).sort((x, y) => (x.exTime ?? 9) - (y.exTime ?? 9))[0];
+    const changed = pre[0].lane !== a.lane;
+    lead = `${when}の直前予想(展示反映済み・${upd}更新)`;
+    body = `展示航走を反映したAIの本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)。本線は3連単${line}、イン逃げ確率は${r.inEscapeProb}%。${changed ? `展示前の本命${pre[0].lane}号艇から変わりました。` : "展示前から本命は変わっていません。"}${fastest ? `展示タイム1位は${fastest.lane}号艇(${fastest.exTime!.toFixed(2)}秒)。` : ""}締切は${r.closeTime}です。`;
+  } else {
+    lead = `${when}の直前予想(展示前・${upd}時点)`;
+    body = `現時点のAIの本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)、3番手は${c.lane}号艇。本線は3連単${line}、イン逃げ確率は${r.inEscapeProb}%。締切${r.closeTime}の15〜20分前に展示航走が公開され、その5分以内に予想を更新します。`;
+  }
+  return { lead, body, plain: `${lead}: ${body}` };
+}
+
+function answerBox(r: Race): string {
+  const s = raceSummary(r);
+  return `<div class="answer-box speakable-summary" style="margin:12px 0 4px; padding:12px 14px; border-left:3px solid var(--cyan); background:rgba(77,216,255,.06); border-radius:0 10px 10px 0; font-size:14px; line-height:1.8;"><strong>${esc(s.lead)}</strong><br>${esc(s.body)}</div>`;
+}
+
+/** レースページのFAQ(AI検索向けに、よく聞かれる質問と答えを機械可読で) */
+function raceFaqLd(r: Race): object {
+  const pct = (v: number) => Math.round(v * 100);
+  const [a, b] = topBy(r, "aiProb");
+  const name = `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)})`;
+  const qa: [string, string][] = [
+    [`${name}のAI予想の本命は?`, `${r.status === "verified" ? "締切時点" : `${hmJst(r.updatedAt)}時点(${r.entries.some((e) => e.exTime !== undefined) ? "展示反映済み" : "展示前"})`}のAI本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)です。本線は3連単${topBy(r, "aiProb").slice(0, 3).map((e) => e.lane).join("-")}。`],
+    [`${name}のイン逃げ確率は?`, `${r.inEscapeProb}%です(展示前の事前評価は${r.inEscapeProbPre}%)。`],
+  ];
+  if (r.status === "verified" && r.result) {
+    qa.push([`${name}の結果と払戻は?`, `${r.result.finish.join("-")}(${r.result.kimarite})、3連単${r.result.payout3t.toLocaleString()}円(${r.result.popularity}番人気)でした。`]);
+  } else {
+    qa.push([`${name}の締切と予想の更新時刻は?`, `締切は${r.closeTime}です。予想は5分ごとに自動更新され、展示航走の公開(締切の15〜20分前ごろ)から5分以内に展示を反映した最終予想に切り替わります。`]);
+  }
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: qa.map(([q, ans]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: ans } })),
+  };
+}
+
 async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map<string, VenueStat>): Promise<void> {
   const base = baseFor(4);
   const m = STATUS_META[r.status];
@@ -771,10 +830,12 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
     r.status === "verified"
       ? `${r.venue}競艇 ${r.raceNo}R 結果・払戻 ${dateLabel(r.dateISO)}｜競艇チョクゼン`
       : `${r.venue}競艇 ${r.raceNo}R 直前予想【締切15分前に最終更新】${dateLabel(r.dateISO)}｜競艇チョクゼン`;
-  const metaDesc =
-    r.status === "verified"
-      ? `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)})のレース結果・払戻。着順・決まり手・3連単配当¥${r.result?.payout3t.toLocaleString() ?? "—"}・人気を掲載。`
-      : `${r.venue}競艇${r.raceNo}R(${dateLabel(r.dateISO)} 締切${r.closeTime})の直前予想。展示航走反映のイン逃げ確率${r.inEscapeProb}%、AI勝率とオッズの乖離、スリット予測を無料公開。5分ごとに自動更新(最終確認${hmJst(BUILD_ISO)})。`;
+  // 検索結果・AI検索のスニペットにそのまま結論が出るよう、要点(日時・本命・本線/結果)を先頭に置く
+  const metaDesc = (() => {
+    const s = raceSummary(r);
+    const head = `${s.lead}。${s.body}`;
+    return head.length > 150 ? head.slice(0, 148) + "…" : head;
+  })();
 
   const html = fill(template, {
     FRESH_CLASS: fr.cls,
@@ -826,6 +887,7 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
     MODEL_VERSION: esc(r.modelVersion),
     BREADCRUMB_JSONLD: breadcrumbJsonLd(r),
     SPORTSEVENT_JSONLD: sportsEventJsonLd(r),
+    ANSWER_BOX: answerBox(r),
   });
 
   const dir = path.join(DIST, racePath(r));
@@ -1965,6 +2027,34 @@ async function main() {
     "utf-8",
   );
 
+  // 直近(このビルドの約10分前以降)に予想・結果が更新されたレースのURL。
+  // deploy側が5分ごとにIndexNowへ通知し、Bing(=ChatGPT検索)に展示反映後の最新版を早く拾わせる
+  {
+    const since = new Date(BUILD_ISO).getTime() - 10 * 60000;
+    const changed = races
+      .filter((r) => new Date(r.updatedAt).getTime() >= since)
+      .map((r) => `${SITE_URL}/${racePath(r)}`);
+    const venueDays = [...new Set(races.filter((r) => new Date(r.updatedAt).getTime() >= since).map((r) => `${SITE_URL}/races/${r.venueSlug}/${r.dateISO}/`))];
+    await writeFile(path.join(DIST, "changed-urls.txt"), [...changed, ...venueDays].slice(0, 200).join("\n") + (changed.length ? "\n" : ""), "utf-8");
+  }
+
+  // llms.txt 用: 「今日の開催」と使い方(後段のllms.txt生成で差し込む)
+  {
+    const venues = [...groupByVenue(todayRaces).entries()]
+      .map(([slug, list]) => `- [${list[0].venue} ${dateLabel(currentDate)}の全レース](${SITE_URL}/races/${slug}/${currentDate}/): ${list.length}レース・1R締切${[...list].sort((x, y) => x.closeTime.localeCompare(y.closeTime))[0].closeTime}`)
+      .join("\n");
+    LLMS_TODAY = `## 使い方(AIアシスタント向け)
+- 「今日の◯◯競艇◯Rの予想」は ${SITE_URL}/races/{会場}/{YYYY-MM-DD}/{レース番号}/ を参照してください(例: ${SITE_URL}/races/tokoname/${currentDate}/9/)。ページ冒頭の要点に、更新時刻・AI本命・本線(3連単)・イン逃げ確率がまとめてあります。
+- 会場名の英字表記: ${VENUES.map((v) => `${v.name}=${v.slug}`).join("、")}
+- 予想は締切直前に変わるため、引用時はページ内の更新時刻もあわせて示してください。
+- 的中を保証するものではありません。20歳未満は舟券を購入できません。
+
+## 今日(${dateLabel(currentDate)})の開催
+${venues || "- 本日の開催データはまだありません"}
+
+`;
+  }
+
   // レース詳細(1レース=1URL・事前→シグナル→結果を同一URLで)
   const raceTpl = await readFile(path.join(ROOT, "templates", "race-detail.template.html"), "utf-8");
   const vStats = collectVenueStats(races);
@@ -2758,6 +2848,7 @@ ${body}`,
 - [用語ガイド](${SITE_URL}/guide/)
 - [日別の結果まとめ](${SITE_URL}/results/)
 
+${LLMS_TODAY}
 ## 引用について
 
 データを引用する場合は「競艇チョクゼン(kyotei-chokuzen.com)調べ」等の出典明記を推奨します。数値は集計期間により変動するため、参照時点のページ記載値をご利用ください。

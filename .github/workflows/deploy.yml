@@ -95,6 +95,20 @@ jobs:
           {"host":"kyotei-chokuzen.com","key":"8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24","keyLocation":"https://kyotei-chokuzen.com/8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24.txt","urlList":[${URLS}]}
           EOF
           curl -s -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data @payload.json -w "\nIndexNow HTTP %{http_code}\n" || echo "::warning::IndexNow通知失敗(継続)"
+      # IndexNow(5分ごと): 直近10分で予想・結果が更新されたレースだけを通知。
+      # 展示反映後の最新版をBing(=ChatGPT検索)に早く取り込ませる。更新が無ければ何も送らない。
+      - name: Notify IndexNow (changed races)
+        if: github.event.inputs.indexnow != 'true' && github.event.inputs.daily != 'true'
+        run: |
+          curl -s "https://kyotei-chokuzen.com/changed-urls.txt?t=$(date +%s)" -o changed.txt || exit 0
+          [ -s changed.txt ] || { echo "no changed urls"; exit 0; }
+          URLS=$(grep -E '^https://' changed.txt | head -200 | sed 's/.*/"&"/' | paste -sd, -)
+          [ -n "$URLS" ] || exit 0
+          cat > payload.json <<EOF
+          {"host":"kyotei-chokuzen.com","key":"8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24","keyLocation":"https://kyotei-chokuzen.com/8f3c1e7a2b9d4f6e0a5c8b1d7e3f9a24.txt","urlList":[${URLS}]}
+          EOF
+          echo "notify $(grep -c '^https://' changed.txt) changed urls"
+          curl -s -X POST "https://api.indexnow.org/indexnow" -H "Content-Type: application/json; charset=utf-8" --data @payload.json -w "\nIndexNow HTTP %{http_code}\n" || echo "::warning::IndexNow通知失敗(継続)"
       # IndexNow(毎時): 当日のレースページ・当日まとめだけを開催時間帯に毎時通知。
       # ChatGPT検索(Bingインデックス)に「展示反映後の直前版」を拾わせて鮮度で差別化する。
       # ticker.yml が毎時0分の起動時に indexnow=true を渡してくる。

@@ -225,12 +225,17 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
       sashi: Math.round(rest * 0.42 * 100) / 100,
       other: Math.round(rest * 0.13 * 100) / 100,
     };
+    const exShown = race.entries.some((e) => e.exTime !== undefined);
     race.kimariteNote = courseChanged
       ? "進入変化を反映した展開確率です。"
-      : "展示ST・展示タイムを反映した展開確率です。";
-    race.inNote = `事前${race.inEscapeProbPre}%から展示反映で${race.inEscapeProb}%に更新。${
-      lane1.exDev !== undefined ? `1号艇の展示偏差は${lane1.exDev > 0 ? "+" : ""}${lane1.exDev}σ。` : ""
-    }`;
+      : exShown
+        ? "展示ST・展示タイムを反映した展開確率です。"
+        : "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。";
+    race.inNote = exShown || courseChanged
+      ? `事前${race.inEscapeProbPre}%から展示反映で${race.inEscapeProb}%に更新。${
+          lane1.exDev !== undefined ? `1号艇の展示偏差は${lane1.exDev > 0 ? "+" : ""}${lane1.exDev}σ。` : ""
+        }`
+      : `展示タイム公開前のため、現在は事前評価ベースの${race.inEscapeProb}%です(展示公開後5分以内に更新)。`;
   }
 
   const best = [...race.entries].sort((a, b) => b.aiProb - a.aiProb)[0];
@@ -241,8 +246,11 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
     gapTop && gapTop.marketProb !== undefined && gapTop.aiProb - gapTop.marketProb >= GAP_THRESHOLD
       ? `妙味は${gapTop.lane}号艇・${gapTop.name}(歪み+${Math.round((gapTop.aiProb - gapTop.marketProb) * 100)}pt)。`
       : "市場と AI の評価に大きな歪みは検出されていません。";
+  const exReady = race.entries.some((e) => e.exTime !== undefined);
   race.verdict =
-    `直前最終評価: 本命候補は${best.lane}号艇・${best.name}(展示反映後AI勝率${Math.round(best.aiProb * 100)}%)。` +
+    (exReady
+      ? `直前最終評価: 本命候補は${best.lane}号艇・${best.name}(展示反映後AI勝率${Math.round(best.aiProb * 100)}%)。`
+      : `直前評価(展示タイム公開待ち): 本命候補は${best.lane}号艇・${best.name}(現時点のAI勝率${Math.round(best.aiProb * 100)}%)。展示タイムの公開後5分以内に最終評価へ更新します。`) +
     gapNote +
     `イン逃げ確率は${race.inEscapeProb}%。オッズは締切まで変動します。`;
 

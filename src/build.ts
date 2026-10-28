@@ -743,9 +743,24 @@ function sportsEventJsonLd(r: Race): string {
 }
 
 /* ---------- page builders ---------- */
-function verdictTitle(status: RaceStatus): string {
+/** 保存済みデータの文言補正: 展示タイムが未公開なのに「展示反映」と書かれた旧文言を、事実どおりに直す */
+function liveTextFix(r: Race, text: string): string {
+  if (r.status !== "signal" || r.entries.some((e) => e.exTime !== undefined) || r.entries.some((e) => e.course !== undefined && e.course !== e.lane)) return text;
+  return text
+    .replace(/^直前最終評価: /, "直前評価(展示タイム公開待ち): ")
+    .replace("展示反映後AI勝率", "現時点のAI勝率")
+    .replace(/^事前(\d+)%から展示反映で(\d+)%に更新。.*$/, (_m, _a, b) => `展示タイム公開前のため、現在は事前評価ベースの${b}%です(展示公開後5分以内に更新)。`)
+    .replace("展示ST・展示タイムを反映した展開確率です。", "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。");
+}
+
+function verdictTitle(r: Race): string {
+  const status = r.status;
   if (status === "pre") return "事前評価（展示前・確定前の暫定）";
-  if (status === "signal") return "直前最終結論（展示反映済み）";
+  if (status === "signal") {
+    return r.entries.some((e) => e.exTime !== undefined)
+      ? "直前最終結論（展示反映済み）"
+      : "直前評価（直前オッズ反映・展示タイム公開待ち）";
+  }
   return "このレースの結論はこうだった";
 }
 
@@ -865,8 +880,8 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
     WIND: esc(`${r.windDir}${r.windSpeed}m`),
     WAVE: `${r.wave}cm`,
     CLOSE_ISO: closeIso(r),
-    VERDICT_TITLE: verdictTitle(r.status),
-    VERDICT_TEXT: esc(r.verdict),
+    VERDICT_TITLE: verdictTitle(r),
+    VERDICT_TEXT: esc(liveTextFix(r, r.verdict)),
     RESULT_SECTION: resultSection(r),
     IN_ESCAPE: String(r.inEscapeProb),
     IN_DELTA_CLASS: inDelta > 0 ? "up" : inDelta < 0 ? "down" : "",
@@ -874,12 +889,12 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
       inDelta === 0
         ? `事前と同じ (${r.inEscapeProbPre}%)`
         : `事前 ${r.inEscapeProbPre}% → ${inDelta > 0 ? "+" : ""}${inDelta}pt`,
-    IN_NOTE: esc(r.inNote),
+    IN_NOTE: esc(liveTextFix(r, r.inNote)),
     SIGNAL_FEED: signalFeed(r),
     BET_SECTION: betSuggestion(r) + prePostSection(r),
     VENUE_SECTION: venueSectionHtml(r, vStats.get(r.venueSlug), venueBySlug.get(r.venueSlug)?.inEscapeBase, base),
     KIMARITE_BAR: kimariteBar(r),
-    KIMARITE_NOTE: esc(r.kimariteNote),
+    KIMARITE_NOTE: esc(liveTextFix(r, r.kimariteNote)),
     ENTRIES_ROWS: entriesRows(r, base),
     AVATAR_LEGEND: avatarLegend(),
     OTHER_RACES_HTML: otherRacesHtml(all, r, base),

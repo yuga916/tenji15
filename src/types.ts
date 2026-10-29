@@ -3,7 +3,7 @@
 /** レースページのライフサイクル: 事前 → シグナル点灯(展示反映) → 答え合わせ(結果検証) */
 export type RaceStatus = "pre" | "signal" | "verified";
 
-export type SignalType = "gap" | "formation" | "extime" | "slit" | "bias" | "parts";
+export type SignalType = "gap" | "formation" | "extime" | "slit" | "bias" | "parts" | "scratch";
 export type SignalImpact = "up" | "down" | "neutral";
 
 export interface Entry {
@@ -25,6 +25,7 @@ export interface Entry {
   parts?: string[];        // 部品交換(直前情報。例: "リング×1")
   newProp?: boolean;       // 新プロペラに交換
   liveNotes?: string[];    // 部品交換・チルト・体重による補正の内訳(表示用)
+  scratched?: boolean;     // 欠場(直前情報・オッズで検知。AI勝率0として残り艇で再計算)
   preProb: number;         // 事前AI勝率 0-1
   aiProb: number;          // 展示反映後AI勝率 0-1
   marketProb?: number;     // 直前オッズ逆算の市場勝率 0-1

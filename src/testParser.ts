@@ -171,6 +171,23 @@ assert(live.entries.find((e) => e.lane === 4)?.course === 5, `live: 進入コー
 assert(live.verdict.includes("直前最終評価") && !live.verdict.includes("必勝"), `live: 結論文更新(断定なし)`);
 assert(live.windSpeed === 4 && live.wave === 3, `live: 気象をRaceへ反映`);
 
+// ---- 欠場(2026-10-29: 欠場艇にAI勝率が残っていた不具合の回帰テスト) ----
+{
+  const scr = convertBText(text, "2026-07-07")[0];
+  const bi5 = { ...bi, exTimes: new Map([...bi.exTimes].filter(([l]) => l !== 3)), courses: [1, 2, 4, 5, 6], scratched: new Set<number>() };
+  const wo5 = { odds: new Map([...wo.odds].filter(([l]) => l !== 3)), scratched: new Set<number>(), warnings: [] };
+  applyLiveInfo(scr, bi5 as any, wo5 as any);
+  const e3 = scr.entries.find((e) => e.lane === 3)!;
+  assert(e3.scratched === true && e3.aiProb === 0, `欠場: 展示・オッズとも無い艇を欠場として勝率0 (実際: ${e3.scratched}/${e3.aiProb})`);
+  assert(Math.abs(scr.entries.reduce((a, e) => a + e.aiProb, 0) - 1) < 0.01, `欠場: 残り5艇で合計≒1`);
+  assert(scr.signals.some((s) => s.type === "scratch"), `欠場: 欠場シグナル`);
+  assert(!scr.signals.some((s) => s.type === "formation"), `欠場: 欠場による繰り上がりを進入変化と誤判定しない`);
+  const tiers = buildTiers(scr)!;
+  assert([...tiers.honmei, ...tiers.taikou, ...tiers.ana].every((c) => !c.lanes.includes(3)), `欠場: 買い目に欠場艇を含めない`);
+  const woTxt = parseWinOdds('<tr><td class="is-boatColor3">3</td><td>西橋</td><td>欠場</td></tr><tr><td class="is-boatColor1">1</td><td>a</td><td>1.5</td></tr>');
+  assert(woTxt.scratched?.has(3) === true, `欠場: オッズ表の「欠場」表示を検知`);
+}
+
 // パース不能なHTMLでも落ちない(フェイルセーフ)
 const biBad = parseBeforeInfo("<html><body>メンテナンス中</body></html>");
 assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTMLで警告のみ(クラッシュなし)`);

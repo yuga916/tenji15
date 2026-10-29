@@ -99,15 +99,27 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
     applied = true;
   }
 
+  // ---- 2.5) 欠場の検知 ----
+  // 公式の「欠場」表示(直前情報・オッズ)に加え、他の艇は展示タイムも単勝オッズも出ているのに
+  // その艇だけどちらも無い場合も欠場とみなす
+  const scratched = new Set<number>([...(before.scratched ?? []), ...(oddsInfo?.scratched ?? [])]);
+  if (before.exTimes.size >= 4 && oddsInfo && oddsInfo.odds.size >= 4) {
+    for (const e of race.entries) if (!before.exTimes.has(e.lane) && !oddsInfo.odds.has(e.lane)) scratched.add(e.lane);
+  }
+  for (const e of race.entries) e.scratched = scratched.has(e.lane) || undefined;
+  if (scratched.size > 0) applied = true;
+
   // ---- 3) 進入(前づけ検知) ----
   let courseChanged = false;
-  if (before.courses.length === 6) {
+  if (before.courses.length >= 5) {
+    // 枠なりの並び(欠場艇を除いた艇番順)と比べて進入の変化を判定する
+    const nominal = race.entries.map((x) => x.lane).filter((l) => !scratched.has(l)).sort((a, b) => a - b);
     before.courses.forEach((lane, i) => {
       const e = race.entries.find((x) => x.lane === lane);
       if (!e) return;
       const course = i + 1;
       if (e.course !== undefined && e.course !== course) courseChanged = true;
-      if (e.lane !== course) courseChanged = true;
+      if (nominal[i] !== lane) courseChanged = true;
       e.course = course;
       e.exCourse = course;
       const st = before.exSts.get(lane);
@@ -129,6 +141,7 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
 
   // ---- 4) AI勝率の再計算(コース基準 × 展示偏差 × 調整情報) ----
   const raw = race.entries.map((e) => {
+    if (e.scratched) { e.liveNotes = ["欠場"]; return 0; }
     const base = LANE_BASE[e.course ?? e.lane] ?? 0.05;
     const pre = Math.max(e.preProb, 0.01);
     const laneBasePre = LANE_BASE[e.lane] ?? 0.05;
@@ -154,6 +167,14 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
   }
 
   // ---- 6) シグナル生成 ----
+  for (const e of race.entries.filter((x) => x.scratched)) {
+    signals.push({
+      time,
+      type: "scratch",
+      impact: "neutral",
+      text: `${e.lane}号艇・${e.name}は欠場。残り${race.entries.length - scratched.size}艇でAI勝率を再計算しました。`,
+    });
+  }
   for (const e of race.entries) {
     if (e.exDev !== undefined && Math.abs(e.exDev) >= EXDEV_THRESHOLD) {
       signals.push({
@@ -195,7 +216,7 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
   }
 
   for (const e of race.entries) {
-    if (!e.liveNotes || e.liveNotes.length === 0) continue;
+    if (!e.liveNotes || e.liveNotes.length === 0 || e.scratched) continue;
     const up = e.liveNotes.some((n) => n.includes("プラス"));
     const down = e.liveNotes.some((n) => n.includes("マイナス"));
     signals.push({

@@ -33,10 +33,11 @@ export function trifectaProbs(probs: Map<number, number>): Combo[] {
 }
 
 export function buildTiers(r: Race): Tiers | null {
-  if (r.entries.length < 3) return null;
-  const order = [...r.entries].sort((a, b) => b.aiProb - a.aiProb || a.lane - b.lane);
+  const live = r.entries.filter((e) => !e.scratched); // 欠場艇は買い目に含めない
+  if (live.length < 3) return null;
+  const order = [...live].sort((a, b) => b.aiProb - a.aiProb || a.lane - b.lane);
   const top1 = order[0].lane, top2 = order[1].lane;
-  const all = trifectaProbs(new Map(r.entries.map((e) => [e.lane, e.aiProb])));
+  const all = trifectaProbs(new Map(live.map((e) => [e.lane, e.aiProb])));
   const honmei = all.slice(0, 3);
   const used = new Set(honmei.map((c) => c.lanes.join("-")));
   const taikou = all.filter((c) => c.lanes[0] === top2 && !used.has(c.lanes.join("-"))).slice(0, 3);

@@ -26,11 +26,15 @@ export interface LiveBeforeInfo {
   newProps?: Set<number>;
   /** 艇番 → 調整重量(kg) */
   adjWeights?: Map<number, number>;
+  /** 欠場(直前情報に「欠場」表示がある艇) */
+  scratched?: Set<number>;
   warnings: string[];
 }
 
 export interface LiveWinOdds {
   odds: Map<number, number>;      // 艇番 → 単勝オッズ
+  /** オッズ表で「欠場」「取消」となっている艇 */
+  scratched?: Set<number>;
   warnings: string[];
 }
 
@@ -106,12 +110,14 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
   const parts = new Map<number, string[]>();
   const newProps = new Set<number>();
   const adjWeights = new Map<number, number>();
+  const scratched = new Set<number>();
   const z2h = (t: string) => t.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0)).replace(/×/g, "×");
   for (const tb of html.split(/<tbody/i).slice(1)) {
     const body = tb.split(/<\/tbody>/i)[0];
     const mLane = body.match(/is-boatColor([1-6])/);
     if (!mLane) continue;
     const lane = Number(mLane[1]);
+    if (/欠場/.test(stripTags(body)) || /is-miss/.test(tb.slice(0, 200))) scratched.add(lane);
     const rows = body.split(/<\/tr>/i);
     const cells = [...(rows[0] ?? "").matchAll(/<td[^>]*>([\s\S]*?)<\/td>/gi)].map((m) => stripTags(m[1]).replace(/&nbsp;/g, " ").trim());
     const w = cells.map((c) => c.match(/^(\d{2,3}\.\d)\s*kg$/)).find(Boolean);
@@ -138,7 +144,8 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
 
   return {
     exTimes,
-    courses: courses.length === 6 ? courses : [],
+    // 欠場があるとスタート展示は5艇になる
+    courses: courses.length === 6 || (courses.length === 5 && scratched.size === 1) ? courses : [],
     exSts,
     weather: weather?.[1],
     windSpeed: wind ? Number(wind[1]) : undefined,
@@ -148,6 +155,7 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
     parts,
     newProps,
     adjWeights,
+    scratched,
     warnings,
   };
 }
@@ -156,6 +164,7 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
 export function parseWinOdds(html: string): LiveWinOdds {
   const warnings: string[] = [];
   const odds = new Map<number, number>();
+  const scratched = new Set<number>();
 
   // 単勝オッズ: 艇色クラスの近傍にある「x.x」(1.0〜99.9)を拾う
   const blocks = html.split(/(?=is-boatColor[1-6])/);
@@ -165,7 +174,7 @@ export function parseWinOdds(html: string): LiveWinOdds {
     const lane = Number(mLane[1]);
     if (odds.has(lane)) continue;
     const text = stripTags(block.slice(0, 1200));
-    if (/欠場|取消/.test(text)) continue;
+    if (/欠場|取消/.test(text.slice(0, 120))) { scratched.add(lane); continue; }
     const m = text.match(/\b(\d{1,2}\.\d)\b/);
     if (m) {
       const v = Number(m[1]);
@@ -173,5 +182,5 @@ export function parseWinOdds(html: string): LiveWinOdds {
     }
   }
   if (odds.size < 4) warnings.push(`単勝オッズの検出が${odds.size}艇のみ(歪み計算をスキップ)`);
-  return { odds, warnings };
+  return { odds, scratched, warnings };
 }

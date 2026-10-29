@@ -213,6 +213,16 @@ function entriesRows(r: Race, base: string): string {
         ? `<a href="${base}racers/${e.regNo}/" style="color:inherit; border-bottom:1px dotted var(--dim);" title="${esc(e.name)}選手の成績・AI評価">${esc(e.name)}</a>`
         : esc(e.name);
       const nameCell = `<span style="display:flex; align-items:center; gap:8px;">${racerAvatar(e.name, e.racerClass, 26)}${nameLink}</span>`;
+      if (e.scratched) {
+        return `<tr style="opacity:.5;">
+        <td><span class="boat boat-${e.lane}">${e.lane}</span></td>
+        <td class="racer-name">${nameCell}</td>
+        <td>${esc(e.racerClass)}</td>
+        <td>${e.natWinRate.toFixed(2)}</td>
+        <td>${e.motorRate.toFixed(1)}%</td>
+        <td colspan="5" style="color:var(--signal); font-weight:700;">欠場(残り艇でAI勝率を再計算)</td>
+      </tr>`;
+      }
       return `<tr${topClass}>
         <td><span class="boat boat-${e.lane}">${e.lane}</span></td>
         <td class="racer-name">${nameCell}</td>
@@ -792,6 +802,8 @@ function raceSummary(r: Race): { lead: string; body: string; plain: string } {
   const when = `${dateLabel(r.dateISO)} ${r.venue}${r.raceNo}R`;
   const upd = hmJst(r.updatedAt);
   const hasEx = r.entries.some((e) => e.exTime !== undefined);
+  const scr = r.entries.filter((e) => e.scratched);
+  const scrNote = scr.length > 0 ? `${scr.map((e) => `${e.lane}号艇・${e.name}`).join("、")}は欠場のため、残り${r.entries.length - scr.length}艇で計算しています。` : "";
   let lead: string, body: string;
   if (r.status === "verified" && r.result) {
     const res = r.result;
@@ -802,10 +814,10 @@ function raceSummary(r: Race): { lead: string; body: string; plain: string } {
     const fastest = [...r.entries].filter((e) => e.exTime !== undefined).sort((x, y) => (x.exTime ?? 9) - (y.exTime ?? 9))[0];
     const changed = pre[0].lane !== a.lane;
     lead = `${when}の直前予想(展示反映済み・${upd}更新)`;
-    body = `展示航走を反映したAIの本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)。本線は3連単${line}、イン逃げ確率は${r.inEscapeProb}%。${changed ? `展示前の本命${pre[0].lane}号艇から変わりました。` : "展示前から本命は変わっていません。"}${fastest ? `展示タイム1位は${fastest.lane}号艇(${fastest.exTime!.toFixed(2)}秒)。` : ""}締切は${r.closeTime}です。`;
+    body = `${scrNote}展示航走を反映したAIの本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)。本線は3連単${line}、イン逃げ確率は${r.inEscapeProb}%。${changed ? `展示前の本命${pre[0].lane}号艇から変わりました。` : "展示前から本命は変わっていません。"}${fastest ? `展示タイム1位は${fastest.lane}号艇(${fastest.exTime!.toFixed(2)}秒)。` : ""}締切は${r.closeTime}です。`;
   } else {
     lead = `${when}の直前予想(展示前・${upd}時点)`;
-    body = `現時点のAIの本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)、3番手は${c.lane}号艇。本線は3連単${line}、イン逃げ確率は${r.inEscapeProb}%。締切${r.closeTime}の15〜20分前に展示航走が公開され、その5分以内に予想を更新します。`;
+    body = `${scrNote}現時点のAIの本命は${a.lane}号艇・${a.name}(AI勝率${pct(a.aiProb)}%)、対抗は${b.lane}号艇・${b.name}(${pct(b.aiProb)}%)、3番手は${c.lane}号艇。本線は3連単${line}、イン逃げ確率は${r.inEscapeProb}%。締切${r.closeTime}の15〜20分前に展示航走が公開され、その5分以内に予想を更新します。`;
   }
   return { lead, body, plain: `${lead}: ${body}` };
 }

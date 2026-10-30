@@ -30,9 +30,40 @@
       '</div>' +
       '<p class="fb-msg" style="font-size:12.5px; margin:8px 0 0; min-height:1.2em;"></p>' +
       '</form>' +
-      '<p style="color:var(--dim,#6b7c89); font-size:11px; margin:6px 0 0;">送信されるのは書いた内容と閲覧中のページ名だけです。内容は個人が特定されない形で公開する場合があります(<a href="/feedback/#voices" style="color:var(--muted,#9fb3c1);">みなさんの声と対応</a>)。うまく送れない場合は<a href="' + FORM + '/viewform" target="_blank" rel="nofollow noopener" style="color:var(--muted,#9fb3c1);">フォーム版</a>からどうぞ。</p>' +
+      voicesCard(inline) +
+      '<p style="color:var(--dim,#6b7c89); font-size:11px; margin:6px 0 0;">送信されるのは書いた内容と閲覧中のページ名だけです。いただいた声は、個人が特定されない形に要約して運営の回答とあわせて公開する場合があります。うまく送れない場合は<a href="' + FORM + '/viewform" target="_blank" rel="nofollow noopener" style="color:var(--muted,#9fb3c1);">フォーム版</a>からどうぞ。</p>' +
       '</div>';
   }
+
+  // これまでに届いた声と運営の回答への入口(件数と最新の回答を表示)
+  function voicesCard(inline) {
+    return '<a href="/feedback/#voices" class="fb-voices" data-ev-voices="1" style="display:block; margin:4px 0 10px; padding:9px 12px; border-radius:10px; border:1px solid rgba(255,201,77,.45); background:rgba(255,201,77,.07); color:var(--text,#e6eef5); text-decoration:none;">' +
+      '<span style="display:flex; justify-content:space-between; align-items:center; gap:8px;"><strong style="font-size:13px;">💬 みなさんの声と運営の回答</strong><span style="color:#ffc94d; font-size:12px; white-space:nowrap;">' + (inline ? "このページの下で公開中 ↓" : "一覧を見る →") + '</span></span>' +
+      '<span class="fb-voices-sum" style="display:block; color:var(--muted,#9fb3c1); font-size:12px; margin-top:4px; line-height:1.6;">これまでに届いた声と、それぞれへの回答・対応状況(対応済み/検討中など)をすべて公開しています。</span>' +
+      '</a>';
+  }
+  var voicesCache = null;
+  function fillVoices(root) {
+    var el = root.querySelector(".fb-voices-sum");
+    if (!el) return;
+    var render = function (d) {
+      if (!d || !d.total) return;
+      var c = d.counts || {};
+      var parts = ["対応済み", "対応中", "検討中", "見送り"].filter(function (k) { return c[k]; }).map(function (k) { return k + c[k] + "件"; });
+      var latest = (d.latest || [])[0];
+      el.innerHTML = "これまで" + d.total + "件の声に回答(" + parts.join("・") + ")" +
+        (latest ? '<br>最新の回答: 「' + String(latest.q).replace(/[<>&"]/g, "") + "」<span style=\"color:#ffc94d;\">[" + latest.status + "]</span>" : "");
+    };
+    if (voicesCache) return render(voicesCache);
+    fetch("/data/voices-summary.json?t=" + Math.floor(Date.now() / 600000), { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { voicesCache = d; render(d); })
+      .catch(function () {});
+  }
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("[data-ev-voices]");
+    if (a) ga("click_voices_link", { from: document.querySelector(".fb-overlay") ? "modal" : "page" });
+  });
 
   function post(text, place) {
     var body = new URLSearchParams();
@@ -108,6 +139,7 @@
     ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
     document.body.appendChild(ov);
     wire(ov, place);
+    fillVoices(ov);
     var t = ov.querySelector("textarea"); if (t) t.focus();
     ga("open_feedback", { place: place });
   }
@@ -117,6 +149,7 @@
   if (slot) {
     slot.innerHTML = formHtml(true);
     wire(slot, "page");
+    fillVoices(slot);
   }
 
   // [data-feedback-open] リンクはモーダルで開く(JS無効時は通常遷移)

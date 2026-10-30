@@ -1013,7 +1013,7 @@ ${opts.bodyHtml}
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
 <script defer src="${opts.base}assets/home.js?v=20261022"></script>
 <script defer src="${opts.base}assets/fav.js?v=20261031"></script>
-<script defer src="${opts.base}assets/feedback.js?v=20261018b"></script>
+<script defer src="${opts.base}assets/feedback.js?v=20261031"></script>
 </body></html>`;
 }
 
@@ -2037,6 +2037,17 @@ async function main() {
   }
 
   const voices = await loadVoices();
+  // 意見箱モーダル用: 声と回答の件数・最新の回答
+  {
+    const counts: Record<string, number> = {};
+    for (const v of voices.items) counts[v.status] = (counts[v.status] ?? 0) + 1;
+    await mkdir(path.join(DIST, "data"), { recursive: true });
+    await writeFile(path.join(DIST, "data", "voices-summary.json"), JSON.stringify({
+      total: voices.items.length,
+      counts,
+      latest: voices.items.slice(0, 3).map((v) => ({ id: v.id, date: v.date, q: v.question ?? v.voice, status: v.status })),
+    }), "utf-8");
+  }
 
   // トップページ(マーカー置換をfillより先に)
   const indexBase = baseFor(0);

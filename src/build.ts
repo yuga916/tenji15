@@ -23,6 +23,9 @@ import { buildTiers, collectTierStats, rates, SHIBORI_MIN, type Tiers, type Tier
 let TIER_STATS: TierStats | null = null;
 /** llms.txtに差し込む「使い方・今日の開催」(main()で生成) */
 let LLMS_TODAY = "";
+/** 選手の実測データ(過去分バックフィル集計)。出走表の「このコース1着率」「平均ST」に使う */
+let HIST_RACERS: HistoryAgg["racers"] | null = null;
+let HIST_PERIOD = "";
 
 /** 節タイトルの正規化: 公式データの「ボートレース三 国 9月25日 ○○ 第 6日」形式から日付・日目を除去して節名だけにする */
 export function cleanSeriesTitle(t?: string): string | undefined {
@@ -204,6 +207,21 @@ function gapCell(e: Entry): string {
   return `<span class="gap ${cls}">${sign}${(g * 100).toFixed(0)}pt</span>`;
 }
 
+/** 出走表用: 今回入るコースでの1着率・平均ST(実測。母数が少ない時は「—」) */
+function racerStats(r: Race, e: Entry): { courseCell: string; stCell: string } {
+  const h = e.regNo ? HIST_RACERS?.[e.regNo] : undefined;
+  // 今回のコース: 展示の進入 → (確定前は)反映済みの進入 → 枠なり想定
+  const course = e.exCourse ?? (r.status !== "verified" ? e.course : undefined) ?? e.lane;
+  let courseCell = '<span style="color:var(--dim);">—</span>';
+  if (h) {
+    const c = h.byCourse[course - 1];
+    if (c && c[0] >= 5) courseCell = `<strong>${Math.round((100 * c[1]) / c[0])}%</strong><span style="color:var(--dim); font-size:10.5px;"> ${course}コース${c[0]}走</span>`;
+    else if (c) courseCell = `<span style="color:var(--dim); font-size:11px;">${course}コース${c[0]}走のみ</span>`;
+  }
+  const stCell = h && h.stCnt >= 10 ? (h.stSum / h.stCnt).toFixed(2) : '<span style="color:var(--dim);">—</span>';
+  return { courseCell, stCell };
+}
+
 function entriesRows(r: Race, base: string): string {
   const best = topPick(r);
   return r.entries
@@ -212,7 +230,9 @@ function entriesRows(r: Race, base: string): string {
       const nameLink = e.regNo
         ? `<a href="${base}racers/${e.regNo}/" style="color:inherit; border-bottom:1px dotted var(--dim);" title="${esc(e.name)}選手の成績・AI評価">${esc(e.name)}</a>`
         : esc(e.name);
-      const nameCell = `<span style="display:flex; align-items:center; gap:8px;">${racerAvatar(e.name, e.racerClass, 26)}${nameLink}</span>`;
+      const more = e.regNo ? ` <a href="${base}racers/${e.regNo}/" class="racer-more" style="font-size:11px; color:var(--cyan); white-space:nowrap;">詳しく →</a>` : "";
+      const nameCell = `<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">${racerAvatar(e.name, e.racerClass, 26)}${nameLink}${more}</span>`;
+      const st = racerStats(r, e);
       if (e.scratched) {
         return `<tr style="opacity:.5;">
         <td><span class="boat boat-${e.lane}">${e.lane}</span></td>
@@ -220,6 +240,8 @@ function entriesRows(r: Race, base: string): string {
         <td>${esc(e.racerClass)}</td>
         <td>${e.natWinRate.toFixed(2)}</td>
         <td>${e.motorRate.toFixed(1)}%</td>
+        <td>${st.courseCell}</td>
+        <td>${st.stCell}</td>
         <td colspan="5" style="color:var(--signal); font-weight:700;">欠場(残り艇でAI勝率を再計算)</td>
       </tr>`;
       }
@@ -229,6 +251,8 @@ function entriesRows(r: Race, base: string): string {
         <td>${esc(e.racerClass)}</td>
         <td>${e.natWinRate.toFixed(2)}</td>
         <td>${e.motorRate.toFixed(1)}%</td>
+        <td>${st.courseCell}</td>
+        <td>${st.stCell}</td>
         <td>${e.exTime !== undefined ? e.exTime.toFixed(2) : "—"}</td>
         <td>${exDevCell(e)}</td>
         <td style="font-weight:700;">${pct(e.aiProb)}</td>
@@ -1983,6 +2007,10 @@ async function main() {
     const h = JSON.parse(await readFile(path.join(process.cwd(), "data", "history", "agg.json"), "utf-8")) as HistoryAgg;
     if (h && h.races > 0) history = normalizeAgg(h);
   } catch { /* 未生成 */ }
+  if (history) {
+    HIST_RACERS = history.racers;
+    HIST_PERIOD = `${dateLabel(history.from)}〜${dateLabel(history.to)}`;
+  }
 
   await mkdir(DIST, { recursive: true });
   const assetsSrc = path.join(ROOT, "site", "assets");

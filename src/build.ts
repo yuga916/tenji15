@@ -988,6 +988,7 @@ ${opts.bodyHtml}
 </main>
 <footer class="site"><div class="wrap"><div class="legal"><p>【免責事項】当サイトの分析情報は的中を保証するものではありません。当サイトはBOATRACE公式とは無関係の非公式メディアです。</p><p>© 2026 競艇チョクゼン ｜ <a href="https://blog.with2.net/link/?id=2141472" rel="nofollow" target="_blank" style="color:var(--dim);">人気ブログランキング</a> ｜ <a href="${opts.base}feedback/" data-feedback-open="footer" style="color:var(--dim);">ご意見箱</a></p></div></div></footer>
 <script defer src="${opts.base}assets/home.js?v=20261022"></script>
+<script defer src="${opts.base}assets/fav.js?v=20261031"></script>
 <script defer src="${opts.base}assets/feedback.js?v=20261018b"></script>
 </body></html>`;
 }
@@ -1747,13 +1748,15 @@ function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): st
     return `<a href="${base}${racePath(r)}" title="${esc(r.venue)}${r.raceNo}R 締切${r.closeTime}${done ? "(結果あり)" : ""}" style="display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:28px; padding:0 6px; border:1px solid; border-radius:7px; font-size:12px; ${style}">${r.raceNo}</a>`;
   };
   const rowsHtml = rows
-    .map(({ v, sorted, next, night, allDone }) => `<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06);">
+    .map(({ v, sorted, next, night, allDone }) => `<div class="jg-row" data-venue="${v.venueSlug}" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06);">
+<button type="button" class="fav-btn" data-fav="${v.venueSlug}" data-fav-name="${esc(v.venue)}" aria-label="${esc(v.venue)}をお気に入りに追加" title="お気に入り" style="background:none; border:0; padding:0 2px; font-size:16px; line-height:1; cursor:pointer; color:var(--dim);">☆</button>
 <a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="min-width:66px; font-weight:700; color:var(--text); font-size:13.5px;">${esc(v.venue)}${night ? '<span style="color:var(--dim); font-size:10.5px; font-weight:400;"> 夜</span>' : ""}${v.grade ? ` <span class="grade-badge">${esc(v.grade)}</span>` : ""}</a>
 <div style="display:flex; gap:4px; flex-wrap:wrap;">${sorted.map((r) => chip(r, !!next && r.raceId === next.raceId)).join("")}</div>
 <span style="color:var(--dim); font-size:11.5px; margin-left:auto;">${allDone ? "全R終了" : `次 ${next!.raceNo}R ${next!.closeTime}`}</span>
 </div>`)
     .join("\n");
-  return `<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
+  return `<div id="fav-panel" data-base="${base}"></div>
+<div class="fb-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:14px; padding:14px 18px; border:1px solid rgba(77,216,255,.45); border-radius:14px; background:linear-gradient(135deg, rgba(77,216,255,.10), rgba(255,138,61,.05));">
 <div><div style="font-size:15px; font-weight:700;">次に作る機能は、あなたの声で決めます</div><div style="color:var(--muted); font-size:12.5px; margin-top:3px;">競艇チョクゼンを、もっと舟券に役立つサイトにしていきたいと思っています。欲しい機能や不満を匿名で送れます。届いた声はすべて読んで、次に作るものを決めます。</div>${latestVoice ? `
 <div style="margin-top:8px; font-size:12.5px; padding-top:8px; border-top:1px dashed rgba(255,255,255,.12);"><span style="color:var(--dim);">最新の回答:</span> <a href="${base}feedback/#voice-${esc(latestVoice.id)}" style="color:var(--text);">${esc(latestVoice.question ?? latestVoice.voice)}</a> <span style="color:${VOICE_STATUS_COLOR[latestVoice.status] ?? "#7a8a96"}; font-size:11.5px;">[${esc(latestVoice.status)}]</span> <a href="${base}feedback/#voices" style="font-size:12px;">声と対応の一覧 →</a></div>` : ""}</div>
 <a href="${base}feedback/" data-feedback-open="top_card" style="display:inline-flex; align-items:center; padding:10px 18px; border-radius:999px; background:var(--cyan); color:#0b1220; font-weight:700; font-size:13.5px; white-space:nowrap;">意見を送る →</a>
@@ -1763,7 +1766,8 @@ function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): st
 <h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切・${hmJst(BUILD_ISO)}更新</span></h2>
 <div style="display:flex; gap:12px; font-size:12px; flex-wrap:wrap;"><a href="${base}today/main-races/">各場12R本命</a><a href="${base}today/night/">ナイター</a><a href="${base}today/manshu/">万舟狙い目</a></div>
 </div>
-${rowsHtml}
+<p class="fav-hint" style="color:var(--dim); font-size:11.5px; margin:0 0 4px;">☆を押すと会場をお気に入り登録でき、このページの一番上にその会場の次のレースが出ます(この端末に保存・登録不要)。</p>
+<div id="jg-rows">${rowsHtml}</div>
 </div>`;
 }
 
@@ -2104,6 +2108,7 @@ ${venues || "- 本日の開催データはまだありません"}
         .map((r) => ({
           i: r.raceId, v: r.venueSlug, vn: r.venue, n: r.raceNo, c: closeIso(r), s: r.status,
           x: r.entries.some((e) => e.exTime !== undefined) ? 1 : 0, u: r.updatedAt, p: racePath(r),
+          k: topPick(r).lane, kn: topPick(r).name, kp: Math.round(topPick(r).aiProb * 100),
         })),
     };
     await writeFile(path.join(DIST, "live", "now.json"), JSON.stringify(live), "utf-8");
@@ -2274,6 +2279,7 @@ ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p s
           }]
         : undefined,
       bodyHtml: `<h1>${esc(venue)}競艇場の特徴データと直前予想</h1>
+<div class="fav-toggle" data-fav="${slug}" data-fav-name="${esc(venue)}"></div>
 <p style="color:var(--muted);">${esc(venue)}競艇の今日の予想(全レースAI本命・締切時刻)と、結果アーカイブから毎日自動更新する実測傾向をまとめたページです。</p>
 ${todayHtml}
 <section><h2>開催日別の予想・結果</h2><div style="display:flex; flex-wrap:wrap; gap:6px;">${dayLinks}</div></section>
@@ -2308,6 +2314,7 @@ ${venueFaqHtml}
         base: dayBase,
         crumbs: [["ホーム", dayBase], [`${venue}競艇`, `${dayBase}races/${slug}/`], [dateLabel(dateISO)]],
         bodyHtml: `<h1>${esc(dayTitle)}</h1>
+<div class="fav-toggle" data-fav="${slug}" data-fav-name="${esc(venue)}"></div>
 ${box(b.summary)}
 <div style="display:flex; justify-content:space-between; font-size:12.5px; margin:6px 0 12px;">
 <span>${prev ? `<a href="${dayBase}races/${slug}/${prev}/">← ${dateLabel(prev)}</a>` : ""}</span>

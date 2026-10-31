@@ -3057,21 +3057,21 @@
     "dateISO": "2026-11-01",
     "raceNo": 2,
     "name": "狙いトク特選",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "09:09",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 83,
     "inEscapeProb": 83,
-    "inNote": "徳山の基準値(62%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの83%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.83,
       "makuri": 0.08,
       "sashi": 0.07,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -3083,7 +3083,11 @@
         "motorRate": 41.83,
         "weight": 49,
         "preProb": 0.794,
-        "aiProb": 0.794
+        "aiProb": 0.789,
+        "exWeight": 50,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(49→50kg)でマイナス"
+        ]
       },
       {
         "lane": 2,
@@ -3095,7 +3099,11 @@
         "motorRate": 39.86,
         "weight": 54,
         "preProb": 0.019,
-        "aiProb": 0.019
+        "aiProb": 0.02,
+        "exWeight": 52.5,
+        "liveNotes": [
+          "体重が番組表より1.5kg減(54→52.5kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -3107,7 +3115,8 @@
         "motorRate": 29.2,
         "weight": 52,
         "preProb": 0.106,
-        "aiProb": 0.106
+        "aiProb": 0.109,
+        "exWeight": 52
       },
       {
         "lane": 4,
@@ -3119,7 +3128,8 @@
         "motorRate": 39.06,
         "weight": 51,
         "preProb": 0.053,
-        "aiProb": 0.053
+        "aiProb": 0.054,
+        "exWeight": 51
       },
       {
         "lane": 5,
@@ -3131,7 +3141,8 @@
         "motorRate": 36.69,
         "weight": 51,
         "preProb": 0.017,
-        "aiProb": 0.017
+        "aiProb": 0.017,
+        "exWeight": 51.5
       },
       {
         "lane": 6,
@@ -3143,13 +3154,27 @@
         "motorRate": 22.96,
         "weight": 50,
         "preProb": 0.011,
-        "aiProb": 0.011
+        "aiProb": 0.011,
+        "exWeight": 50.5
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 徳山のイン逃げ確率は83%想定。本命候補は1号艇・平尾崇典(A1・事前勝率79%)、対抗は3号艇・丸岡正典(同11%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-31T23:41:18.479Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:45",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・平尾崇典: 体重が番組表より1.0kg増(49→50kg)でマイナス"
+      },
+      {
+        "time": "08:45",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・松尾宣邦: 体重が番組表より1.5kg減(54→52.5kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・平尾崇典(現時点のAI勝率79%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は83%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-31T23:45:29.729Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "tokuyama-2026-11-01-3",
@@ -5697,44 +5722,44 @@
     ],
     "signals": [
       {
-        "time": "08:41",
+        "time": "08:45",
         "type": "gap",
         "impact": "up",
         "text": "1号艇・一宮稔弘: AI評価50%に対し市場は6%。+44ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "08:41",
+        "time": "08:45",
         "type": "gap",
         "impact": "down",
         "text": "2号艇・楠将太郎: 市場25%に対しAI評価は6%。過剰人気の可能性。"
       },
       {
-        "time": "08:41",
+        "time": "08:45",
         "type": "gap",
         "impact": "down",
         "text": "3号艇・盛本真輔: 市場38%に対しAI評価は22%。過剰人気の可能性。"
       },
       {
-        "time": "08:41",
+        "time": "08:45",
         "type": "gap",
         "impact": "up",
         "text": "4号艇・加藤政彦: AI評価13%に対し市場は6%。+7ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "08:41",
+        "time": "08:45",
         "type": "gap",
         "impact": "down",
         "text": "6号艇・竹田辰也: 市場25%に対しAI評価は8%。過剰人気の可能性。"
       },
       {
-        "time": "08:41",
+        "time": "08:45",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・楠将太郎: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       }
     ],
     "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・一宮稔弘(現時点のAI勝率50%)。展示タイムの公開後5分以内に最終評価へ更新します。妙味は1号艇・一宮稔弘(歪み+44pt)。イン逃げ確率は34%。オッズは締切まで変動します。",
-    "updatedAt": "2026-10-31T23:41:23.950Z",
+    "updatedAt": "2026-10-31T23:45:26.279Z",
     "modelVersion": "v0.4.0-live"
   },
   {

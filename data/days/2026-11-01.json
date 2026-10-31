@@ -5299,21 +5299,21 @@
     "raceNo": 1,
     "name": "とるならなる",
     "seriesTitle": "BTSオラレ美馬開設17周年記念競走",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 85,
     "inEscapeProb": 85,
-    "inNote": "鳴門の基準値(50%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの85%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.85,
       "makuri": 0.07,
       "sashi": 0.06,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -5325,7 +5325,8 @@
         "motorRate": 38.32,
         "weight": 56,
         "preProb": 0.836,
-        "aiProb": 0.836
+        "aiProb": 0.831,
+        "exWeight": 56.4
       },
       {
         "lane": 2,
@@ -5337,7 +5338,11 @@
         "motorRate": 35.35,
         "weight": 56,
         "preProb": 0.066,
-        "aiProb": 0.066
+        "aiProb": 0.068,
+        "exWeight": 54.7,
+        "liveNotes": [
+          "体重が番組表より1.3kg減(56→54.7kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -5349,7 +5354,8 @@
         "motorRate": 26.55,
         "weight": 54,
         "preProb": 0.034,
-        "aiProb": 0.034
+        "aiProb": 0.034,
+        "exWeight": 53.4
       },
       {
         "lane": 4,
@@ -5361,7 +5367,8 @@
         "motorRate": 35.19,
         "weight": 57,
         "preProb": 0.041,
-        "aiProb": 0.041
+        "aiProb": 0.041,
+        "exWeight": 57.2
       },
       {
         "lane": 5,
@@ -5373,7 +5380,11 @@
         "motorRate": 31.53,
         "weight": 58,
         "preProb": 0.006,
-        "aiProb": 0.006
+        "aiProb": 0.01,
+        "exWeight": 55.4,
+        "liveNotes": [
+          "体重が番組表より2.6kg減(58→55.4kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 6,
@@ -5385,13 +5396,27 @@
         "motorRate": 33.04,
         "weight": 52,
         "preProb": 0.017,
-        "aiProb": 0.017
+        "aiProb": 0.017,
+        "exWeight": 52
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 鳴門のイン逃げ確率は85%想定。本命候補は1号艇・浜野孝志(A2・事前勝率84%)、対抗は2号艇・半田尚也(同7%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-10-31T23:00:43.863Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・半田尚也: 体重が番組表より1.3kg減(56→54.7kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "5号艇・宮本琉正: 体重が番組表より2.6kg減(58→55.4kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・浜野孝志(現時点のAI勝率83%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は85%。オッズは締切まで変動します。",
+    "updatedAt": "2026-10-31T23:10:27.612Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "naruto-2026-11-01-2",

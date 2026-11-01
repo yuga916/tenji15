@@ -5119,21 +5119,21 @@
     "raceNo": 11,
     "name": "予選特選",
     "seriesTitle": "MNBR下関7th BOATBoyカップ",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "22:18",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 39,
     "inEscapeProb": 39,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの39%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.39,
       "makuri": 0.27,
       "sashi": 0.26,
       "other": 0.08
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -5145,7 +5145,12 @@
         "motorRate": 25.62,
         "weight": 51,
         "preProb": 0.488,
-        "aiProb": 0.488
+        "aiProb": 0.55,
+        "exWeight": 52.1,
+        "liveNotes": [
+          "体重が番組表より1.1kg増(51→52.1kg)でマイナス"
+        ],
+        "marketProb": 0.464
       },
       {
         "lane": 2,
@@ -5157,7 +5162,12 @@
         "motorRate": 27.72,
         "weight": 51,
         "preProb": 0.132,
-        "aiProb": 0.132
+        "aiProb": 0,
+        "scratched": true,
+        "exWeight": 52,
+        "liveNotes": [
+          "欠場"
+        ]
       },
       {
         "lane": 3,
@@ -5169,7 +5179,12 @@
         "motorRate": 28.7,
         "weight": 57,
         "preProb": 0.214,
-        "aiProb": 0.214
+        "aiProb": 0.256,
+        "exWeight": 53.7,
+        "liveNotes": [
+          "体重が番組表より3.3kg減(57→53.7kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.093
       },
       {
         "lane": 4,
@@ -5181,7 +5196,9 @@
         "motorRate": 34.96,
         "weight": 54,
         "preProb": 0.09,
-        "aiProb": 0.09
+        "aiProb": 0.105,
+        "exWeight": 53.7,
+        "marketProb": 0.08
       },
       {
         "lane": 5,
@@ -5193,7 +5210,9 @@
         "motorRate": 38.6,
         "weight": 54,
         "preProb": 0.021,
-        "aiProb": 0.021
+        "aiProb": 0.024,
+        "exWeight": 53.3,
+        "marketProb": 0.284
       },
       {
         "lane": 6,
@@ -5205,13 +5224,52 @@
         "motorRate": 47.37,
         "weight": 53,
         "preProb": 0.056,
-        "aiProb": 0.056
+        "aiProb": 0.065,
+        "exWeight": 53.3,
+        "marketProb": 0.08
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は39%想定。本命候補は1号艇・一瀬明(A1・事前勝率49%)、対抗は3号艇・島田賢人(同21%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-01T12:50:29.318Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "21:55",
+        "type": "scratch",
+        "impact": "neutral",
+        "text": "2号艇・谷川祐一は欠場。残り5艇でAI勝率を再計算しました。"
+      },
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・一瀬明: AI評価55%に対し市場は46%。+9ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "up",
+        "text": "3号艇・島田賢人: AI評価26%に対し市場は9%。+16ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:55",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・新田洋一: 市場28%に対しAI評価は2%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:55",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・一瀬明: 体重が番組表より1.1kg増(51→52.1kg)でマイナス"
+      },
+      {
+        "time": "21:55",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・島田賢人: 体重が番組表より3.3kg減(57→53.7kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・一瀬明(現時点のAI勝率55%)。展示タイムの公開後5分以内に最終評価へ更新します。妙味は3号艇・島田賢人(歪み+16pt)。イン逃げ確率は39%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-01T12:55:45.081Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "shimonoseki-2026-11-01-12",

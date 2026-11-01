@@ -4736,21 +4736,21 @@
     "raceNo": 9,
     "name": "予選",
     "seriesTitle": "MNBR下関7th BOATBoyカップ",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "21:25",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 58,
     "inEscapeProb": 58,
-    "inNote": "下関の基準値(58%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの58%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.58,
       "makuri": 0.19,
       "sashi": 0.18,
       "other": 0.05
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -4762,7 +4762,12 @@
         "motorRate": 25,
         "weight": 59,
         "preProb": 0.66,
-        "aiProb": 0.66
+        "aiProb": 0.662,
+        "exWeight": 56.9,
+        "liveNotes": [
+          "体重が番組表より2.1kg減(59→56.9kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.766
       },
       {
         "lane": 2,
@@ -4774,7 +4779,9 @@
         "motorRate": 32.2,
         "weight": 52,
         "preProb": 0.111,
-        "aiProb": 0.111
+        "aiProb": 0.108,
+        "exWeight": 52,
+        "marketProb": 0.029
       },
       {
         "lane": 3,
@@ -4786,7 +4793,12 @@
         "motorRate": 36.28,
         "weight": 55,
         "preProb": 0.052,
-        "aiProb": 0.052
+        "aiProb": 0.052,
+        "exWeight": 53.5,
+        "liveNotes": [
+          "体重が番組表より1.5kg減(55→53.5kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.073
       },
       {
         "lane": 4,
@@ -4798,7 +4810,9 @@
         "motorRate": 43.55,
         "weight": 53,
         "preProb": 0.139,
-        "aiProb": 0.139
+        "aiProb": 0.135,
+        "exWeight": 52.5,
+        "marketProb": 0.073
       },
       {
         "lane": 5,
@@ -4810,7 +4824,9 @@
         "motorRate": 27.43,
         "weight": 53,
         "preProb": 0.033,
-        "aiProb": 0.033
+        "aiProb": 0.032,
+        "exWeight": 52.6,
+        "marketProb": 0.044
       },
       {
         "lane": 6,
@@ -4822,13 +4838,40 @@
         "motorRate": 39.09,
         "weight": 53,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "exWeight": 52.4,
+        "marketProb": 0.015
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 下関のイン逃げ確率は58%想定。本命候補は1号艇・小林一樹(A2・事前勝率66%)、対抗は4号艇・櫻井優(同14%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-01T11:40:24.845Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "down",
+        "text": "1号艇・小林一樹: 市場77%に対しAI評価は66%。過剰人気の可能性。"
+      },
+      {
+        "time": "21:00",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・金山立樹: AI評価11%に対し市場は3%。+8ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "21:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・小林一樹: 体重が番組表より2.1kg減(59→56.9kg)=軽量化でプラス"
+      },
+      {
+        "time": "21:00",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・谷勝幸: 体重が番組表より1.5kg減(55→53.5kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・小林一樹(現時点のAI勝率66%)。展示タイムの公開後5分以内に最終評価へ更新します。妙味は2号艇・金山立樹(歪み+8pt)。イン逃げ確率は58%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-01T12:00:47.711Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "shimonoseki-2026-11-01-10",
@@ -4929,7 +4972,7 @@
     ],
     "signals": [],
     "verdict": "事前評価: 下関のイン逃げ確率は41%想定。本命候補は1号艇・中島昂章(A2・事前勝率54%)、対抗は3号艇・鳥飼眞(同23%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-01T11:40:24.845Z",
+    "updatedAt": "2026-11-01T12:00:45.601Z",
     "modelVersion": "v0.4.0-multifactor"
   },
   {
@@ -5031,7 +5074,7 @@
     ],
     "signals": [],
     "verdict": "事前評価: 下関のイン逃げ確率は39%想定。本命候補は1号艇・一瀬明(A1・事前勝率49%)、対抗は3号艇・島田賢人(同21%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-01T11:40:24.845Z",
+    "updatedAt": "2026-11-01T12:00:45.601Z",
     "modelVersion": "v0.4.0-multifactor"
   },
   {
@@ -5133,7 +5176,7 @@
     ],
     "signals": [],
     "verdict": "事前評価: 下関のイン逃げ確率は40%想定。本命候補は1号艇・中澤和志(A1・事前勝率53%)、対抗は3号艇・森野正弘(同18%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-01T11:40:24.845Z",
+    "updatedAt": "2026-11-01T12:00:45.601Z",
     "modelVersion": "v0.4.0-multifactor"
   },
   {

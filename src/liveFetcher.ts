@@ -160,6 +160,20 @@ export function parseBeforeInfo(html: string): LiveBeforeInfo {
   };
 }
 
+/**
+ * 直前情報ページ上部の「締切予定時刻」行(その場の1R〜12R)を読む。
+ * 事故・天候で締切が遅れると公式側の時刻が変わるため、番組表の予定時刻をこれで上書きする。
+ */
+export function parseCloseTimes(html: string): Map<number, string> {
+  const out = new Map<number, string>();
+  const i = html.indexOf("締切予定時刻");
+  if (i < 0) return out;
+  const seg = html.slice(i, i + 2500).split(/<\/tr>/i)[0];
+  const times = [...seg.matchAll(/<td[^>]*>\s*(\d{1,2}):(\d{2})\s*<\/td>/gi)].map((m) => `${m[1].padStart(2, "0")}:${m[2]}`);
+  times.forEach((t, idx) => out.set(idx + 1, t));
+  return out;
+}
+
 /** 単勝オッズHTMLのパース */
 export function parseWinOdds(html: string): LiveWinOdds {
   const warnings: string[] = [];

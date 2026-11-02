@@ -41,19 +41,16 @@ async function updateSignals(today: string): Promise<void> {
   if (!races || races.length === 0) return;
 
   const { venueBySlug } = await import("./venues.ts");
-  const { fetchHtml, beforeInfoUrl, winOddsUrl, parseBeforeInfo, parseWinOdds } = await import("./liveFetcher.ts");
+  const { fetchHtml, beforeInfoUrl, winOddsUrl, parseBeforeInfo, parseWinOdds, parseCloseTimes } = await import("./liveFetcher.ts");
   const { applyLiveInfo } = await import("./signals.ts");
 
   const now = Date.now();
-  const targets = races
-    .filter((r) => r.status !== "verified")
-    .filter((r) => {
-      const close = new Date(`${r.dateISO}T${r.closeTime}:00+09:00`).getTime();
-      const diffMin = (close - now) / 60000;
-      return diffMin > 0 && diffMin <= 25;
-    })
-    .sort((a, b) => a.closeTime.localeCompare(b.closeTime))
-    .slice(0, 6);
+  const diffOf = (r: Race) => (new Date(`${r.dateISO}T${r.closeTime}:00+09:00`).getTime() - now) / 60000;
+  const open = races.filter((r) => r.status !== "verified");
+  // 締切前25分以内を優先。予定時刻を過ぎた直後(20分以内)のレースも、締切の遅延に備えて確認する
+  const upcoming = open.filter((r) => diffOf(r) > 0 && diffOf(r) <= 25).sort((a, b) => diffOf(a) - diffOf(b));
+  const justPassed = open.filter((r) => diffOf(r) <= 0 && diffOf(r) > -20).sort((a, b) => diffOf(b) - diffOf(a));
+  const targets = [...upcoming, ...justPassed].slice(0, 6);
   if (targets.length === 0) return;
 
   let updated = 0;
@@ -70,6 +67,19 @@ async function updateSignals(today: string): Promise<void> {
         for (const w of oddsInfo.warnings) console.warn(`[live] ${race.venue}${race.raceNo}R: ${w}`);
       } catch (e) {
         console.warn(`[live] ${race.venue}${race.raceNo}R: オッズ取得失敗(展示のみ反映): ${(e as Error).message}`);
+      }
+      // 締切の遅延: 公式の締切予定時刻で、同じ場の未確定レースの時刻を更新
+      const closeTimes = parseCloseTimes(beforeHtml);
+      if (closeTimes.size >= race.raceNo) {
+        for (const r of races) {
+          if (r.venueSlug !== race.venueSlug || r.status === "verified") continue;
+          const t = closeTimes.get(r.raceNo);
+          if (t && t !== r.closeTime) {
+            console.log(`[live] ${r.venue}${r.raceNo}R: 締切時刻を更新 ${r.closeTime} → ${t}`);
+            r.closeTime = t;
+            updated++;
+          }
+        }
       }
       const before = parseBeforeInfo(beforeHtml);
       for (const w of before.warnings) console.warn(`[live] ${race.venue}${race.raceNo}R: ${w}`);
@@ -136,6 +146,15 @@ async function updateRacecards(today: string): Promise<void> {
 
   try {
     const fresh = await source.fetchRaces(today);
+    // 番組表パースの警告を診断用に保存(除外されたレースがあった時に原因を後から確認できるように)
+    if (OFFICIAL) {
+      const { LAST_B_WARNINGS } = await import("./dataSource.ts");
+      if (LAST_B_WARNINGS.length > 0) {
+        const { mkdir, writeFile } = await import("node:fs/promises");
+        await mkdir("data/debug", { recursive: true });
+        await writeFile(`data/debug/b-warnings-${today}.txt`, LAST_B_WARNINGS.slice(0, 300).join("\n") + "\n", "utf-8");
+      }
+    }
     const existing = await loadDay(today);
     const merged = mergeDay(existing, fresh);
     const file = await saveDay(today, merged);

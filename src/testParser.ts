@@ -188,6 +188,20 @@ assert(live.windSpeed === 4 && live.wave === 3, `live: 気象をRaceへ反映`);
   assert(woTxt.scratched?.has(3) === true, `欠場: オッズ表の「欠場」表示を検知`);
 }
 
+// ---- 番組表: 番号3桁が率に連結/勝率空欄(2026-11-02: 芦屋・福岡のレースが欠ける不具合の回帰テスト) ----
+{
+  const { parseRacerNumbers } = await import("./officialParser.ts");
+  const a = parseRacerNumbers(" 5.58 31.58 5.88 33.33 59 23.28170 37.12");
+  assert(!!a && a.v[6] === 170 && a.v[5] === 23.28 && !a.filled, `番組表: 3桁ボート番号の連結を分離 (実際: ${JSON.stringify(a?.v)})`);
+  const b = parseRacerNumbers(" 2.29  2.78              11 39.67119 28.93");
+  assert(!!b && b.v[2] === 0 && b.v[4] === 11 && b.v[6] === 119 && b.filled, `番組表: 当地勝率空欄は0扱い (実際: ${JSON.stringify(b?.v)})`);
+  const c = parseRacerNumbers(" 6.12 45.00 6.50 50.00 45 38.20 33 40.10");
+  assert(!!c && JSON.stringify(c.v) === JSON.stringify([6.12, 45, 6.5, 50, 45, 38.2, 33, 40.1]), `番組表: 通常行は従来どおり`);
+  const { parseCloseTimes } = await import("./liveFetcher.ts");
+  const ct = parseCloseTimes('<tr><td colspan="2">締切予定時刻</td><td class=" is-activeColor1">10:49</td><td>11:16</td><td>11:44</td></tr><tr><td>12:00</td></tr>');
+  assert(ct.size === 3 && ct.get(1) === "10:49" && ct.get(3) === "11:44", `直前情報: 締切予定時刻の読み取り (実際: ${[...ct].join(",")})`);
+}
+
 // パース不能なHTMLでも落ちない(フェイルセーフ)
 const biBad = parseBeforeInfo("<html><body>メンテナンス中</body></html>");
 assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTMLで警告のみ(クラッシュなし)`);

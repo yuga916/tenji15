@@ -71,6 +71,30 @@ const RACE_HEADER_RE = /^\s*(\d{1,2})R\s+(.*?)\s*(?:H?\s*(\d{3,4})m)?\s*電話�
 /** 選手行: 艇番(1-6)+登番4桁+氏名(非数字)+年齢2桁+支部+体重2桁+級別、続いて数値列 */
 const RACER_LINE_RE = /^\s*([1-6])\s*(\d{4})(\D+?)(\d{2})(\D+?)(\d{2})\s*(A1|A2|B1|B2)(.*)$/;
 
+/**
+ * 選手行の数値部分を [全国勝率, 全国2率, 当地勝率, 当地2率, M番, M2率, B番, B2率] に解釈する。
+ * 勝率欄が空欄(新人・当地初出走など)でも、モーター/ボート欄の並び(整数 小数 整数 小数)を手がかりに位置を合わせる。
+ */
+export function parseRacerNumbers(rest: string): { v: number[]; filled: boolean } | null {
+  // 勝率・2連率は小数2桁固定。固定幅の列で番号(3桁)が直後に連結されることがある(例: "23.28170" = 23.28 と 170)ため小数は2桁で区切る
+  const toks = [...rest.matchAll(/\d+\.\d{2}|\d+/g)].map((m) => m[0]);
+  const isDec = (t?: string) => t !== undefined && t.includes(".");
+  const isInt = (t?: string) => t !== undefined && !t.includes(".");
+  for (let k = 0; k + 3 < toks.length; k++) {
+    if (!(isInt(toks[k]) && isDec(toks[k + 1]) && isInt(toks[k + 2]) && isDec(toks[k + 3]))) continue;
+    const head = toks.slice(0, k);
+    if (head.some(isInt)) continue; // 勝率欄に整数が混ざる=位置がずれている
+    const d = head.map(Number);
+    let nat = [0, 0], loc = [0, 0];
+    if (d.length >= 4) { nat = [d[0], d[1]]; loc = [d[2], d[3]]; }
+    else if (d.length >= 2) { nat = [d[0], d[1]]; }
+    else if (d.length !== 0) continue;
+    const v = [nat[0], nat[1], loc[0], loc[1], Number(toks[k]), Number(toks[k + 1]), Number(toks[k + 2]), Number(toks[k + 3])];
+    return { v, filled: d.length < 4 };
+  }
+  return null;
+}
+
 export function parseBFile(text: string): ParseResult {
   const warnings: string[] = [];
   const venues: ParsedVenueDay[] = [];
@@ -139,14 +163,16 @@ export function parseBFile(text: string): ParseResult {
       const rm = line.match(RACER_LINE_RE);
       if (rm) {
         const rest = rm[8];
-        // 残り部分から数値トークンを順に取得:
-        // 全国勝率, 全国2率, 当地勝率, 当地2率, M番, M2率, B番, B2率
-        const nums = [...rest.matchAll(/\d+\.\d+|\d+/g)].map((m) => m[0]);
-        if (nums.length < 8) {
-          warnings.push(`選手行の数値不足(${nums.length}/8): ${line.slice(0, 40)}...`);
+        // 残り部分の数値列: 全国勝率, 全国2率, 当地勝率, 当地2率, M番, M2率, B番, B2率
+        // 新人・初出走の場など、勝率欄が空欄の選手もいるため「M番(整数) M2率(小数) B番(整数) B2率(小数)」の並びを
+        // 基準に位置を決め、手前の小数の数で全国/当地の有無を判断する(空欄は0扱い)
+        const nums = parseRacerNumbers(rest);
+        if (!nums) {
+          warnings.push(`選手行の数値を解釈できず: ${line.slice(0, 60)}...`);
           if (debug) console.error("[parser] 数値不足:", line);
           continue;
         }
+        if (nums.filled) warnings.push(`選手行の勝率欄が空欄(0として扱う): ${line.slice(0, 40)}...`);
         currentRace.racers.push({
           lane: Number(rm[1]),
           regNo: rm[2],
@@ -155,14 +181,14 @@ export function parseBFile(text: string): ParseResult {
           branch: rm[5].trim(),
           weight: Number(rm[6]),
           racerClass: rm[7],
-          natWinRate: Number(nums[0]),
-          natTop2Rate: Number(nums[1]),
-          localWinRate: Number(nums[2]),
-          localTop2Rate: Number(nums[3]),
-          motorNo: Number(nums[4]),
-          motorRate: Number(nums[5]),
-          boatNo: Number(nums[6]),
-          boatRate: Number(nums[7]),
+          natWinRate: nums.v[0],
+          natTop2Rate: nums.v[1],
+          localWinRate: nums.v[2],
+          localTop2Rate: nums.v[3],
+          motorNo: nums.v[4],
+          motorRate: nums.v[5],
+          boatNo: nums.v[6],
+          boatRate: nums.v[7],
         });
         continue;
       }

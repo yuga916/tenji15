@@ -60,8 +60,12 @@ export function gradeOf(title?: string): string | undefined {
 }
 
 /** 番組表テキスト→Race[] 変換(テスト可能な純関数) */
+/** 直近の番組表パースの警告(パイプラインが診断用に保存する) */
+export let LAST_B_WARNINGS: string[] = [];
+
 export function convertBText(text: string, dateISO: string): Race[] {
   const { venues, warnings } = parseBFile(text);
+  LAST_B_WARNINGS = warnings;
   for (const w of warnings.slice(0, 10)) console.warn(`[official] 警告: ${w}`);
   if (warnings.length > 10) console.warn(`[official] 警告 他${warnings.length - 10}件`);
   if (venues.length === 0) {

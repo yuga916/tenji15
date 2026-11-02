@@ -77,7 +77,18 @@ const RACER_LINE_RE = /^\s*([1-6])\s*(\d{4})(\D+?)(\d{2})(\D+?)(\d{2})\s*(A1|A2|
  */
 export function parseRacerNumbers(rest: string): { v: number[]; filled: boolean } | null {
   // 勝率・2連率は小数2桁固定。固定幅の列で番号(3桁)が直後に連結されることがある(例: "23.28170" = 23.28 と 170)ため小数は2桁で区切る
-  const toks = [...rest.matchAll(/\d+\.\d{2}|\d+/g)].map((m) => m[0]);
+  // さらに「62100.00」(M番62 + 2連率100.00)のように番号の後ろに率が連結されることもあるため、
+  // 整数部が3桁以上の小数は「番号 + 率(100.00 または 2桁.2桁)」に分ける
+  const toks: string[] = [];
+  for (const m of rest.matchAll(/\d+\.\d{2}|\d+/g)) {
+    const t = m[0];
+    const dot = t.indexOf(".");
+    if (dot > 2 && t.slice(0, dot) !== "100") {
+      const ip = t.slice(0, dot), frac = t.slice(dot);
+      if (ip.endsWith("100") && ip.length > 3) toks.push(ip.slice(0, -3), "100" + frac);
+      else toks.push(ip.slice(0, -2), ip.slice(-2) + frac);
+    } else toks.push(t);
+  }
   const isDec = (t?: string) => t !== undefined && t.includes(".");
   const isInt = (t?: string) => t !== undefined && !t.includes(".");
   for (let k = 0; k + 3 < toks.length; k++) {

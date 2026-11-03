@@ -2455,21 +2455,21 @@
     "raceNo": 1,
     "name": "サンライズV",
     "seriesTitle": "BTSオラレ日南開設15周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
+    "windDir": "曇",
     "windSpeed": 0,
-    "wave": 0,
+    "wave": 1,
     "inEscapeProbPre": 88,
     "inEscapeProb": 88,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの88%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.88,
       "makuri": 0.05,
       "sashi": 0.05,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -2481,7 +2481,11 @@
         "motorRate": 23.85,
         "weight": 56,
         "preProb": 0.869,
-        "aiProb": 0.869
+        "aiProb": 0.869,
+        "exWeight": 55,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(56→55kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 2,
@@ -2493,7 +2497,11 @@
         "motorRate": 15.84,
         "weight": 55,
         "preProb": 0.052,
-        "aiProb": 0.052
+        "aiProb": 0.052,
+        "exWeight": 52.2,
+        "liveNotes": [
+          "体重が番組表より2.8kg減(55→52.2kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -2505,7 +2513,8 @@
         "motorRate": 41.8,
         "weight": 51,
         "preProb": 0.024,
-        "aiProb": 0.024
+        "aiProb": 0.023,
+        "exWeight": 51.5
       },
       {
         "lane": 4,
@@ -2517,7 +2526,11 @@
         "motorRate": 30,
         "weight": 54,
         "preProb": 0.035,
-        "aiProb": 0.035
+        "aiProb": 0.035,
+        "exWeight": 51.5,
+        "liveNotes": [
+          "体重が番組表より2.5kg減(54→51.5kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 5,
@@ -2529,7 +2542,8 @@
         "motorRate": 39.67,
         "weight": 52,
         "preProb": 0.009,
-        "aiProb": 0.009
+        "aiProb": 0.01,
+        "exWeight": 52.4
       },
       {
         "lane": 6,
@@ -2541,13 +2555,42 @@
         "motorRate": 36.29,
         "weight": 51,
         "preProb": 0.012,
-        "aiProb": 0.012
+        "aiProb": 0.011,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(51→52kg)でマイナス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は88%想定。本命候補は1号艇・長野壮志(A2・事前勝率87%)、対抗は2号艇・酒井俊弘(同5%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-03T23:00:32.240Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・長野壮志: 体重が番組表より1.0kg減(56→55kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・酒井俊弘: 体重が番組表より2.8kg減(55→52.2kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "4号艇・中井俊祐: 体重が番組表より2.5kg減(54→51.5kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "6号艇・木幡純也: 体重が番組表より1.0kg増(51→52kg)でマイナス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・長野壮志(現時点のAI勝率87%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は88%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-03T23:10:28.006Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "ashiya-2026-11-04-2",

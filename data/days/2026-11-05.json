@@ -1231,21 +1231,21 @@
     "raceNo": 1,
     "name": "サンライズV",
     "seriesTitle": "BTSオラレ日南開設15周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 88,
     "inEscapeProb": 88,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの88%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.88,
       "makuri": 0.05,
       "sashi": 0.05,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -1257,7 +1257,8 @@
         "motorRate": 40.16,
         "weight": 52,
         "preProb": 0.838,
-        "aiProb": 0.838
+        "aiProb": 0.832,
+        "exWeight": 52
       },
       {
         "lane": 2,
@@ -1269,7 +1270,8 @@
         "motorRate": 26.05,
         "weight": 56,
         "preProb": 0.024,
-        "aiProb": 0.024
+        "aiProb": 0.024,
+        "exWeight": 55.6
       },
       {
         "lane": 3,
@@ -1281,7 +1283,11 @@
         "motorRate": 31.09,
         "weight": 50,
         "preProb": 0.071,
-        "aiProb": 0.071
+        "aiProb": 0.068,
+        "exWeight": 51,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(50→51kg)でマイナス"
+        ]
       },
       {
         "lane": 4,
@@ -1293,7 +1299,8 @@
         "motorRate": 33.86,
         "weight": 61,
         "preProb": 0.032,
-        "aiProb": 0.032
+        "aiProb": 0.032,
+        "exWeight": 60.2
       },
       {
         "lane": 5,
@@ -1305,7 +1312,11 @@
         "motorRate": 37.5,
         "weight": 56,
         "preProb": 0.033,
-        "aiProb": 0.033
+        "aiProb": 0.034,
+        "exWeight": 54.4,
+        "liveNotes": [
+          "体重が番組表より1.6kg減(56→54.4kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 6,
@@ -1317,13 +1328,27 @@
         "motorRate": 28.35,
         "weight": 50,
         "preProb": 0.002,
-        "aiProb": 0.002
+        "aiProb": 0.01,
+        "exWeight": 50.5
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は88%想定。本命候補は1号艇・広次修(A2・事前勝率84%)、対抗は3号艇・伊藤尚汰(同7%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-04T23:00:28.668Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "3号艇・伊藤尚汰: 体重が番組表より1.0kg増(50→51kg)でマイナス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "5号艇・田邉亮蔵: 体重が番組表より1.6kg減(56→54.4kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・広次修(現時点のAI勝率83%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は88%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-04T23:10:29.881Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "ashiya-2026-11-05-2",

@@ -7,21 +7,21 @@
     "raceNo": 1,
     "name": "朝1戦",
     "seriesTitle": "BTSみやき開設17周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 69,
     "inEscapeProb": 69,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの69%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.69,
       "makuri": 0.14,
       "sashi": 0.13,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -33,7 +33,15 @@
         "motorRate": 24,
         "weight": 52,
         "preProb": 0.688,
-        "aiProb": 0.688
+        "aiProb": 0.674,
+        "exWeight": 52.2,
+        "parts": [
+          "電気&nbsp;",
+          "キャブ&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(電気&nbsp;・キャブ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+        ]
       },
       {
         "lane": 2,
@@ -45,7 +53,8 @@
         "motorRate": 41.38,
         "weight": 53,
         "preProb": 0.143,
-        "aiProb": 0.143
+        "aiProb": 0.146,
+        "exWeight": 53.1
       },
       {
         "lane": 3,
@@ -57,7 +66,11 @@
         "motorRate": 28.13,
         "weight": 56,
         "preProb": 0.092,
-        "aiProb": 0.092
+        "aiProb": 0.097,
+        "exWeight": 54.3,
+        "liveNotes": [
+          "体重が番組表より1.7kg減(56→54.3kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 4,
@@ -69,7 +82,8 @@
         "motorRate": 23.08,
         "weight": 54,
         "preProb": 0.043,
-        "aiProb": 0.043
+        "aiProb": 0.044,
+        "exWeight": 53.5
       },
       {
         "lane": 5,
@@ -81,7 +95,8 @@
         "motorRate": 0,
         "weight": 56,
         "preProb": 0.029,
-        "aiProb": 0.029
+        "aiProb": 0.03,
+        "exWeight": 55.5
       },
       {
         "lane": 6,
@@ -93,13 +108,36 @@
         "motorRate": 26.92,
         "weight": 56,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.011,
+        "exWeight": 55,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(56→55kg)=軽量化でプラス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は69%想定。本命候補は1号艇・秋山広一(A2・事前勝率69%)、対抗は2号艇・安田政彦(同14%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-05T23:00:24.200Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・秋山広一: 部品交換(電気&nbsp;・キャブ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・富澤祐作: 体重が番組表より1.7kg減(56→54.3kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "6号艇・今泉博人: 体重が番組表より1.0kg減(56→55kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・秋山広一(現時点のAI勝率67%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は69%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-05T23:10:42.547Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "karatsu-2026-11-06-2",

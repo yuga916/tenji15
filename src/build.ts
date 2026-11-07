@@ -17,7 +17,7 @@ import { GUIDE_TERMS } from "./guideTerms.ts";
 import { venueBySlug, VENUES } from "./venues.ts";
 import { normalizeAgg, type HistoryAgg } from "./backfill.ts";
 import { gradeOf } from "./dataSource.ts";
-import { buildTiers, collectTierStats, rates, SHIBORI_MIN, type Tiers, type TierKey, type TierStats, type Combo } from "./betTiers.ts";
+import { buildTiers, collectTierStats, rates, exactaTop, SHIBORI_MIN, type Tiers, type TierKey, type TierStats, type Combo } from "./betTiers.ts";
 
 /** 買い目の段階別・過去成績(main()で全確定レースから集計) */
 let TIER_STATS: TierStats | null = null;
@@ -351,7 +351,7 @@ function betSuggestion(r: Race): string {
   const autoNote = hasEx ? "" : `<p style="color:var(--signal); font-size:12px; margin:0 0 10px;">開いたままでOK: 展示タイムが公開されて予想が更新されると、このページは自動で最新に切り替わります。</p>`;
 
   return `<section data-ev="view_bet_suggestion" data-race-status="${r.status}">
-    <h2>買い目の目安 — 本命・対抗・穴(3連単)</h2>
+    <h2>買い目の目安 — 3連単(本命・対抗・穴)と2連単</h2>
     <div class="card">
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
         <span style="color:var(--muted); font-size:12.5px;">本線</span>
@@ -360,6 +360,7 @@ function betSuggestion(r: Race): string {
       </div>
       ${autoNote}
       ${tiers ? tierTable(tiers, line) : ""}
+      ${exactaRow(r, line)}
       ${gapBoat ? `<p style="color:var(--muted); font-size:12.5px; margin:0 0 10px;">歪み狙い(市場が過小評価): ${a.lane}-${b.lane}-${gapBoat.lane}</p>` : ""}
       <p style="font-size:13px; color:#cfdde6; margin-bottom:4px;">根拠:</p>
       <ul style="font-size:13px; color:#cfdde6; padding-left:18px; line-height:1.9;">
@@ -369,6 +370,23 @@ function betSuggestion(r: Race): string {
       <p style="color:var(--dim); font-size:11.5px; margin-top:10px;">※AI評価の高い順の組み合わせであり、的中を保証するものではありません。「推定」はAI勝率から計算した目安、「過去」は当サイトの確定レースに同じ選び方を当てはめた実測です(回収率100%未満は長期的にはマイナス)。オッズは締切まで変動します。選び方は<a href="${baseFor(4)}stats/methodology/#bets">買い目の段階表示について</a>をご覧ください。</p>
     </div>
   </section>`;
+}
+
+/** 2連単(推定確率の上位3点)。回収率は払戻の記録がたまるまで「集計中」 */
+function exactaRow(r: Race, line: (lanes: number[]) => string): string {
+  const ex = exactaTop(r, 3);
+  if (ex.length < 3) return "";
+  const pct = (v: number) => (v * 100 >= 10 ? Math.round(v * 100) : Math.round(v * 1000) / 10);
+  const st = TIER_STATS?.exacta;
+  const past = st && st.n >= 30
+    ? `過去${st.n.toLocaleString()}レース: 的中${((100 * st.hit) / st.n).toFixed(1)}%・回収${st.nPay >= 300 ? `${Math.round(st.ret / (st.nPay * 3))}%` : "は集計中(2連単の払戻は11月7日から記録)"}`
+    : "過去成績は集計中";
+  const sum = ex.reduce((a, x) => a + x.prob, 0);
+  return `<div style="padding:10px 0; border-top:1px solid rgba(255,255,255,.08); margin-bottom:12px;">
+<div style="display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:6px;"><strong style="color:#b39dff; font-size:14px;">2連単</strong><span style="color:var(--dim); font-size:11.5px;">3点(推定確率の上位)・どれかが当たる推定 約${pct(sum)}%</span></div>
+<div style="display:flex; flex-wrap:wrap; gap:8px 14px;">${ex.map((x) => `<span style="display:inline-flex; align-items:center; gap:3px; font-size:14px; font-weight:700;">${line(x.lanes)}<span style="color:var(--dim); font-size:11px; font-weight:400; margin-left:4px;">${pct(x.prob)}%</span></span>`).join("")}</div>
+<div style="color:var(--dim); font-size:11px; margin-top:5px;">${past}</div>
+</div>`;
 }
 
 /** 本命・対抗・穴の段階表(推定確率と過去成績つき) */
@@ -2133,6 +2151,7 @@ ${venues || "- 本日の開催データはまだありません"}
     const rt = rates(TIER_STATS[k]);
     console.log(`[build] 買い目段階 ${k}: n=${TIER_STATS[k].n} ${rt ? `的中${rt.hit.toFixed(1)}% 回収${rt.ret.toFixed(1)}%` : "-"}`);
   }
+  console.log(`[build] 2連単(上位3点): n=${TIER_STATS.exacta.n} 的中${TIER_STATS.exacta.n ? ((100 * TIER_STATS.exacta.hit) / TIER_STATS.exacta.n).toFixed(1) : "-"}% 払戻記録${TIER_STATS.exacta.nPay}件`);
   for (const r of races) await buildRacePage(raceTpl, r, races, vStats);
 
   // 当日のライブ状態(レースページが裏で取得し、展示反映時の自動切替・締切後の「次のレース」案内に使う)
@@ -2883,7 +2902,7 @@ ${body}`,
 <section><h2>処理の流れ</h2><p>毎朝の番組確定後にレースページを自動生成 → 開催時間帯は5分ごとに直前情報を反映 → レース確定後の夜に競走成績で結果を照合し、同じURLに追記します。並行して、過去分の競走成績を毎晩さかのぼって取得し、<a href="${statsBase}stats/">統計ページ</a>の母数を拡充しています(目標: 過去3年分)。</p></section>
 <section><h2>AI評価の中身</h2><p>事前評価は級別・全国勝率・当地勝率・全国2連率・モーター2連率・ボート2連率の6ファクターをレース内で相対化し、会場ごとのコース別基準値に重ねたものです。展示航走後は展示タイムの偏差・進入変化に加え、部品交換・チルト角度・体重の変化(<a href="${statsBase}stats/methodology/#adjust">扱いの詳細</a>)で評価を更新し、直前オッズとの乖離を検出します。詳細は<a href="${statsBase}guide/ai-yosou/">競艇のAI予想とは</a>へ。</p></section>
 <section id="adjust"><h2>直前の調整情報(部品交換・チルト・体重)の扱い</h2><p>2026年10月9日から、公式の直前情報に掲載される次の3項目を、展示航走のデータと合わせてAI勝率に反映しています。いずれも選手コメントで語られることの多い「調整の中身」を、文章ではなく事実データとして読み取るものです。</p><p>①<strong>部品交換</strong>: リング・ピストン・キャブレターなどの主要部品を交換した艇は「足に不満があって手を入れた」サインとして、わずかにマイナス。新しいプロペラへの交換も、まだ合っていない可能性としてわずかにマイナス。<br>②<strong>チルト角度</strong>: +0.5以上は伸びを重視した調整。4〜6コースではまくり狙いとしてプラス、1〜2コースでは出足が落ちやすいとしてマイナス。<br>③<strong>体重</strong>: 番組表に記載の体重と当日の体重を比べ、1kg以上の減少はプラス、1kg以上の増加はマイナス。</p><p>補正の大きさは1項目あたり数%程度にとどめています。効果は検証中で、確定したレースの結果と照合しながら見直します(検証結果はまとまり次第、このサイトで公開します)。どの艇にどの補正が入ったかは、各レースページの「展示前→展示後で、予想はどう変わったか」に表示しています。</p></section>
-<section id="bets"><h2>買い目の段階表示(本命・対抗・穴)について</h2><p>各レースページの「買い目の目安」は、AI勝率(各艇が1着になる推定確率)から3連単120通りそれぞれの推定確率を計算し(Harville式: 1着の確率×残りの艇の中で2着になる確率×残りの艇の中で3着になる確率)、次のルールで機械的に選んでいます。</p><p><strong>本命(3点)</strong>: 推定確率の上位3点。<strong>対抗(3点)</strong>: AI評価2位の艇が1着になる組み合わせの上位3点。<strong>穴(2点)</strong>: AI評価1・2位以外の艇が1着になる組み合わせの上位2点。<strong>絞るなら2点</strong>: AI本命の勝率が70%以上のレースに限り、本命の上位2点を表示します。</p><p>各段の「過去」の的中率・回収率は、当サイトに記録された確定レースすべてに同じ選び方を当てはめて毎回のビルドで再集計した実測値です(100円ずつ購入した場合の払戻合計÷購入額)。回収率が100%を下回る段は、長期的には購入額を下回ることを意味します。点数を増やすほど的中率は上がりますが、回収率が上がるとは限りません。</p></section>
+<section id="bets"><h2>買い目の段階表示(本命・対抗・穴)について</h2><p>各レースページの「買い目の目安」は、AI勝率(各艇が1着になる推定確率)から3連単120通りそれぞれの推定確率を計算し(Harville式: 1着の確率×残りの艇の中で2着になる確率×残りの艇の中で3着になる確率)、次のルールで機械的に選んでいます。</p><p><strong>本命(3点)</strong>: 推定確率の上位3点。<strong>対抗(3点)</strong>: AI評価2位の艇が1着になる組み合わせの上位3点。<strong>穴(2点)</strong>: AI評価1・2位以外の艇が1着になる組み合わせの上位2点。<strong>絞るなら2点</strong>: AI本命の勝率が70%以上のレースに限り、本命の上位2点を表示します。</p><p>各段の「過去」の的中率・回収率は、当サイトに記録された確定レースすべてに同じ選び方を当てはめて毎回のビルドで再集計した実測値です(100円ずつ購入した場合の払戻合計÷購入額)。回収率が100%を下回る段は、長期的には購入額を下回ることを意味します。点数を増やすほど的中率は上がりますが、回収率が上がるとは限りません。</p><p><strong>2連単(3点)</strong>: 1着・2着の組み合わせの推定確率(1着の確率×残りの艇の中で2着になる確率)の上位3点です。2連単の払戻は2026年11月7日から記録を始めたため、回収率はデータがたまり次第表示します。なお、AI上位3艇・4艇の3連単BOXも同じ方法で検証しましたが、回収率が本命3点を下回った(BOX6点・24点ともに約70%、本命3点は約77%)ため、おすすめとしての掲載は見送っています。</p></section>
 <section><h2>数値の限界と免責</h2><p>払戻の一部が取得できないレースや、中止・不成立レースは集計から除外されます。回収率等は「過去の実測」であり将来の結果を保証しません。当サイトは的中保証・断定表現を行わず、舟券の販売・購入代行も行いません。</p></section>
 <section><h2>引用について</h2><p>当サイトのデータは出典明記(「競艇チョクゼン(kyotei-chokuzen.com)調べ」等)の上で引用いただけます。機械可読データは<a href="${statsBase}data/stats.json">stats.json</a>で公開しています。</p></section>`,
     }));

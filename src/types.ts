@@ -52,6 +52,7 @@ export interface RaceResult {
   payout3t: number;        // 3連単払戻(円)
   popularity: number;      // 3連単人気
   payoutWin?: number;      // 単勝払戻(円)。AI本命の仮想回収率算出に使用
+  payout2t?: number;       // 2連単払戻(円)。2026-11-07から記録(2連単の回収率集計用)
   review: string;          // 答え合わせ本文(直前サインがどう効いたか)
 }
 

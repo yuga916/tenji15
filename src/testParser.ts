@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { parseBFile } from "./officialParser.ts";
 import { venueByJcd } from "./venues.ts";
 import { computePreProbs, computeInEscape } from "./model.ts";
-import { trifectaProbs, buildTiers, collectTierStats } from "./betTiers.ts";
+import { trifectaProbs, buildTiers, collectTierStats, exactaTop } from "./betTiers.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -140,6 +140,7 @@ assert(gradeOf(venues[0]?.seriesTitle) === undefined, `一般節はグレード�
 assert(gradeOf("GⅠ第70回九州地区選手権") === "G1" && gradeOf("GⅢオールレディース") === "G3", `G1/G3判定`);
 assert(vOmura.grade === "SG" && vOmura.seriesTitle !== undefined, `RaceへのSG付与 (実際: ${vOmura.grade})`);
 assert(v1.result!.payoutWin === 130, `単勝払戻の保存 (実際: ${v1.result!.payoutWin})`);
+assert(v1.result!.payout2t === 450, `2連単払戻の保存 (実際: ${v1.result!.payout2t})`);
 assert(races2[0].entries[0].regNo === "4444", `Entry.regNo付与`);
 
 /* ---------- 直前情報(シグナルフェーズ) ---------- */
@@ -266,6 +267,12 @@ assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTML�
   const st = collectTierStats([race]);
   assert(st.honmei.n === 1 && st.honmei.hit === 1 && st.honmei.ret === 900, "段階別成績: 本命的中を集計");
   assert(st.ana.hit === 0, "段階別成績: 穴は不的中");
+  const ex = exactaTop(mk([0.72, 0.1, 0.08, 0.05, 0.03, 0.02]), 3);
+  assert(ex.length === 3 && ex[0].lanes.join("-") === "1-2" && ex.every((x) => x.lanes[0] !== x.lanes[1]), "2連単: 上位3点(1点目は1-2)");
+  const st2 = collectTierStats([{ ...race, result: { ...race.result, payout2t: 340 } }] as any);
+  assert(st2.exacta.n === 1 && st2.exacta.hit === 1 && st2.exacta.nPay === 1 && st2.exacta.ret === 340, "2連単: 的中と払戻の集計");
+  const st3 = collectTierStats([race] as any);
+  assert(st3.exacta.hit === 1 && st3.exacta.nPay === 0, "2連単: 払戻未記録のレースは的中率のみに算入");
 }
 
 console.log(process.exitCode ? "\nテスト失敗があります" : "\n全テスト通過");

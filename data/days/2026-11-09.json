@@ -7,21 +7,21 @@
     "raceNo": 1,
     "name": "朝1戦",
     "seriesTitle": "BTSみやき開設17周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 62,
     "inEscapeProb": 62,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの62%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.62,
       "makuri": 0.17,
       "sashi": 0.16,
       "other": 0.05
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -33,7 +33,11 @@
         "motorRate": 41.38,
         "weight": 53,
         "preProb": 0.732,
-        "aiProb": 0.732
+        "aiProb": 0.733,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 2,
@@ -45,7 +49,11 @@
         "motorRate": 27.27,
         "weight": 54,
         "preProb": 0.081,
-        "aiProb": 0.081
+        "aiProb": 0.081,
+        "exWeight": 52.5,
+        "liveNotes": [
+          "体重が番組表より1.5kg減(54→52.5kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -57,7 +65,11 @@
         "motorRate": 19.23,
         "weight": 58,
         "preProb": 0.064,
-        "aiProb": 0.064
+        "aiProb": 0.064,
+        "exWeight": 56.3,
+        "liveNotes": [
+          "体重が番組表より1.7kg減(58→56.3kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 4,
@@ -69,7 +81,14 @@
         "motorRate": 26.92,
         "weight": 56,
         "preProb": 0.014,
-        "aiProb": 0.014
+        "aiProb": 0.014,
+        "exWeight": 55.4,
+        "parts": [
+          "シャフト&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(シャフト&nbsp;)"
+        ]
       },
       {
         "lane": 5,
@@ -81,7 +100,11 @@
         "motorRate": 37.93,
         "weight": 54,
         "preProb": 0.089,
-        "aiProb": 0.089
+        "aiProb": 0.089,
+        "exWeight": 52.9,
+        "liveNotes": [
+          "体重が番組表より1.1kg減(54→52.9kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 6,
@@ -93,13 +116,54 @@
         "motorRate": 44,
         "weight": 56,
         "preProb": 0.019,
-        "aiProb": 0.019
+        "aiProb": 0.019,
+        "exWeight": 52.6,
+        "liveNotes": [
+          "体重が番組表より3.4kg減(56→52.6kg)=軽量化でプラス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は62%想定。本命候補は1号艇・大串重幸(A2・事前勝率73%)、対抗は5号艇・谷川将太(同9%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-08T23:00:29.398Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・大串重幸: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・高山敬悟: 体重が番組表より1.5kg減(54→52.5kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・岡谷健吾: 体重が番組表より1.7kg減(58→56.3kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "neutral",
+        "text": "4号艇・今泉博人: 部品交換(シャフト&nbsp;)"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "5号艇・谷川将太: 体重が番組表より1.1kg減(54→52.9kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "6号艇・河上年昭: 体重が番組表より3.4kg減(56→52.6kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・大串重幸(現時点のAI勝率73%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は62%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-08T23:10:29.077Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "karatsu-2026-11-09-2",

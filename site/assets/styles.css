@@ -381,3 +381,15 @@ footer.site ul { list-style: none; }
 footer.site li { margin-bottom: 8px; }
 .legal { border-top: 1px solid var(--line); margin-top: 34px; padding-top: 22px; color: var(--dim); font-size: 11.5px; }
 .legal p { margin-bottom: 8px; }
+
+/* 女子選手マーク(意見箱の要望で追加) */
+.fem-mark { font-size: 12px; margin-left: 2px; line-height: 1; }
+.fem-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #ffd84d; border: 1px solid rgba(255, 216, 77, .45); background: rgba(255, 216, 77, .08); }
+
+/* スマホでもヘッダーのメニューを横スクロールで表示(過去の結果などへ行けるように) */
+@media (max-width: 760px) {
+  header.site .wrap { height: auto; flex-wrap: wrap; row-gap: 2px; padding-top: 10px; padding-bottom: 6px; }
+  nav.global { display: flex; width: 100%; overflow-x: auto; gap: 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  nav.global::-webkit-scrollbar { display: none; }
+  nav.global a { flex: 0 0 auto; white-space: nowrap; padding: 6px 10px; font-size: 12px; }
+}

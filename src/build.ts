@@ -26,6 +26,12 @@ let LLMS_TODAY = "";
 /** 選手の実測データ(過去分バックフィル集計)。出走表の「このコース1着率」「平均ST」に使う */
 let HIST_RACERS: HistoryAgg["racers"] | null = null;
 let HIST_PERIOD = "";
+/** 女子選手の登録番号(公式の期別成績の性別欄から。data/female-racers.json) */
+let FEMALE: Set<string> = new Set();
+const isFemale = (e: Entry): boolean => !!e.regNo && FEMALE.has(e.regNo);
+const femaleCount = (r: Race): number => r.entries.filter((e) => !e.scratched && isFemale(e)).length;
+const HEART = `<span class="fem-mark" title="女子選手" aria-label="女子選手">💛</span>`;
+const heartIf = (r: Race): string => (femaleCount(r) > 0 ? `<span class="fem-mark" title="女子選手が出走" aria-label="女子選手が出走">💛</span>` : "");
 
 /** 節タイトルの正規化: 公式データの「ボートレース三 国 9月25日 ○○ 第 6日」形式から日付・日目を除去して節名だけにする */
 export function cleanSeriesTitle(t?: string): string | undefined {
@@ -231,7 +237,7 @@ function entriesRows(r: Race, base: string): string {
         ? `<a href="${base}racers/${e.regNo}/" style="color:inherit; border-bottom:1px dotted var(--dim);" title="${esc(e.name)}選手の成績・AI評価">${esc(e.name)}</a>`
         : esc(e.name);
       const more = e.regNo ? ` <a href="${base}racers/${e.regNo}/" class="racer-more" style="font-size:11px; color:var(--cyan); white-space:nowrap;">詳しく →</a>` : "";
-      const nameCell = `<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">${racerAvatar(e.name, e.racerClass, 26)}${nameLink}${more}</span>`;
+      const nameCell = `<span style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">${racerAvatar(e.name, e.racerClass, 26)}${nameLink}${isFemale(e) ? HEART : ""}${more}</span>`;
       const st = racerStats(r, e);
       if (e.scratched) {
         return `<tr style="opacity:.5;">
@@ -637,7 +643,7 @@ function otherRacesHtml(all: Race[], current: Race, base: string): string {
       const label = r.status === "verified" ? "済" : r.closeTime;
       return isCurrent
         ? `<span style="display:inline-block; padding:8px 12px; border-radius:8px; background:var(--cyan); color:#05131c; font-weight:700; font-size:13px;">${r.raceNo}R</span>`
-        : `<a href="${base}${racePath(r)}" style="display:inline-block; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); color:var(--text); font-size:13px;">${r.raceNo}R <span style="color:var(--dim); font-size:11px;">${label}</span></a>`;
+        : `<a href="${base}${racePath(r)}" style="display:inline-block; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,.14); color:var(--text); font-size:13px;">${r.raceNo}R${heartIf(r)} <span style="color:var(--dim); font-size:11px;">${label}</span></a>`;
     })
     .join("\n");
 
@@ -927,7 +933,7 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
     DATE_LABEL: dateLabel(r.dateISO),
     RACE_NO: String(r.raceNo),
     RACE_NAME: esc(r.name),
-    GRADE_BADGE: r.grade ? `<span class="grade-badge">${esc(r.grade)}</span>` : "",
+    GRADE_BADGE: (r.grade ? `<span class="grade-badge">${esc(r.grade)}</span>` : "") + (femaleCount(r) > 0 ? ` <span class="fem-badge">💛 女子選手${femaleCount(r)}名</span>` : ""),
     STATUS_CLASS: m.cls,
     STATUS_LABEL: m.label,
     TIME_LABEL: `締切 ${r.closeTime}`,
@@ -1019,7 +1025,7 @@ ${ldScripts}
 <meta name="theme-color" content="#050b12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="チョクゼン">
-<link rel="stylesheet" href="${opts.base}assets/styles.css">
+<link rel="stylesheet" href="${opts.base}assets/styles.css?v=20261110">
 ${gaSnippet()}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="${opts.base}" title="競艇チョクゼン">競艇<span class="num">チョクゼン</span></a>
 <nav class="global"><a href="${opts.base}guide/kanzen-guide/">予想ガイド</a><a href="${opts.base}stats/">データ</a><a href="${opts.base}results/">結果まとめ</a><a href="${opts.base}racers/">選手</a><a href="${opts.base}guide/">用語</a></nav></div></header>
@@ -1296,7 +1302,7 @@ function stubPage(title: string, body: string, base: string): string {
 <meta name="theme-color" content="#050b12">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="チョクゼン">
-<link rel="stylesheet" href="${base}assets/styles.css">
+<link rel="stylesheet" href="${base}assets/styles.css?v=20261110">
 ${gaSnippet()}</head><body>
 <header class="site"><div class="wrap"><a class="logo" href="${base}" title="競艇チョクゼン">競艇<span class="num">チョクゼン</span></a></div></header>
 <main class="wrap article"><h1>${title}</h1><p style="color:var(--muted);">${body}</p>
@@ -1787,7 +1793,7 @@ function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): st
       : done || closed
         ? "color:var(--dim); border-color:rgba(255,255,255,.08);"
         : "color:var(--text); border-color:rgba(255,255,255,.2);";
-    return `<a href="${base}${racePath(r)}" title="${esc(r.venue)}${r.raceNo}R 締切${r.closeTime}${done ? "(結果あり)" : ""}" style="display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:28px; padding:0 6px; border:1px solid; border-radius:7px; font-size:12px; ${style}">${r.raceNo}</a>`;
+    return `<a href="${base}${racePath(r)}" title="${esc(r.venue)}${r.raceNo}R 締切${r.closeTime}${done ? "(結果あり)" : ""}" style="display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:28px; padding:0 6px; border:1px solid; border-radius:7px; font-size:12px; ${style}">${r.raceNo}${femaleCount(r) > 0 ? '<span style="font-size:8px; margin-left:1px;" aria-label="女子選手が出走">💛</span>' : ""}</a>`;
   };
   const rowsHtml = rows
     .map(({ v, sorted, next, night, allDone }) => `<div class="jg-row" data-venue="${v.venueSlug}" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.06);">
@@ -1808,7 +1814,7 @@ function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): st
 <h2 style="font-size:15px; margin:0;">レースへジャンプ <span style="color:var(--dim); font-size:11.5px; font-weight:400;">会場×R・水色は次の締切・${hmJst(BUILD_ISO)}更新</span></h2>
 <div style="display:flex; gap:12px; font-size:12px; flex-wrap:wrap;"><a href="${base}today/main-races/">各場12R本命</a><a href="${base}today/night/">ナイター</a><a href="${base}today/manshu/">万舟狙い目</a></div>
 </div>
-<p class="fav-hint" style="color:var(--dim); font-size:11.5px; margin:0 0 4px;">☆を押すと会場をお気に入り登録でき、このページの一番上にその会場の次のレースが出ます(この端末に保存・登録不要)。</p>
+<p class="fav-hint" style="color:var(--dim); font-size:11.5px; margin:0 0 4px;">☆を押すと会場をお気に入り登録でき、このページの一番上にその会場の次のレースが出ます(この端末に保存・登録不要)。💛は女子選手が出走するレースです。</p>
 <div id="jg-rows">${rowsHtml}</div>
 </div>`;
 }
@@ -1831,7 +1837,7 @@ function todayRaceTable(list: Race[], base: string, manshuRate?: (r: Race) => st
             : `<span style="color:var(--muted);">事前評価</span>`;
       const res = done ? `${r.result!.finish.join("-")}<div style="color:var(--muted); font-size:11.5px;">¥${r.result!.payout3t.toLocaleString()}${r.result!.payout3t >= 10000 ? ' <span style="color:var(--signal);">万舟</span>' : ""}</div>` : "—";
       const mr = manshuRate ? manshuRate(r) : null;
-      return `<tr>${td(`<a href="${base}${racePath(r)}" style="font-weight:700;">${esc(r.venue)} ${r.raceNo}R</a><div style="color:var(--dim); font-size:11px;">${esc(r.name)}</div>`)}${td(r.closeTime, "white-space:nowrap;")}${td(`<strong>${t.lane}</strong> ${esc(t.name)} <span style="color:var(--muted); font-size:12px;">${Math.round(t.aiProb * 100)}%</span>`)}${td(`${r.inEscapeProb}%`)}${mr !== null && manshuRate ? td(mr ?? "—") : ""}${td(st, "white-space:nowrap;")}${td(res)}</tr>`;
+      return `<tr>${td(`<a href="${base}${racePath(r)}" style="font-weight:700;">${esc(r.venue)} ${r.raceNo}R</a>${heartIf(r)}<div style="color:var(--dim); font-size:11px;">${esc(r.name)}</div>`)}${td(r.closeTime, "white-space:nowrap;")}${td(`<strong>${t.lane}</strong> ${esc(t.name)} <span style="color:var(--muted); font-size:12px;">${Math.round(t.aiProb * 100)}%</span>`)}${td(`${r.inEscapeProb}%`)}${mr !== null && manshuRate ? td(mr ?? "—") : ""}${td(st, "white-space:nowrap;")}${td(res)}</tr>`;
     })
     .join("");
   return `<div style="overflow-x:auto;"><table style="width:100%; border-collapse:collapse; font-size:13px;"><thead><tr>${th("レース")}${th("締切")}${th("AI本命")}${th("イン逃げ")}${manshuRate ? th("会場万舟率") : ""}${th("状態")}${th("結果/3連単")}</tr></thead><tbody>${rows}</tbody></table></div>`;
@@ -2028,6 +2034,12 @@ async function main() {
   if (history) {
     HIST_RACERS = history.racers;
     HIST_PERIOD = `${dateLabel(history.from)}〜${dateLabel(history.to)}`;
+  }
+  {
+    const { loadFemaleData } = await import("./femaleRacers.ts");
+    const fd = await loadFemaleData();
+    if (fd) FEMALE = new Set(fd.regNos);
+    console.log(`[build] 女子選手データ: ${FEMALE.size}名`);
   }
 
   await mkdir(DIST, { recursive: true });

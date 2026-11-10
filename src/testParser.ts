@@ -10,6 +10,7 @@ import { parseBFile } from "./officialParser.ts";
 import { venueByJcd } from "./venues.ts";
 import { computePreProbs, computeInEscape } from "./model.ts";
 import { trifectaProbs, buildTiers, collectTierStats, exactaTop } from "./betTiers.ts";
+import { parseFanFemale, fanFileCandidates } from "./femaleRacers.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -273,6 +274,20 @@ assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTML�
   assert(st2.exacta.n === 1 && st2.exacta.hit === 1 && st2.exacta.nPay === 1 && st2.exacta.ret === 340, "2連単: 的中と払戻の集計");
   const st3 = collectTierStats([race] as any);
   assert(st3.exacta.hit === 1 && st3.exacta.nPay === 0, "2連単: 払戻未記録のレースは的中率のみに算入");
+}
+
+/* ---------- 女子選手(期別成績の性別欄) ---------- */
+{
+  const kana = (k: string) => k.padEnd(15, " ");
+  const male = "3415" + "松井　繁　　　　" + kana("ﾏﾂｲ ｼｹﾞﾙ") + "大阪" + "A1" + "S" + "441111" + "1" + "44" + "16850O 075604590370190122050201";
+  const fem = "4502" + "遠藤　エミ　　　" + kana("ｴﾝﾄﾞｳ ｴﾐ") + "滋賀" + "A1" + "H" + "040101" + "2" + "33" + "15847A 072005800400200150030101";
+  const fem2 = "５０００" + "新人　花子　　　" + kana("ｼﾝｼﾞﾝ ﾊﾅｺ") + "東京" + "B2" + "H" + "150505" + "2" + "20" + "16045B 000000000000000000000000";
+  const r = parseFanFemale([male, fem, "ヘッダ行", fem2].join("\r\n"));
+  assert(r.total === 3, `期別成績: 選手行を3件読み取る (実際: ${r.total})`);
+  assert(r.female.join(",") === "4502,5000", `期別成績: 性別2を女子として抽出 (実際: ${r.female.join(",")})`);
+  const c = fanFileCandidates("2026-11-10");
+  assert(c[0].endsWith("fan2610.lzh") && c[1].endsWith("fan2604.lzh") && c[2].endsWith("fan2510.lzh"), `期別成績: 新しい順の候補 (実際: ${c.map((u) => u.slice(-11)).join(",")})`);
+  assert(fanFileCandidates("2027-02-01")[0].endsWith("fan2610.lzh"), "期別成績: 年またぎ");
 }
 
 console.log(process.exitCode ? "\nテスト失敗があります" : "\n全テスト通過");

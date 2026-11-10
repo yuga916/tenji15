@@ -25,6 +25,11 @@ export async function runPipelineOnce(dateISO?: string): Promise<void> {
     await updateSignals(today);
     await prefetchTomorrow(today);
     await updateResults(today);
+    // 女子選手一覧(💛マーク用)。14日に1回・失敗してもパイプラインは継続
+    try {
+      const { refreshFemaleRacers } = await import("./femaleRacers.ts");
+      await refreshFemaleRacers(today, getMeta, setMeta);
+    } catch (e) { console.warn(`[female] 更新失敗(継続): ${(e as Error).message}`); }
   }
 }
 

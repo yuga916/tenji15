@@ -86,6 +86,11 @@ async function fetchLzhText(url: string, label: string): Promise<string> {
   return decodeShiftJis(buf);
 }
 
+/** 任意のLZH配布ファイル(期別成績など)を取得 */
+export async function fetchLzhUrlText(url: string, label: string): Promise<string> {
+  return fetchLzhText(url, label);
+}
+
 /** 指定日の番組表テキスト(デコード済み)を取得 */
 export async function fetchBFileText(dateISO: string): Promise<string> {
   return fetchLzhText(bFileUrl(dateISO), "番組表");

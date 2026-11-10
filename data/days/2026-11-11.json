@@ -2455,21 +2455,21 @@
     "raceNo": 1,
     "name": "サンライズV",
     "seriesTitle": "BTS宮崎開設12周年記念",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
+    "windDir": "晴",
     "windSpeed": 0,
-    "wave": 0,
+    "wave": 1,
     "inEscapeProbPre": 78,
     "inEscapeProb": 78,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの78%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.78,
       "makuri": 0.1,
       "sashi": 0.09,
       "other": 0.03
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -2481,7 +2481,11 @@
         "motorRate": 37.78,
         "weight": 54,
         "preProb": 0.731,
-        "aiProb": 0.731
+        "aiProb": 0.733,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より2.0kg減(54→52kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 2,
@@ -2493,7 +2497,14 @@
         "motorRate": 39.23,
         "weight": 52,
         "preProb": 0.121,
-        "aiProb": 0.121
+        "aiProb": 0.113,
+        "exWeight": 52,
+        "parts": [
+          "リング×2"
+        ],
+        "liveNotes": [
+          "部品交換(リング×2)=足に不満があり手を入れたサインでマイナス"
+        ]
       },
       {
         "lane": 3,
@@ -2505,7 +2516,11 @@
         "motorRate": 35.61,
         "weight": 55,
         "preProb": 0.056,
-        "aiProb": 0.056
+        "aiProb": 0.056,
+        "exWeight": 53.1,
+        "liveNotes": [
+          "体重が番組表より1.9kg減(55→53.1kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 4,
@@ -2517,7 +2532,11 @@
         "motorRate": 38.46,
         "weight": 58,
         "preProb": 0.062,
-        "aiProb": 0.062
+        "aiProb": 0.062,
+        "exWeight": 55.9,
+        "liveNotes": [
+          "体重が番組表より2.1kg減(58→55.9kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 5,
@@ -2529,7 +2548,8 @@
         "motorRate": 33.63,
         "weight": 55,
         "preProb": 0.026,
-        "aiProb": 0.026
+        "aiProb": 0.025,
+        "exWeight": 54.5
       },
       {
         "lane": 6,
@@ -2541,13 +2561,39 @@
         "motorRate": 41.41,
         "weight": 55,
         "preProb": 0.003,
-        "aiProb": 0.003
+        "aiProb": 0.01,
+        "exWeight": 54.9
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は78%想定。本命候補は1号艇・平田健之(A2・事前勝率73%)、対抗は2号艇・倉富大誠(同12%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-10T23:00:25.147Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "1号艇・平田健之: 体重が番組表より2.0kg減(54→52kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "2号艇・倉富大誠: 部品交換(リング×2)=足に不満があり手を入れたサインでマイナス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・滝沢芳行: 体重が番組表より1.9kg減(55→53.1kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "4号艇・大場広孝: 体重が番組表より2.1kg減(58→55.9kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・平田健之(現時点のAI勝率73%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は78%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-10T23:10:29.078Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "ashiya-2026-11-11-2",

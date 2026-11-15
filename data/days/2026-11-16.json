@@ -3667,21 +3667,21 @@
     "raceNo": 1,
     "name": "朝トク予選",
     "seriesTitle": "ボートレース徳 山 11月16日 デイリースポーツ杯争 第 2日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 88,
     "inEscapeProb": 88,
-    "inNote": "徳山の基準値(62%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの88%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.88,
       "makuri": 0.05,
       "sashi": 0.05,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -3693,7 +3693,8 @@
         "motorRate": 39.84,
         "weight": 44,
         "preProb": 0.823,
-        "aiProb": 0.823
+        "aiProb": 0.819,
+        "exWeight": 44
       },
       {
         "lane": 2,
@@ -3705,7 +3706,14 @@
         "motorRate": 29.66,
         "weight": 54,
         "preProb": 0.029,
-        "aiProb": 0.029
+        "aiProb": 0.028,
+        "exWeight": 53.5,
+        "parts": [
+          "ギヤ&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(ギヤ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+        ]
       },
       {
         "lane": 3,
@@ -3717,7 +3725,15 @@
         "motorRate": 45.97,
         "weight": 55,
         "preProb": 0.077,
-        "aiProb": 0.077
+        "aiProb": 0.076,
+        "exWeight": 53.1,
+        "parts": [
+          "ギヤ&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(ギヤ&nbsp;)=足に不満があり手を入れたサインでマイナス",
+          "体重が番組表より1.9kg減(55→53.1kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 4,
@@ -3729,7 +3745,8 @@
         "motorRate": 34.07,
         "weight": 54,
         "preProb": 0.02,
-        "aiProb": 0.02
+        "aiProb": 0.02,
+        "exWeight": 53.1
       },
       {
         "lane": 5,
@@ -3741,7 +3758,8 @@
         "motorRate": 28.93,
         "weight": 53,
         "preProb": 0.048,
-        "aiProb": 0.048
+        "aiProb": 0.048,
+        "exWeight": 52.3
       },
       {
         "lane": 6,
@@ -3753,13 +3771,36 @@
         "motorRate": 24.66,
         "weight": 48,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "exWeight": 47,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(48→47kg)=軽量化でプラス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 徳山のイン逃げ確率は88%想定。本命候補は1号艇・山下友貴(A1・事前勝率82%)、対抗は3号艇・生方靖亜(同8%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-15T23:00:28.766Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "2号艇・本橋克洋: 部品交換(ギヤ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "neutral",
+        "text": "3号艇・生方靖亜: 部品交換(ギヤ&nbsp;)=足に不満があり手を入れたサインでマイナス／体重が番組表より1.9kg減(55→53.1kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "6号艇・宇恵有香: 体重が番組表より1.0kg減(48→47kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・山下友貴(現時点のAI勝率82%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は88%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-15T23:10:25.595Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "tokuyama-2026-11-16-2",

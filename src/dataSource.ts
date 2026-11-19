@@ -52,8 +52,11 @@ export function gradeOf(title?: string): string | undefined {
   if (/SG|グランプリ|ボートレースクラシック|総理大臣杯|オールスター|笹川賞|グランドチャンピオン|オーシャンカップ|ボートレースメモリアル|ボートレースダービー|全日本選手権|チャレンジカップ/.test(title)) return "SG";
   if (/G[Ⅰ1](?![ⅠⅡⅢ0-9])/.test(title)) return "G1";
   // 競艇場の周年記念(G1)は開設60〜70年超。場外発売所の周年(一桁〜30年台、末尾BT等)は一般戦
-  const anniv = title.match(/開設(\d+)周年記念/);
+  // 番組表の節名は固定幅で末尾が切れる(例「京極賞開設74周年記」「大渦大賞開設73周年」)ため「記念」までは要求しない(2026-11-19修正)
+  const anniv = title.match(/開設\s*(\d+)\s*周年/);
   if (anniv && Number(anniv[1]) >= 40 && !/周年記念\s*BT/.test(title)) return "G1";
+  // 周年表記のないG1(地区選手権・高松宮記念特別競走 など)
+  if (/地区選手権|高松宮記念/.test(title)) return "G1";
   if (/G[Ⅱ2]/.test(title)) return "G2";
   if (/G[Ⅲ3]/.test(title)) return "G3";
   return undefined;

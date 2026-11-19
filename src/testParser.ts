@@ -290,4 +290,14 @@ assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTML�
   assert(fanFileCandidates("2027-02-01")[0].endsWith("fan2610.lzh"), "期別成績: 年またぎ");
 }
 
+/* ---------- グレード判定(節名の末尾切れ) ---------- */
+{
+  const { gradeOf } = await import("./dataSource.ts");
+  assert(gradeOf("ボートレース丸亀11月15日京極賞開設74周年記") === "G1", "グレード: 末尾が切れた周年記念(丸亀)をG1");
+  assert(gradeOf("ボートレース鳴 門 11月 9日 大渦大賞開設73周年 第 4日") === "G1", "グレード: 末尾が切れた周年記念(鳴門)をG1");
+  assert(gradeOf("ボートレース住之江 11月 9日 第54回高松宮記念特 第 5日") === "G1", "グレード: 高松宮記念特別競走をG1");
+  assert(gradeOf("BTSみやき開設17周年記念") === undefined, "グレード: 場外発売所の周年は一般戦のまま");
+  assert(gradeOf("ボートレース下 関 11月 9日 スポーツ報知杯 第 3日") === undefined, "グレード: 一般戦はundefined");
+}
+
 console.log(process.exitCode ? "\nテスト失敗があります" : "\n全テスト通過");

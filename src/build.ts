@@ -1356,6 +1356,72 @@ function collectFeatures(races: Race[]): Feature[] {
   return out.sort((a, b) => b.dates[b.dates.length - 1].localeCompare(a.dates[a.dates.length - 1]));
 }
 
+/** 特設ページ用「優勝戦に向けた見どころ」。数字はすべて当サイトの記録(番組表・競走成績)から自動集計 */
+function featureOutlook(f: Feature, currentDate: string, finalRace: Race | undefined, base: string): { html: string; answer: string; faq: { q: string; a: string }[] } {
+  const done = f.races.filter((r) => r.status === "verified" && r.result && r.result.finish.length >= 3);
+  const faq: { q: string; a: string }[] = [];
+  const parts: string[] = [];
+  let answer = "";
+  // 1) 節間の好調選手(当サイト集計の着順。公式の予選得点とは異なる)
+  type Agg = { name: string; regNo?: string; runs: number; w1: number; w2: number; w3: number; sum: number };
+  const agg = new Map<string, Agg>();
+  for (const r of done) {
+    for (const e of r.entries) {
+      if (e.scratched) continue;
+      const k = e.regNo ?? e.name;
+      const pos = r.result!.finish.indexOf(e.lane) + 1; // 0=着外(記録なし)
+      const a = agg.get(k) ?? { name: e.name, regNo: e.regNo, runs: 0, w1: 0, w2: 0, w3: 0, sum: 0 };
+      a.runs++;
+      if (pos === 1) a.w1++;
+      if (pos >= 1 && pos <= 2) a.w2++;
+      if (pos >= 1 && pos <= 3) a.w3++;
+      a.sum += pos >= 1 ? pos : 6;
+      agg.set(k, a);
+    }
+  }
+  const hot = [...agg.values()].filter((a) => a.runs >= 3).sort((a, b) => a.sum / a.runs - b.sum / b.runs || b.w1 - a.w1).slice(0, 6);
+  if (hot.length > 0) {
+    const rows = hot.map((a, i) => `<tr><td>${i + 1}</td><td>${a.regNo ? `<a href="${base}racers/${a.regNo}/">${esc(a.name)}</a>` : esc(a.name)}${a.regNo && FEMALE.has(a.regNo) ? HEART : ""}</td><td>${a.runs}走</td><td>${a.w1}勝</td><td>${Math.round((100 * a.w2) / a.runs)}%</td><td>${(a.sum / a.runs).toFixed(2)}</td></tr>`).join("");
+    parts.push(`<h3 style="font-size:14.5px; margin:14px 0 6px;">この節で好調な選手(節間の平均着順・上位6名)</h3>
+<div class="table-scroll"><table class="entries"><thead><tr><th>#</th><th>選手</th><th>出走</th><th>1着</th><th>2連対率</th><th>平均着順</th></tr></thead><tbody>${rows}</tbody></table></div>
+<p style="color:var(--dim); font-size:11.5px;">当サイトに記録のある確定レース(${done.length}レース)から集計。着外・事故は6着扱い。公式の予選得点・順位とは異なります。</p>`);
+    const hotTxt = hot.slice(0, 3).map((a) => `${a.name}(${a.runs}走${a.w1}勝・平均${(a.sum / a.runs).toFixed(2)}着)`).join("、");
+    faq.push({ q: `${f.title}で好調な選手は?`, a: `当サイトの集計(確定${done.length}レース・平均着順)では、${hotTxt}が上位です。公式の予選得点とは異なります。` });
+    answer += `節間の好調選手は${hotTxt}。`;
+  }
+  // 2) 優勝戦(番組公開後)または準優勝戦のAI評価
+  const pct = (x: number) => `${Math.round(x * 100)}%`;
+  const evalTable = (r: Race) => {
+    const t = buildTiers(r);
+    const rows = [...r.entries].sort((a, b) => a.lane - b.lane).map((e) => `<tr${e.scratched ? ' style="opacity:.5;"' : ""}><td><span class="boat boat-${e.lane}">${e.lane}</span></td><td>${e.regNo ? `<a href="${base}racers/${e.regNo}/">${esc(e.name)}</a>` : esc(e.name)}${isFemale(e) ? HEART : ""}</td><td>${esc(e.racerClass)}</td><td>${e.scratched ? "欠場" : pct(e.aiProb)}</td><td>${e.marketProb !== undefined ? pct(e.marketProb) : "—"}</td></tr>`).join("");
+    const bets = t ? `本命3点: ${t.honmei.map((c) => c.lanes.join("-")).join(" / ")}` : "";
+    return `<div class="table-scroll"><table class="entries"><thead><tr><th>艇</th><th>選手</th><th>級</th><th>AI勝率</th><th>市場勝率</th></tr></thead><tbody>${rows}</tbody></table></div>
+<p style="font-size:12.5px; color:var(--muted);">イン逃げ確率 ${r.inEscapeProb}% ${bets ? `/ ${bets}` : ""} / <a href="${base}${racePath(r)}">${r.raceNo}Rの詳細・展示反映 →</a></p>`;
+  };
+  const pickTxt = (r: Race) => { const t = topAiOf(r); return `${t.lane}号艇・${t.name}(AI勝率${Math.round(t.aiProb * 100)}%)`; };
+  if (finalRace && finalRace.status !== "verified") {
+    parts.push(`<h3 style="font-size:14.5px; margin:16px 0 6px;">優勝戦(${dateLabel(finalRace.dateISO)} ${finalRace.raceNo}R 締切${finalRace.closeTime})のAI評価</h3>${evalTable(finalRace)}
+<p style="color:var(--dim); font-size:11.5px;">${finalRace.status === "signal" ? "展示反映済みの評価です。" : "番組表にもとづく事前評価です。締切15分前の展示反映で更新されます。"}</p>`);
+    faq.push({ q: `${f.title}の優勝戦のAI本命は?`, a: `${finalRace.raceNo}R(締切${finalRace.closeTime})のAI本命は${pickTxt(finalRace)}。イン逃げ確率は${finalRace.inEscapeProb}%です(展示反映で更新)。` });
+    if (finalRace.dateISO !== currentDate) answer += `優勝戦のAI本命は${pickTxt(finalRace)}。`;
+  } else if (!finalRace || finalRace.dateISO !== currentDate) {
+    const semis = f.races.filter((r) => r.dateISO === currentDate && /準優/.test(r.name)).sort((a, b) => a.raceNo - b.raceNo);
+    if (semis.length > 0) {
+      parts.push(`<h3 style="font-size:14.5px; margin:16px 0 6px;">本日の準優勝戦(優勝戦の枠をかけた勝負)</h3>${semis.map((r) => `<p style="font-size:13px; margin:10px 0 4px;"><strong>${r.raceNo}R ${esc(r.name)}</strong>(締切${r.closeTime})${r.result ? ` — 結果 ${r.result.finish.slice(0, 3).join("-")}` : ""}</p>${evalTable(r)}`).join("")}
+<p style="color:var(--dim); font-size:11.5px;">準優勝戦の各上位2名が優勝戦に進出します。優勝戦の番組は公式の発表後、このページに自動で掲載します。</p>`);
+      answer += `本日は準優勝戦(${semis.map((r) => `${r.raceNo}R`).join("・")})。AI本命は${semis.map((r) => `${r.raceNo}R ${pickTxt(r)}`).join("、")}。`;
+    }
+  }
+  // 3) この節でのAI成績(外れも含めて正直に)
+  if (done.length >= 12) {
+    const aiHit = done.filter((r) => topAiOf(r).lane === r.result!.finish[0]).length;
+    const in1 = done.filter((r) => r.result!.finish[0] === 1).length;
+    parts.push(`<p style="font-size:12.5px; color:var(--muted); margin-top:12px;">この節のAI成績: AI本命の1着 ${aiHit}/${done.length}レース(${Math.round((100 * aiHit) / done.length)}%)。参考までに1号艇の1着は${in1}/${done.length}レース(${Math.round((100 * in1) / done.length)}%)。AIの評価は判断材料の一つとしてご利用ください。</p>`);
+  }
+  if (parts.length === 0) return { html: "", answer: "", faq };
+  return { html: `<section><h2>優勝戦に向けた見どころ</h2><div class="card">${parts.join("\n")}</div></section>`, answer, faq };
+}
+
 function featurePageHtml(f: Feature, currentDate: string): string {
   const base = baseFor(2);
   const done = f.races.filter((r) => r.status === "verified" && r.result);
@@ -1398,6 +1464,14 @@ function featurePageHtml(f: Feature, currentDate: string): string {
   if (done.length > 0) {
     const m = done.filter((r) => r.result!.payout3t >= 10000).length;
     faq.push({ q: `${f.title}は荒れていますか?`, a: `ここまで確定${done.length}レースで万舟券(3連単1万円以上)は${m}本、発生率${((100 * m) / done.length).toFixed(1)}%です。` });
+  }
+  // ---- 優勝戦に向けた見どころ(開催中のみ): 節間の好調選手・優勝戦/準優のAI評価・この節のAI成績 ----
+  let outlookHtml = "";
+  if (ongoing) {
+    const ol = featureOutlook(f, currentDate, finalRace, base);
+    outlookHtml = ol.html;
+    if (ol.answer) answer += ` ${ol.answer}`;
+    faq.push(...ol.faq);
   }
   const answerBox = `<p class="speakable-summary" style="border-left:3px solid var(--signal); padding:10px 14px; background:rgba(255,138,61,.06); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.8; margin:12px 0;">${answer}</p>`;
   const faqHtml = faq.length > 0 ? `<section><h2>よくある質問</h2>${faq.map((x) => `<h3 style="font-size:14px; margin-top:12px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("")}</section>` : "";
@@ -1459,6 +1533,7 @@ function featurePageHtml(f: Feature, currentDate: string): string {
     bodyHtml: `<h1>${esc(f.title)} — ${esc(f.venue)}競艇の直前予想・結果</h1>
 <p style="color:var(--muted);"><span class="grade-badge">${esc(f.grade)}</span> ${statusChip} 開催期間: ${dateLabel(first)}〜${finalRace ? dateLabel(finalRace.dateISO) : `${dateLabel(last)}(掲載分)`}。締切15分前の直前更新と結果・払戻を全レース掲載します。</p>
 ${answerBox}
+${outlookHtml}
 ${todayBlock}
 ${topPayHtml}
 ${faqHtml}

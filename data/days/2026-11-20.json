@@ -7350,21 +7350,21 @@
     "dateISO": "2026-11-20",
     "raceNo": 1,
     "name": "とるならなる",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 4,
+    "wave": 4,
     "inEscapeProbPre": 83,
     "inEscapeProb": 83,
-    "inNote": "鳴門の基準値(50%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの83%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.83,
       "makuri": 0.08,
       "sashi": 0.07,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -7376,7 +7376,8 @@
         "motorRate": 36.84,
         "weight": 52,
         "preProb": 0.776,
-        "aiProb": 0.776
+        "aiProb": 0.773,
+        "exWeight": 52
       },
       {
         "lane": 2,
@@ -7388,7 +7389,11 @@
         "motorRate": 25.81,
         "weight": 55,
         "preProb": 0.101,
-        "aiProb": 0.101
+        "aiProb": 0.104,
+        "exWeight": 53.8,
+        "liveNotes": [
+          "体重が番組表より1.2kg減(55→53.8kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -7400,7 +7405,8 @@
         "motorRate": 37.5,
         "weight": 49,
         "preProb": 0.048,
-        "aiProb": 0.048
+        "aiProb": 0.048,
+        "exWeight": 48.2
       },
       {
         "lane": 4,
@@ -7412,7 +7418,8 @@
         "motorRate": 20.34,
         "weight": 52,
         "preProb": 0.045,
-        "aiProb": 0.045
+        "aiProb": 0.045,
+        "exWeight": 52
       },
       {
         "lane": 5,
@@ -7424,7 +7431,8 @@
         "motorRate": 37.4,
         "weight": 51,
         "preProb": 0.008,
-        "aiProb": 0.008
+        "aiProb": 0.01,
+        "exWeight": 50.8
       },
       {
         "lane": 6,
@@ -7436,13 +7444,21 @@
         "motorRate": 33.33,
         "weight": 56,
         "preProb": 0.021,
-        "aiProb": 0.021
+        "aiProb": 0.021,
+        "exWeight": 55.8
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 鳴門のイン逃げ確率は83%想定。本命候補は1号艇・松井友汰(A2・事前勝率78%)、対抗は2号艇・齊藤優(同10%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-19T23:01:08.726Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・齊藤優: 体重が番組表より1.2kg減(55→53.8kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・松井友汰(現時点のAI勝率77%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は83%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-19T23:10:27.150Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "naruto-2026-11-20-2",

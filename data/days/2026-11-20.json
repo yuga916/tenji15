@@ -3256,21 +3256,21 @@
     "dateISO": "2026-11-20",
     "raceNo": 5,
     "name": "サンライズZ",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "10:36",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "曇",
+    "windSpeed": 5,
+    "wave": 5,
     "inEscapeProbPre": 88,
-    "inEscapeProb": 88,
-    "inNote": "芦屋の基準値(60%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inEscapeProb": 90,
+    "inNote": "事前88%から展示反映で90%に更新。1号艇の展示偏差は+1σ。",
     "kimarite": {
-      "nige": 0.88,
-      "makuri": 0.05,
-      "sashi": 0.05,
-      "other": 0.02
+      "nige": 0.9,
+      "makuri": 0.04,
+      "sashi": 0.04,
+      "other": 0.01
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -3282,7 +3282,15 @@
         "motorRate": 29.92,
         "weight": 52,
         "preProb": 0.872,
-        "aiProb": 0.872
+        "aiProb": 0.898,
+        "exTime": 6.78,
+        "exDev": 1,
+        "course": 1,
+        "exCourse": 1,
+        "exSt": 0.07,
+        "exWeight": 52,
+        "tilt": -0.5,
+        "marketProb": 0.781
       },
       {
         "lane": 2,
@@ -3294,7 +3302,15 @@
         "motorRate": 38.13,
         "weight": 57,
         "preProb": 0.05,
-        "aiProb": 0.05
+        "aiProb": 0.046,
+        "exTime": 6.79,
+        "exDev": 0.7,
+        "course": 2,
+        "exCourse": 2,
+        "exSt": 0.11,
+        "exWeight": 56.3,
+        "tilt": -0.5,
+        "marketProb": 0.082
       },
       {
         "lane": 3,
@@ -3306,7 +3322,15 @@
         "motorRate": 39.72,
         "weight": 50,
         "preProb": 0.03,
-        "aiProb": 0.03
+        "aiProb": 0.026,
+        "exTime": 6.8,
+        "exDev": 0.5,
+        "course": 3,
+        "exCourse": 3,
+        "exSt": 0.01,
+        "exWeight": 50.5,
+        "tilt": -0.5,
+        "marketProb": 0.055
       },
       {
         "lane": 4,
@@ -3318,7 +3342,15 @@
         "motorRate": 24.43,
         "weight": 52,
         "preProb": 0.019,
-        "aiProb": 0.019
+        "aiProb": 0.012,
+        "exTime": 6.84,
+        "exDev": -0.4,
+        "course": 4,
+        "exCourse": 4,
+        "exSt": 0.36,
+        "exWeight": 52,
+        "tilt": -0.5,
+        "marketProb": 0.027
       },
       {
         "lane": 5,
@@ -3330,7 +3362,19 @@
         "motorRate": 44.22,
         "weight": 56,
         "preProb": 0.013,
-        "aiProb": 0.013
+        "aiProb": 0.005,
+        "exTime": 6.91,
+        "exDev": -2,
+        "course": 5,
+        "exCourse": 5,
+        "exSt": 0.14,
+        "exWeight": 56.1,
+        "tilt": 0,
+        "newProp": true,
+        "liveNotes": [
+          "新プロペラに交換=まだ合っていない可能性でマイナス"
+        ],
+        "marketProb": 0.027
       },
       {
         "lane": 6,
@@ -3342,13 +3386,40 @@
         "motorRate": 41.43,
         "weight": 52,
         "preProb": 0.016,
-        "aiProb": 0.016
+        "aiProb": 0.013,
+        "exTime": 6.81,
+        "exDev": 0.3,
+        "course": 6,
+        "exCourse": 6,
+        "exSt": 0,
+        "exWeight": 52,
+        "tilt": -0.5,
+        "marketProb": 0.027
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 芦屋のイン逃げ確率は88%想定。本命候補は1号艇・山本隆幸(A1・事前勝率87%)、対抗は2号艇・大庭元明(同5%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-20T01:00:42.533Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "10:20",
+        "type": "extime",
+        "impact": "down",
+        "text": "5号艇・中村裕将の展示タイムがレース内偏差-2σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "10:20",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・山本隆幸: AI評価90%に対し市場は78%。+12ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "10:20",
+        "type": "parts",
+        "impact": "down",
+        "text": "5号艇・中村裕将: 新プロペラに交換=まだ合っていない可能性でマイナス"
+      }
+    ],
+    "verdict": "直前最終評価: 本命候補は1号艇・山本隆幸(展示反映後AI勝率90%)。妙味は1号艇・山本隆幸(歪み+12pt)。イン逃げ確率は90%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-20T01:20:42.670Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "ashiya-2026-11-20-6",
@@ -4897,8 +4968,8 @@
     "status": "signal",
     "closeTime": "10:28",
     "windDir": "晴",
-    "windSpeed": 4,
-    "wave": 4,
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 53,
     "inEscapeProb": 57,
     "inNote": "事前53%から展示反映で57%に更新。1号艇の展示偏差は+1.1σ。",
@@ -4922,7 +4993,7 @@
         "preProb": 0.669,
         "aiProb": 0.72,
         "exWeight": 51.5,
-        "marketProb": 0.591,
+        "marketProb": 0.92,
         "exTime": 6.79,
         "exDev": 1.1,
         "course": 1,
@@ -4945,7 +5016,7 @@
         "liveNotes": [
           "体重が番組表より1.0kg減(54→53kg)=軽量化でプラス"
         ],
-        "marketProb": 0.007,
+        "marketProb": 0.02,
         "exTime": 6.82,
         "exDev": 0,
         "course": 2,
@@ -4965,7 +5036,7 @@
         "preProb": 0.134,
         "aiProb": 0.166,
         "exWeight": 52.3,
-        "marketProb": 0.007,
+        "marketProb": 0.01,
         "exTime": 6.78,
         "exDev": 1.5,
         "course": 3,
@@ -4985,7 +5056,7 @@
         "preProb": 0.096,
         "aiProb": 0.048,
         "exWeight": 52.1,
-        "marketProb": 0.281,
+        "marketProb": 0.02,
         "exTime": 6.85,
         "exDev": -1.1,
         "course": 4,
@@ -5005,7 +5076,7 @@
         "preProb": 0.015,
         "aiProb": 0.007,
         "exWeight": 48.1,
-        "marketProb": 0.106,
+        "marketProb": 0.01,
         "exTime": 6.85,
         "exDev": -1.1,
         "course": 5,
@@ -5025,7 +5096,7 @@
         "preProb": 0.049,
         "aiProb": 0.031,
         "exWeight": 52,
-        "marketProb": 0.007,
+        "marketProb": 0.02,
         "exTime": 6.83,
         "exDev": -0.4,
         "course": 6,
@@ -5036,44 +5107,32 @@
     ],
     "signals": [
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "extime",
         "impact": "up",
         "text": "3号艇・為本智也の展示タイムがレース内偏差+1.5σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "gap",
-        "impact": "up",
-        "text": "1号艇・鳥居塚孝: AI評価72%に対し市場は59%。+13ptの歪み(市場が織り込んでいない可能性)。"
+        "impact": "down",
+        "text": "1号艇・鳥居塚孝: 市場92%に対しAI評価は72%。過剰人気の可能性。"
       },
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "gap",
         "impact": "up",
         "text": "3号艇・為本智也: AI評価17%に対し市場は1%。+16ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "10:15",
-        "type": "gap",
-        "impact": "down",
-        "text": "4号艇・福田宗平: 市場28%に対しAI評価は5%。過剰人気の可能性。"
-      },
-      {
-        "time": "10:15",
-        "type": "gap",
-        "impact": "down",
-        "text": "5号艇・仁科さや: 市場11%に対しAI評価は1%。過剰人気の可能性。"
-      },
-      {
-        "time": "10:15",
+        "time": "10:20",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・上村宏太: 体重が番組表より1.0kg減(54→53kg)=軽量化でプラス"
       }
     ],
     "verdict": "直前最終評価: 本命候補は1号艇・鳥居塚孝(展示反映後AI勝率72%)。妙味は3号艇・為本智也(歪み+16pt)。イン逃げ確率は57%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-20T01:15:39.815Z",
+    "updatedAt": "2026-11-20T01:20:35.772Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -9189,7 +9248,7 @@
         "preProb": 0.134,
         "aiProb": 0.16,
         "exWeight": 49.8,
-        "marketProb": 0.175,
+        "marketProb": 0.185,
         "exTime": 6.96,
         "exDev": 0.9,
         "course": 1,
@@ -9215,7 +9274,7 @@
         "liveNotes": [
           "部品交換(ギヤ&nbsp;)=足に不満があり手を入れたサインでマイナス"
         ],
-        "marketProb": 0.614,
+        "marketProb": 0.529,
         "exTime": 6.98,
         "exDev": 0.7,
         "course": 2,
@@ -9235,7 +9294,7 @@
         "preProb": 0.15,
         "aiProb": 0.167,
         "exWeight": 52,
-        "marketProb": 0.045,
+        "marketProb": 0.109,
         "exTime": 6.98,
         "exDev": 0.7,
         "course": 3,
@@ -9261,7 +9320,7 @@
         "exCourse": 4,
         "exSt": 0.06,
         "tilt": 0,
-        "marketProb": 0.075
+        "marketProb": 0.073
       },
       {
         "lane": 5,
@@ -9281,7 +9340,7 @@
         "liveNotes": [
           "部品交換(リング×2)=足に不満があり手を入れたサインでマイナス"
         ],
-        "marketProb": 0.081,
+        "marketProb": 0.087,
         "exTime": 7.17,
         "exDev": -1.1,
         "course": 5,
@@ -9308,7 +9367,7 @@
           "部品交換(リング×2)=足に不満があり手を入れたサインでマイナス",
           "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
         ],
-        "marketProb": 0.01,
+        "marketProb": 0.017,
         "exTime": 7.24,
         "exDev": -1.7,
         "course": 6,
@@ -9319,44 +9378,32 @@
     ],
     "signals": [
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "extime",
         "impact": "down",
         "text": "6号艇・赤池修平の展示タイムがレース内偏差-1.7σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "10:15",
-        "type": "gap",
-        "impact": "down",
-        "text": "2号艇・井上一輝: 市場61%に対しAI評価は47%。過剰人気の可能性。"
-      },
-      {
-        "time": "10:15",
-        "type": "gap",
-        "impact": "up",
-        "text": "3号艇・浜崎準也: AI評価17%に対し市場は5%。+12ptの歪み(市場が織り込んでいない可能性)。"
-      },
-      {
-        "time": "10:15",
+        "time": "10:20",
         "type": "parts",
         "impact": "down",
         "text": "2号艇・井上一輝: 部品交換(ギヤ&nbsp;)=足に不満があり手を入れたサインでマイナス"
       },
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "parts",
         "impact": "down",
         "text": "5号艇・今井美亜: 部品交換(リング×2)=足に不満があり手を入れたサインでマイナス"
       },
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "parts",
         "impact": "neutral",
         "text": "6号艇・赤池修平: 部品交換(リング×2)=足に不満があり手を入れたサインでマイナス／体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は2号艇・井上一輝(展示反映後AI勝率47%)。妙味は3号艇・浜崎準也(歪み+12pt)。イン逃げ確率は31%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-20T01:15:36.439Z",
+    "verdict": "直前最終評価: 本命候補は2号艇・井上一輝(展示反映後AI勝率47%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は31%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-20T01:20:28.790Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -10177,26 +10224,26 @@
     ],
     "signals": [
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "gap",
         "impact": "up",
         "text": "1号艇・三嶌さら: AI評価45%に対し市場は22%。+23ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "gap",
         "impact": "down",
         "text": "3号艇・大場恒季: 市場38%に対しAI評価は31%。過剰人気の可能性。"
       },
       {
-        "time": "10:15",
+        "time": "10:20",
         "type": "gap",
         "impact": "down",
         "text": "6号艇・竹野元喜: 市場11%に対しAI評価は1%。過剰人気の可能性。"
       }
     ],
     "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・三嶌さら(現時点のAI勝率45%)。展示タイムの公開後5分以内に最終評価へ更新します。妙味は1号艇・三嶌さら(歪み+23pt)。イン逃げ確率は36%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-20T01:15:46.576Z",
+    "updatedAt": "2026-11-20T01:20:39.200Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -11534,7 +11581,7 @@
     "name": "予選",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "signal",
-    "closeTime": "10:16",
+    "closeTime": "10:11",
     "windDir": "晴",
     "windSpeed": 1800,
     "wave": 0,
@@ -11636,7 +11683,7 @@
     "name": "予選",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "signal",
-    "closeTime": "10:26",
+    "closeTime": "10:22",
     "windDir": "晴",
     "windSpeed": 1800,
     "wave": 0,
@@ -11726,7 +11773,7 @@
     ],
     "signals": [],
     "verdict": "直前評価(展示タイム公開待ち): 本命候補は2号艇・石川真二(現時点のAI勝率38%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は32%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-20T01:15:43.203Z",
+    "updatedAt": "2026-11-20T01:20:32.279Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -11737,21 +11784,21 @@
     "raceNo": 5,
     "name": "5ールドレー",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
-    "status": "pre",
-    "closeTime": "10:36",
-    "windDir": "—",
-    "windSpeed": 0,
+    "status": "signal",
+    "closeTime": "10:32",
+    "windDir": "晴",
+    "windSpeed": 1800,
     "wave": 0,
     "inEscapeProbPre": 67,
     "inEscapeProb": 67,
-    "inNote": "津の基準値(54%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの67%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.67,
       "makuri": 0.15,
       "sashi": 0.14,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -11763,7 +11810,7 @@
         "motorRate": 32.58,
         "weight": 48,
         "preProb": 0.644,
-        "aiProb": 0.644
+        "aiProb": 0.64
       },
       {
         "lane": 2,
@@ -11775,7 +11822,7 @@
         "motorRate": 34.71,
         "weight": 45,
         "preProb": 0.133,
-        "aiProb": 0.133
+        "aiProb": 0.132
       },
       {
         "lane": 3,
@@ -11787,7 +11834,7 @@
         "motorRate": 41.67,
         "weight": 45,
         "preProb": 0.119,
-        "aiProb": 0.119
+        "aiProb": 0.118
       },
       {
         "lane": 4,
@@ -11823,13 +11870,13 @@
         "motorRate": 32.66,
         "weight": 41,
         "preProb": 0.005,
-        "aiProb": 0.005
+        "aiProb": 0.01
       }
     ],
     "signals": [],
-    "verdict": "事前評価: 津のイン逃げ確率は67%想定。本命候補は1号艇・香川素子(A2・事前勝率64%)、対抗は2号艇・出口舞有(同13%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-20T01:00:42.533Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・香川素子(現時点のAI勝率64%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は67%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-20T01:20:46.100Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "tsu-2026-11-20-6",
@@ -11840,7 +11887,7 @@
     "name": "予選",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "10:46",
+    "closeTime": "10:42",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,
@@ -11942,7 +11989,7 @@
     "name": "予選",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "10:56",
+    "closeTime": "10:52",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,
@@ -12044,7 +12091,7 @@
     "name": "予選",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "11:06",
+    "closeTime": "11:02",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,
@@ -12146,7 +12193,7 @@
     "name": "予選特賞",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "11:16",
+    "closeTime": "11:12",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,
@@ -12248,7 +12295,7 @@
     "name": "予選特賞",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "11:26",
+    "closeTime": "11:22",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,
@@ -12350,7 +12397,7 @@
     "name": "予選特選",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "11:36",
+    "closeTime": "11:32",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,
@@ -12452,7 +12499,7 @@
     "name": "ツッキー選抜",
     "seriesTitle": "ボートレース 津 11月20日 津市合併20周年記念 第 1日",
     "status": "pre",
-    "closeTime": "11:46",
+    "closeTime": "11:42",
     "windDir": "—",
     "windSpeed": 0,
     "wave": 0,

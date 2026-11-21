@@ -4890,21 +4890,21 @@
     "dateISO": "2026-11-22",
     "raceNo": 1,
     "name": "とるならなる",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "晴",
+    "windSpeed": 5,
+    "wave": 5,
     "inEscapeProbPre": 80,
     "inEscapeProb": 80,
-    "inNote": "鳴門の基準値(50%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの80%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.8,
       "makuri": 0.09,
       "sashi": 0.08,
       "other": 0.03
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -4916,7 +4916,8 @@
         "motorRate": 32.26,
         "weight": 52,
         "preProb": 0.734,
-        "aiProb": 0.734
+        "aiProb": 0.729,
+        "exWeight": 52
       },
       {
         "lane": 2,
@@ -4928,7 +4929,17 @@
         "motorRate": 25.62,
         "weight": 61,
         "preProb": 0.067,
-        "aiProb": 0.067
+        "aiProb": 0.066,
+        "exWeight": 57.1,
+        "parts": [
+          "ピストン×2",
+          "リング×4",
+          "シリンダ&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(ピストン×2・リング×4・シリンダ&nbsp;)=足に不満があり手を入れたサインでマイナス",
+          "体重が番組表より3.9kg減(61→57.1kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -4940,7 +4951,11 @@
         "motorRate": 33.61,
         "weight": 54,
         "preProb": 0.085,
-        "aiProb": 0.085
+        "aiProb": 0.087,
+        "exWeight": 52.9,
+        "liveNotes": [
+          "体重が番組表より1.1kg減(54→52.9kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 4,
@@ -4952,7 +4967,8 @@
         "motorRate": 30.4,
         "weight": 54,
         "preProb": 0.075,
-        "aiProb": 0.075
+        "aiProb": 0.074,
+        "exWeight": 54.6
       },
       {
         "lane": 5,
@@ -4964,7 +4980,8 @@
         "motorRate": 27.5,
         "weight": 60,
         "preProb": 0.034,
-        "aiProb": 0.034
+        "aiProb": 0.034,
+        "exWeight": 59.3
       },
       {
         "lane": 6,
@@ -4976,13 +4993,27 @@
         "motorRate": 37.4,
         "weight": 51,
         "preProb": 0.005,
-        "aiProb": 0.005
+        "aiProb": 0.01,
+        "exWeight": 51.1
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 鳴門のイン逃げ確率は80%想定。本命候補は1号艇・向後龍一(A2・事前勝率73%)、対抗は3号艇・重富伸也(同8%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-21T23:00:30.764Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "neutral",
+        "text": "2号艇・武田信一: 部品交換(ピストン×2・リング×4・シリンダ&nbsp;)=足に不満があり手を入れたサインでマイナス／体重が番組表より3.9kg減(61→57.1kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "3号艇・重富伸也: 体重が番組表より1.1kg減(54→52.9kg)=軽量化でプラス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・向後龍一(現時点のAI勝率73%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は80%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-21T23:10:30.075Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "naruto-2026-11-22-2",

@@ -4891,21 +4891,21 @@
     "raceNo": 1,
     "name": "朝トク予選",
     "seriesTitle": "ボートレース徳 山 11月24日 新周南新聞社杯争奪戦 第 1日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:35",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 1,
+    "wave": 1,
     "inEscapeProbPre": 67,
     "inEscapeProb": 67,
-    "inNote": "徳山の基準値(62%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの67%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.67,
       "makuri": 0.15,
       "sashi": 0.14,
       "other": 0.04
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -4917,7 +4917,9 @@
         "motorRate": 31.01,
         "weight": 52,
         "preProb": 0.644,
-        "aiProb": 0.644
+        "aiProb": 0.638,
+        "exWeight": 52,
+        "marketProb": 0.333
       },
       {
         "lane": 2,
@@ -4929,7 +4931,8 @@
         "motorRate": 43.85,
         "weight": 55,
         "preProb": 0.083,
-        "aiProb": 0.083
+        "aiProb": 0.082,
+        "exWeight": 54.8
       },
       {
         "lane": 3,
@@ -4941,7 +4944,9 @@
         "motorRate": 42.96,
         "weight": 48,
         "preProb": 0.115,
-        "aiProb": 0.115
+        "aiProb": 0.114,
+        "exWeight": 48.2,
+        "marketProb": 0.222
       },
       {
         "lane": 4,
@@ -4953,7 +4958,12 @@
         "motorRate": 38.64,
         "weight": 53,
         "preProb": 0.096,
-        "aiProb": 0.096
+        "aiProb": 0.098,
+        "exWeight": 52,
+        "liveNotes": [
+          "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
+        ],
+        "marketProb": 0.222
       },
       {
         "lane": 5,
@@ -4965,7 +4975,9 @@
         "motorRate": 39.55,
         "weight": 54,
         "preProb": 0.059,
-        "aiProb": 0.059
+        "aiProb": 0.058,
+        "exWeight": 53.5,
+        "marketProb": 0.222
       },
       {
         "lane": 6,
@@ -4977,13 +4989,54 @@
         "motorRate": 37.19,
         "weight": 49,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "exWeight": 50,
+        "liveNotes": [
+          "体重が番組表より1.0kg増(49→50kg)でマイナス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 徳山のイン逃げ確率は67%想定。本命候補は1号艇・広次修(A2・事前勝率64%)、対抗は3号艇・佐々木裕(同11%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-23T23:00:26.875Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:10",
+        "type": "gap",
+        "impact": "up",
+        "text": "1号艇・広次修: AI評価64%に対し市場は33%。+31ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "08:10",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・佐々木裕: 市場22%に対しAI評価は11%。過剰人気の可能性。"
+      },
+      {
+        "time": "08:10",
+        "type": "gap",
+        "impact": "down",
+        "text": "4号艇・山崎鉄平: 市場22%に対しAI評価は10%。過剰人気の可能性。"
+      },
+      {
+        "time": "08:10",
+        "type": "gap",
+        "impact": "down",
+        "text": "5号艇・宮村勇哉: 市場22%に対しAI評価は6%。過剰人気の可能性。"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "up",
+        "text": "4号艇・山崎鉄平: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:10",
+        "type": "parts",
+        "impact": "down",
+        "text": "6号艇・高井駿弥: 体重が番組表より1.0kg増(49→50kg)でマイナス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・広次修(現時点のAI勝率64%)。展示タイムの公開後5分以内に最終評価へ更新します。妙味は1号艇・広次修(歪み+31pt)。イン逃げ確率は67%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-23T23:10:35.789Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "tokuyama-2026-11-24-2",

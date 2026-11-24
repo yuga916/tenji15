@@ -26,6 +26,7 @@ let LLMS_TODAY = "";
 /** 選手の実測データ(過去分バックフィル集計)。出走表の「このコース1着率」「平均ST」に使う */
 let HIST_RACERS: HistoryAgg["racers"] | null = null;
 let HIST_PERIOD = "";
+let UPCOMING: { path?: string; title: string; venue?: string; start: string; end: string; grade: string }[] = [];
 /** 女子選手の登録番号(公式の期別成績の性別欄から。data/female-racers.json) */
 let FEMALE: Set<string> = new Set();
 const isFemale = (e: Entry): boolean => !!e.regNo && FEMALE.has(e.regNo);
@@ -1422,6 +1423,80 @@ function featureOutlook(f: Feature, currentDate: string, finalRace: Race | undef
   return { html: `<section><h2>優勝戦に向けた見どころ</h2><div class="card">${parts.join("\n")}</div></section>`, answer, faq };
 }
 
+/* ---------- 開催前の特設ページ(content/upcoming-features.json) ---------- */
+interface UpcomingFeature { grade: string; title: string; venueSlug: string; start: string; end: string; lead?: string; checkedAt?: string; path?: string; venue?: string }
+async function loadUpcoming(): Promise<UpcomingFeature[]> {
+  try {
+    const j = JSON.parse(await readFile(path.join(ROOT, "content", "upcoming-features.json"), "utf-8")) as { items?: UpcomingFeature[] };
+    return (j.items ?? []).filter((u) => u.grade && u.title && u.venueSlug && /^\d{4}-\d{2}-\d{2}$/.test(u.start) && /^\d{4}-\d{2}-\d{2}$/.test(u.end));
+  } catch { return []; }
+}
+function upcomingPageHtml(u: UpcomingFeature, currentDate: string, history: HistoryAgg | null, features: Feature[]): string {
+  const base = baseFor(2);
+  const v = venueBySlug.get(u.venueSlug)!;
+  const days = Math.round((Date.parse(`${u.start}T00:00:00Z`) - Date.parse(`${currentDate}T00:00:00Z`)) / 86400000);
+  const span = `${dateLabel(u.start)}〜${dateLabel(u.end)}`;
+  const nameL = `${u.grade}「${esc(u.title)}」(ボートレース${esc(v.name)})`;
+  const countdown = days > 0 ? `開幕まであと${days}日。` : "まもなく開幕します。";
+  // 会場データ(公式の競走成績から当サイトが集計)
+  const va = history?.venues?.[v.jcd];
+  const pctOf = (a: number, b: number) => (b > 0 ? `${((100 * a) / b).toFixed(1)}%` : "—");
+  let venueHtml = "";
+  let venueTxt = "";
+  const faq: { q: string; a: string }[] = [];
+  if (va && va.races > 0) {
+    const in1 = pctOf(va.laneWins[0], va.races);
+    const man = pctOf(va.manshu, va.races);
+    const kim = Object.entries(va.kimarite).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `${k} ${pctOf(n, va.races)}`).join("・");
+    const r12 = va.byRaceNo?.["12"];
+    const dec = va.byMonth?.["12"];
+    const rows: [string, string][] = [
+      ["1号艇の1着率(全レース)", in1],
+      ...(r12 && r12.races > 0 ? [["12Rの1号艇1着率(優勝戦などの最終レース)", pctOf(r12.lane1Win, r12.races)] as [string, string]] : []),
+      ...(dec && dec.races > 0 ? [["12月の1号艇1着率", pctOf(dec.lane1Win, dec.races)] as [string, string]] : []),
+      ["万舟率(3連単1万円以上)", man],
+      ["決まり手の上位", kim],
+    ];
+    venueHtml = `<section><h2>${esc(v.name)}の水面データ(開催前に知っておきたいこと)</h2><div class="card"><table class="entries"><tbody>${rows.map(([k, x]) => `<tr><td style="text-align:left;">${k}</td><td><strong>${x}</strong></td></tr>`).join("")}</tbody></table>
+<p style="color:var(--dim); font-size:11.5px; margin-top:8px;">公式の競走成績から当サイトが集計(${dateLabel(history!.from)}〜${dateLabel(history!.to)}・${va.races.toLocaleString()}レース)。グレードを問わない全レースの値です。<a href="${base}races/${v.slug}/">${esc(v.name)}競艇の特徴データをもっと見る →</a></p></div></section>`;
+    venueTxt = `${v.name}は1号艇の1着率が${in1}、万舟率は${man}の水面です。`;
+    faq.push({ q: `${v.name}競艇はインが強い?`, a: `当サイトの集計(${va.races.toLocaleString()}レース)では、1号艇の1着率は${in1}、万舟率は${man}です。決まり手の上位は${kim}。` });
+  }
+  const past = features.filter((f) => f.venueSlug === v.slug).slice(0, 5);
+  const pastHtml = past.length > 0 ? `<section><h2>${esc(v.name)}で最近行われたグレードレース</h2><ul style="list-style:none;">${past.map((f) => `<li style="margin-bottom:6px;"><a href="${base}${f.path}"><span class="grade-badge">${esc(f.grade)}</span> ${esc(f.title)}</a> <span style="color:var(--dim); font-size:12px;">${dateLabel(f.dates[0])}〜</span></li>`).join("")}</ul></section>` : "";
+  const answer = `${nameL}は${span}に開催されます(優勝戦は最終日の${dateLabel(u.end)})。${countdown}${venueTxt}番組表が公開され次第(初日の前日夜ごろ)、このページで全レースのAI評価を掲載し、開催中は締切15分前の展示反映まで5分ごとに更新します。`;
+  faq.unshift(
+    { q: `${u.title}はいつ・どこで開催?`, a: `${span}に、ボートレース${v.name}で開催されます。優勝戦は最終日の${dateLabel(u.end)}です。` },
+    { q: `${u.title}のAI予想はいつ見られる?`, a: `初日の番組表が公開され次第(前日夜ごろ)、このページに全レースのAI評価を自動で掲載します。開催中は展示航走の反映まで5分ごとに更新し、結果・払戻も外れを含めて掲載します。` },
+  );
+  const ld: object[] = [
+    { "@context": "https://schema.org", "@type": "SportsEvent", name: `${u.grade} ${u.title}`, sport: "Motorboat racing", startDate: `${u.start}T00:00:00+09:00`, endDate: `${u.end}T23:59:00+09:00`, eventStatus: "https://schema.org/EventScheduled", eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode", location: { "@type": "Place", name: `ボートレース${v.name}`, address: { "@type": "PostalAddress", addressCountry: "JP" } }, url: `${SITE_URL}/${u.path}` },
+    { "@context": "https://schema.org", "@type": "Article", headline: `${u.title}(${v.name})の直前予想・AI評価【開催前特集】`, description: answer.slice(0, 200), datePublished: `${u.checkedAt ?? currentDate}T00:00:00+09:00`, dateModified: BUILD_ISO, image: `${SITE_URL}/assets/og-image.png`, author: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL }, publisher: { "@type": "Organization", name: "競艇チョクゼン", url: SITE_URL }, mainEntityOfPage: `${SITE_URL}/${u.path}`, speakable: { "@type": "SpeakableSpecification", cssSelector: [".speakable-summary"] } },
+    { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map((x) => ({ "@type": "Question", name: x.q, acceptedAnswer: { "@type": "Answer", text: x.a } })) },
+  ];
+  return articlePage({
+    title: `${u.title}2026(${v.name})の直前予想・AI評価【開催前特集】｜競艇チョクゼン`,
+    metaDesc: `${u.grade}「${u.title}」(ボートレース${v.name}・${span})の開催前特集。${v.name}の水面データと、開催中の全レースAI評価・展示反映・結果を1ページで。${countdown}`,
+    path: u.path!,
+    base,
+    crumbs: [["ホーム", base], ["特設一覧", `${base}features/`], [`${u.grade} ${v.name}`]],
+    jsonLd: ld,
+    bodyHtml: `<h1>${esc(u.title)} — ${esc(v.name)}競艇の直前予想・AI評価【開催前特集】</h1>
+<p style="color:var(--muted);"><span class="grade-badge">${esc(u.grade)}</span> <span class="status status-pre" style="font-size:11px;">開催前</span> 開催期間: ${span}(ボートレース${esc(v.name)})</p>
+<p class="speakable-summary" style="border-left:3px solid var(--signal); padding:10px 14px; background:rgba(255,138,61,.06); border-radius:0 8px 8px 0; font-size:13.5px; line-height:1.8; margin:12px 0;">${answer}</p>
+${u.lead ? `<section><h2>どんなレース?</h2><p>${esc(u.lead)}</p></section>` : ""}
+<section><h2>開催中にこのページで見られること</h2><ul style="color:var(--muted); font-size:13.5px;">
+<li>その日の全レースのAI本命・イン逃げ確率(締切15分前の展示反映で自動更新)</li>
+<li>節間で好調な選手の一覧と、準優勝戦・優勝戦のAI評価</li>
+<li>結果・払戻・決まり手(外れも含めて全レース掲載)と、この節でのAIの成績</li>
+</ul><p style="color:var(--dim); font-size:12px;">出場選手は番組表の公開後に自動で掲載します。日程は${dateLabel(u.checkedAt ?? currentDate)}時点のBOATRACE公式のスケジュールにもとづきます。</p></section>
+${venueHtml}
+${pastHtml}
+<section><h2>よくある質問</h2>${faq.map((x) => `<h3 style="font-size:14px; margin-top:12px;">${esc(x.q)}</h3><p style="color:var(--muted);">${esc(x.a)}</p>`).join("")}</section>
+<p style="font-size:12.5px; color:var(--muted); margin-top:16px;"><a href="${base}races/${v.slug}/">${esc(v.name)}競艇の特徴データ</a> / <a href="${base}features/">グレードレース特設一覧</a> / <a href="${base}">今日のレース</a></p>`,
+  });
+}
+
 function featurePageHtml(f: Feature, currentDate: string): string {
   const base = baseFor(2);
   const done = f.races.filter((r) => r.status === "verified" && r.result);
@@ -2301,6 +2376,22 @@ ${voicesSectionHtml(voices, fbBase)}
     await mkdir(dir, { recursive: true });
     await writeFile(path.join(dir, "index.html"), featurePageHtml(f, currentDate), "utf-8");
   }
+  // 開催前の特設(番組表公開前のSG/PG1)。同じ会場・期間の節が検出済みなら通常の特設を優先する
+  const upcoming: UpcomingFeature[] = [];
+  for (const u of await loadUpcoming()) {
+    const v = venueBySlug.get(u.venueSlug);
+    if (!v || u.end < currentDate) continue;
+    const detected = features.some((f) => f.venueSlug === u.venueSlug && f.dates.some((d) => d >= u.start && d <= u.end));
+    if (detected) continue;
+    u.venue = v.name;
+    u.path = `features/${u.grade.toLowerCase()}-${u.venueSlug}-${u.start}/`;
+    upcoming.push(u);
+    const dir = path.join(DIST, u.path);
+    await mkdir(dir, { recursive: true });
+    await writeFile(path.join(dir, "index.html"), upcomingPageHtml(u, currentDate, history, features), "utf-8");
+  }
+  UPCOMING = upcoming;
+  if (upcoming.length > 0) console.log(`[build] 開催前の特設 ${upcoming.length}件`);
   // 旧URL(日ごとに分裂していた特設・誤判定だった特設)は404にせず、統合先へ転送する
   {
     const newPaths = new Set(features.map((f) => f.path));
@@ -2328,6 +2419,7 @@ ${voicesSectionHtml(voices, fbBase)}
     crumbs: [["ホーム", featBase], ["特設一覧"]],
     bodyHtml: `<h1>グレードレース特設一覧</h1>
 <p style="color:var(--muted);">SG・G1等の開催節を検出すると、特設ページがここに自動追加されます。</p>
+${upcoming.length > 0 ? `<h2 style="font-size:16px;">開催予定</h2><ul style="list-style:none;">${upcoming.map((u) => `<li style="margin-bottom:6px;"><a href="${featBase}${u.path}"><span class="grade-badge">${esc(u.grade)}</span> ${esc(u.title)}(${esc(u.venue!)})</a> <span style="color:var(--dim); font-size:12px;">${dateLabel(u.start)}〜${dateLabel(u.end)}・開催前特集</span></li>`).join("")}</ul><h2 style="font-size:16px;">開催中・過去の特設</h2>` : ""}
 ${features.length > 0 ? `<ul style="list-style:none;">${featLinks}</ul>` : `<p style="color:var(--muted);">現在アーカイブ内にグレードレースはありません。開催が始まると自動で追加されます。</p>`}`,
   });
   await mkdir(path.join(DIST, "features"), { recursive: true });
@@ -3013,7 +3105,7 @@ ${body}`,
 - [今日の各場12R(メインレース)AI本命一覧](${SITE_URL}/today/main-races/): 全場の最終レースを1ページで
 - [今日のナイター競艇 直前予想](${SITE_URL}/today/night/): ナイター・ミッドナイト開催場の全レース
 - [今日の万舟狙い目レース](${SITE_URL}/today/manshu/): イン逃げ確率が低い荒れ候補と本日確定した万舟
-- [SG・G1グレードレース特設](${SITE_URL}/features/): 節ごとに「今日の全レースAI本命」「優勝戦の日程・本命・結果」を1ページに集約
+- [SG・G1グレードレース特設](${SITE_URL}/features/): 節ごとに「今日の全レースAI本命」「優勝戦の日程・本命・結果」を1ページに集約${UPCOMING.map((u) => `\n- [${u.grade} ${u.title}(${u.venue}・${u.start}〜${u.end})開催前特集](${SITE_URL}/${u.path}): 会場データと、開催中の全レースAI評価・結果`).join("")}
 - 会場ページ: ${SITE_URL}/races/{会場slug}/ (本日の全レースAI本命・開催日カレンダー・実測データ)
 - 個別レース: ${SITE_URL}/races/{会場slug}/{YYYY-MM-DD}/{R}/ (例: ${SITE_URL}/races/gamagori/${new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10)}/12/)。開催時間帯は5分ごとに直前情報を反映
 - [競艇予想のやり方 完全ガイド](${SITE_URL}/guide/kanzen-guide/): 予想手順の解説ハブ
@@ -3219,6 +3311,7 @@ ${faqHtml}
     { loc: `${SITE_URL}/stats/methodology/`, lastmod: "2026-07-18" },
     ...GUIDE_TERMS.map((t) => ({ loc: `${SITE_URL}/guide/${t.slug}/`, lastmod: GUIDE_PUBLISHED })),
     { loc: `${SITE_URL}/features/`, lastmod: jstToday },
+    ...UPCOMING.map((u) => ({ loc: `${SITE_URL}/${u.path}`, lastmod: jstToday })),
     ...features.map((f) => ({
       loc: `${SITE_URL}/${f.path}`,
       lastmod: dateOf([...f.races].sort((x, y) => y.updatedAt.localeCompare(x.updatedAt))[0].updatedAt),

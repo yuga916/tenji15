@@ -1219,21 +1219,21 @@
     "raceNo": 1,
     "name": "朝1戦",
     "seriesTitle": "ボートレース唐 津 11月27日 ニッカン・コム杯 第 2日",
-    "status": "pre",
+    "status": "signal",
     "closeTime": "08:43",
-    "windDir": "—",
-    "windSpeed": 0,
-    "wave": 0,
+    "windDir": "雨",
+    "windSpeed": 2,
+    "wave": 2,
     "inEscapeProbPre": 88,
     "inEscapeProb": 88,
-    "inNote": "唐津の基準値(53%)を1号艇と対抗勢の力関係で補正した事前値です。展示確定後に更新されます。",
+    "inNote": "展示タイム公開前のため、現在は事前評価ベースの88%です(展示公開後5分以内に更新)。",
     "kimarite": {
       "nige": 0.88,
       "makuri": 0.05,
       "sashi": 0.05,
       "other": 0.02
     },
-    "kimariteNote": "事前のスリット想定は枠なり。展示ST確定後に更新されます。",
+    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
     "entries": [
       {
         "lane": 1,
@@ -1245,7 +1245,14 @@
         "motorRate": 31.82,
         "weight": 52,
         "preProb": 0.85,
-        "aiProb": 0.85
+        "aiProb": 0.84,
+        "exWeight": 52,
+        "parts": [
+          "キャリボ&nbsp;"
+        ],
+        "liveNotes": [
+          "部品交換(キャリボ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+        ]
       },
       {
         "lane": 2,
@@ -1257,7 +1264,11 @@
         "motorRate": 20,
         "weight": 55,
         "preProb": 0.033,
-        "aiProb": 0.033
+        "aiProb": 0.035,
+        "exWeight": 53.9,
+        "liveNotes": [
+          "体重が番組表より1.1kg減(55→53.9kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 3,
@@ -1269,7 +1280,8 @@
         "motorRate": 26.19,
         "weight": 50,
         "preProb": 0.047,
-        "aiProb": 0.047
+        "aiProb": 0.048,
+        "exWeight": 49.5
       },
       {
         "lane": 4,
@@ -1281,7 +1293,8 @@
         "motorRate": 45.83,
         "weight": 55,
         "preProb": 0.041,
-        "aiProb": 0.041
+        "aiProb": 0.042,
+        "exWeight": 54.6
       },
       {
         "lane": 5,
@@ -1293,7 +1306,15 @@
         "motorRate": 28,
         "weight": 59,
         "preProb": 0.024,
-        "aiProb": 0.024
+        "aiProb": 0.024,
+        "exWeight": 56.2,
+        "parts": [
+          "リング×2"
+        ],
+        "liveNotes": [
+          "部品交換(リング×2)=足に不満があり手を入れたサインでマイナス",
+          "体重が番組表より2.8kg減(59→56.2kg)=軽量化でプラス"
+        ]
       },
       {
         "lane": 6,
@@ -1305,13 +1326,42 @@
         "motorRate": 27.5,
         "weight": 49,
         "preProb": 0.004,
-        "aiProb": 0.004
+        "aiProb": 0.01,
+        "exWeight": 50.5,
+        "liveNotes": [
+          "体重が番組表より1.5kg増(49→50.5kg)でマイナス"
+        ]
       }
     ],
-    "signals": [],
-    "verdict": "事前評価: 唐津のイン逃げ確率は88%想定。本命候補は1号艇・山本寛久(A2・事前勝率85%)、対抗は3号艇・伊藤雄二(同5%)。これは展示前の暫定です。締切15分前の展示反映後、歪みが出ればシグナルが点灯します。",
-    "updatedAt": "2026-11-26T23:00:31.805Z",
-    "modelVersion": "v0.4.0-multifactor"
+    "signals": [
+      {
+        "time": "08:20",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・山本寛久: 部品交換(キャリボ&nbsp;)=足に不満があり手を入れたサインでマイナス"
+      },
+      {
+        "time": "08:20",
+        "type": "parts",
+        "impact": "up",
+        "text": "2号艇・黒田誠司: 体重が番組表より1.1kg減(55→53.9kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:20",
+        "type": "parts",
+        "impact": "neutral",
+        "text": "5号艇・大西隆洋: 部品交換(リング×2)=足に不満があり手を入れたサインでマイナス／体重が番組表より2.8kg減(59→56.2kg)=軽量化でプラス"
+      },
+      {
+        "time": "08:20",
+        "type": "parts",
+        "impact": "down",
+        "text": "6号艇・近藤来希: 体重が番組表より1.5kg増(49→50.5kg)でマイナス"
+      }
+    ],
+    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・山本寛久(現時点のAI勝率84%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は88%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-26T23:20:29.849Z",
+    "modelVersion": "v0.4.0-live"
   },
   {
     "raceId": "karatsu-2026-11-27-2",
@@ -7321,15 +7371,15 @@
     "windSpeed": 1,
     "wave": 1,
     "inEscapeProbPre": 87,
-    "inEscapeProb": 87,
-    "inNote": "展示タイム公開前のため、現在は事前評価ベースの87%です(展示公開後5分以内に更新)。",
+    "inEscapeProb": 82,
+    "inNote": "事前87%から展示反映で82%に更新。1号艇の展示偏差は-1.3σ。",
     "kimarite": {
-      "nige": 0.87,
-      "makuri": 0.06,
-      "sashi": 0.05,
+      "nige": 0.82,
+      "makuri": 0.08,
+      "sashi": 0.08,
       "other": 0.02
     },
-    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -7341,8 +7391,14 @@
         "motorRate": 43.65,
         "weight": 53,
         "preProb": 0.887,
-        "aiProb": 0.879,
-        "exWeight": 52.1
+        "aiProb": 0.797,
+        "exWeight": 52.1,
+        "exTime": 6.84,
+        "exDev": -1.3,
+        "course": 1,
+        "exCourse": 1,
+        "exSt": 0.08,
+        "tilt": 0
       },
       {
         "lane": 2,
@@ -7354,11 +7410,17 @@
         "motorRate": 31.88,
         "weight": 57,
         "preProb": 0.027,
-        "aiProb": 0.028,
+        "aiProb": 0.054,
         "exWeight": 55.7,
         "liveNotes": [
           "体重が番組表より1.3kg減(57→55.7kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.77,
+        "exDev": 0.9,
+        "course": 2,
+        "exCourse": 2,
+        "exSt": 0.11,
+        "tilt": 0
       },
       {
         "lane": 3,
@@ -7370,11 +7432,17 @@
         "motorRate": 35.34,
         "weight": 54,
         "preProb": 0.03,
-        "aiProb": 0.031,
+        "aiProb": 0.038,
         "exWeight": 52.2,
         "liveNotes": [
           "体重が番組表より1.8kg減(54→52.2kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.81,
+        "exDev": -0.4,
+        "course": 3,
+        "exCourse": 3,
+        "exSt": 0.08,
+        "tilt": -0.5
       },
       {
         "lane": 4,
@@ -7386,11 +7454,17 @@
         "motorRate": 29.1,
         "weight": 56,
         "preProb": 0.033,
-        "aiProb": 0.034,
+        "aiProb": 0.053,
         "exWeight": 54.2,
         "liveNotes": [
           "体重が番組表より1.8kg減(56→54.2kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.79,
+        "exDev": 0.3,
+        "course": 4,
+        "exCourse": 4,
+        "exSt": 0.08,
+        "tilt": 0
       },
       {
         "lane": 5,
@@ -7402,8 +7476,14 @@
         "motorRate": 33.33,
         "weight": 53,
         "preProb": 0.02,
-        "aiProb": 0.02,
-        "exWeight": 52.5
+        "aiProb": 0.048,
+        "exWeight": 52.5,
+        "exTime": 6.75,
+        "exDev": 1.5,
+        "course": 5,
+        "exCourse": 5,
+        "exSt": 0.01,
+        "tilt": 0
       },
       {
         "lane": 6,
@@ -7419,37 +7499,55 @@
         "exWeight": 46,
         "liveNotes": [
           "体重が番組表より1.0kg増(45→46kg)でマイナス"
-        ]
+        ],
+        "exTime": 6.83,
+        "exDev": -1,
+        "course": 6,
+        "exCourse": 6,
+        "exSt": 0.07,
+        "tilt": -0.5
       }
     ],
     "signals": [
       {
-        "time": "08:15",
+        "time": "08:20",
+        "type": "extime",
+        "impact": "down",
+        "text": "1号艇・烏野賢太の展示タイムがレース内偏差-1.3σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "08:20",
+        "type": "extime",
+        "impact": "up",
+        "text": "5号艇・齋藤達希の展示タイムがレース内偏差+1.5σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "08:20",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・下田哲也: 体重が番組表より1.3kg減(57→55.7kg)=軽量化でプラス"
       },
       {
-        "time": "08:15",
+        "time": "08:20",
         "type": "parts",
         "impact": "up",
         "text": "3号艇・桂林寛: 体重が番組表より1.8kg減(54→52.2kg)=軽量化でプラス"
       },
       {
-        "time": "08:15",
+        "time": "08:20",
         "type": "parts",
         "impact": "up",
         "text": "4号艇・河上年昭: 体重が番組表より1.8kg減(56→54.2kg)=軽量化でプラス"
       },
       {
-        "time": "08:15",
+        "time": "08:20",
         "type": "parts",
         "impact": "down",
         "text": "6号艇・樫葉新心: 体重が番組表より1.0kg増(45→46kg)でマイナス"
       }
     ],
-    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・烏野賢太(現時点のAI勝率88%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は87%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-26T23:15:29.411Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・烏野賢太(展示反映後AI勝率80%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は82%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-26T23:20:26.522Z",
     "modelVersion": "v0.4.0-live"
   },
   {

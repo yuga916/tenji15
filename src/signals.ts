@@ -15,7 +15,18 @@ import type { LiveBeforeInfo, LiveWinOdds } from "./liveFetcher.ts";
 const LANE_BASE: Record<number, number> = { 1: 0.55, 2: 0.14, 3: 0.12, 4: 0.10, 5: 0.06, 6: 0.03 };
 const GAP_THRESHOLD = 0.07;   // 歪みシグナル点灯の閾値
 const EXDEV_THRESHOLD = 1.3;  // 展示偏差シグナルの閾値(σ)
-const EX_COEF = 0.35;         // 展示偏差のAI勝率への影響係数
+const EX_COEF = 0.35;
+/**
+ * 風による1号艇の補正倍率(2026-11-28導入)。
+ * 7〜9月の確定12,861レースで倍率を決め、10〜11月の8,574レースで効果を確認(AI本命1着率 55.61%→55.68%、
+ * ログ損失 1.2311→1.2299。6m以上ではAI本命1着率 51.4%→52.2%)。風が強いほど1号艇を割り引く。
+ */
+export function windLane1Factor(windSpeed?: number): number {
+  if (typeof windSpeed !== "number" || !Number.isFinite(windSpeed)) return 1;
+  if (windSpeed >= 6) return 0.89;
+  if (windSpeed >= 3) return 0.97;
+  return 1;
+}         // 展示偏差のAI勝率への影響係数
 // 調整情報(部品交換・チルト・体重)の補正。検証前のため控えめな係数にとどめ、
 // 生データは全レース保存して実績で再調整する(2026-10-09 導入)。
 const MAJOR_PARTS = /キャブ|ピストン|リング|シリンダ|クランク|ギヤ|ギア|電気|キャリ/;
@@ -152,7 +163,17 @@ export function applyLiveInfo(race: Race, before: LiveBeforeInfo, oddsInfo: Live
     return base * skill * exBoost * mult;
   });
   const sum = raw.reduce((a, b) => a + b, 0);
-  race.entries.forEach((e, i) => (e.aiProb = round3(raw[i] / sum)));
+  const probs = raw.map((x) => x / sum);
+  // ---- 4.5) 風の補正: 1号艇の勝率に倍率をかけ、差分を残りの艇へ比例配分 ----
+  const wk = windLane1Factor(race.windSpeed);
+  const i1 = race.entries.findIndex((e) => e.lane === 1 && !e.scratched);
+  if (wk !== 1 && i1 >= 0 && probs[i1] > 0 && probs[i1] < 1) {
+    const p1 = probs[i1], q1 = p1 * wk, scale = (1 - q1) / (1 - p1);
+    probs.forEach((_, i) => (probs[i] = i === i1 ? q1 : probs[i] * scale));
+    const e1 = race.entries[i1];
+    e1.liveNotes = [...(e1.liveNotes ?? []), `風${race.windSpeed}mでイン評価を補正(×${wk})`];
+  }
+  race.entries.forEach((e, i) => (e.aiProb = round3(probs[i])));
 
   // ---- 5) 市場勝率(単勝オッズ逆算)と歪み ----
   if (oddsInfo && oddsInfo.odds.size >= 4) {

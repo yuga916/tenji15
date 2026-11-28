@@ -26,6 +26,23 @@ let LLMS_TODAY = "";
 /** 選手の実測データ(過去分バックフィル集計)。出走表の「このコース1着率」「平均ST」に使う */
 let HIST_RACERS: HistoryAgg["racers"] | null = null;
 let HIST_PERIOD = "";
+/** 風速帯別のイン1着率(会場別・全場合算)。レースページの「風の影響」注記に使う */
+let HIST_WIND: { byVenue: Record<string, Record<string, { races: number; lane1Win: number }>>; total: Record<string, { races: number; lane1Win: number }> } | null = null;
+const windBucket = (m: number) => (m <= 2 ? "0-2" : m <= 5 ? "3-5" : "6+");
+/** 当日の風が3m以上のとき、実測のイン1着率の変化を注記する(AIのイン逃げ確率には風は未反映であることも明記) */
+function windNote(r: Race): string {
+  if (!HIST_WIND || typeof r.windSpeed !== "number" || !Number.isFinite(r.windSpeed) || r.windSpeed < 3) return "";
+  const b = windBucket(r.windSpeed);
+  const jcd = venueBySlug.get(r.venueSlug)?.jcd ?? "";
+  const vw = HIST_WIND.byVenue[jcd];
+  const useVenue = !!vw && (vw[b]?.races ?? 0) >= 300 && (vw["0-2"]?.races ?? 0) >= 300;
+  const src = useVenue ? vw : HIST_WIND.total;
+  const cur = src[b], calm = src["0-2"];
+  if (!cur || !calm || cur.races === 0 || calm.races === 0) return "";
+  const pc = (x: { races: number; lane1Win: number }) => ((100 * x.lane1Win) / x.races).toFixed(1);
+  const label = b === "3-5" ? "3〜5m" : "6m以上";
+  return `<br><span style="display:inline-block; margin-top:8px; color:var(--text);">風の影響: 当日は${esc(r.windDir)}${r.windSpeed}m。過去の実測では${useVenue ? `${esc(r.venue)}で` : "全場合算で"}風${label}のときのイン(1号艇)1着率は<strong>${pc(cur)}%</strong>(微風0〜2mのときは${pc(calm)}%、${cur.races.toLocaleString()}レース集計)。${Number(pc(cur)) < Number(pc(calm)) - 1.5 ? "AI勝率は風を補正済みですが(1号艇を割引)、イン逃げ確率には風を含めていないため、イン逃げ確率はやや割り引いて見てください。" : "この程度の風ではイン成績に大きな差は出ていません。"}</span>`;
+}
 let UPCOMING: { path?: string; title: string; venue?: string; start: string; end: string; grade: string }[] = [];
 /** 女子選手の登録番号(公式の期別成績の性別欄から。data/female-racers.json) */
 let FEMALE: Set<string> = new Set();
@@ -950,7 +967,7 @@ async function buildRacePage(template: string, r: Race, all: Race[], vStats: Map
       inDelta === 0
         ? `事前と同じ (${r.inEscapeProbPre}%)`
         : `事前 ${r.inEscapeProbPre}% → ${inDelta > 0 ? "+" : ""}${inDelta}pt`,
-    IN_NOTE: esc(liveTextFix(r, r.inNote)),
+    IN_NOTE: esc(liveTextFix(r, r.inNote)) + windNote(r),
     SIGNAL_FEED: signalFeed(r),
     BET_SECTION: betSuggestion(r) + prePostSection(r),
     VENUE_SECTION: venueSectionHtml(r, vStats.get(r.venueSlug), venueBySlug.get(r.venueSlug)?.inEscapeBase, base),
@@ -1950,7 +1967,7 @@ function jumpGrid(todayRaces: Race[], base: string, latestVoice?: VoiceItem): st
 <button type="button" class="fav-btn" data-fav="${v.venueSlug}" data-fav-name="${esc(v.venue)}" aria-label="${esc(v.venue)}をお気に入りに追加" title="お気に入り" style="background:none; border:0; padding:0 2px; font-size:16px; line-height:1; cursor:pointer; color:var(--dim);">☆</button>
 <a href="${base}races/${v.venueSlug}/${v.dateISO}/" style="min-width:66px; font-weight:700; color:var(--text); font-size:13.5px;">${esc(v.venue)}${night ? '<span style="color:var(--dim); font-size:10.5px; font-weight:400;"> 夜</span>' : ""}${v.grade ? ` <span class="grade-badge">${esc(v.grade)}</span>` : ""}</a>
 <div style="display:flex; gap:4px; flex-wrap:wrap;">${sorted.map((r) => chip(r, !!next && r.raceId === next.raceId)).join("")}</div>
-<span style="color:var(--dim); font-size:11.5px; margin-left:auto;">${allDone ? "全R終了" : `次 ${next!.raceNo}R ${next!.closeTime}`}</span>
+${allDone ? '<span style="color:var(--dim); font-size:11.5px; margin-left:auto;">全R終了</span>' : `<span class="jg-next" data-close="${closeIso(next!)}" data-venue="${esc(v.venue)}" data-race="${next!.raceNo}" style="color:var(--text); font-size:12.5px; font-weight:700; margin-left:auto; white-space:nowrap;">次 ${next!.raceNo}R ${next!.closeTime}</span>`}
 </div>`)
     .join("\n");
   return `<div id="fav-panel" data-base="${base}"></div>
@@ -2184,6 +2201,17 @@ async function main() {
   if (history) {
     HIST_RACERS = history.racers;
     HIST_PERIOD = `${dateLabel(history.from)}〜${dateLabel(history.to)}`;
+    const total: Record<string, { races: number; lane1Win: number }> = {};
+    const byVenue: Record<string, Record<string, { races: number; lane1Win: number }>> = {};
+    for (const [jcd, v] of Object.entries(history.venues)) {
+      byVenue[jcd] = {};
+      for (const [k, w] of Object.entries(v.byWind ?? {})) {
+        byVenue[jcd][k] = { races: w.races, lane1Win: w.lane1Win };
+        const t = (total[k] ??= { races: 0, lane1Win: 0 });
+        t.races += w.races; t.lane1Win += w.lane1Win;
+      }
+    }
+    HIST_WIND = { byVenue, total };
   }
   {
     const { loadFemaleData } = await import("./femaleRacers.ts");
@@ -3081,6 +3109,7 @@ ${body}`,
 <section><h2>処理の流れ</h2><p>毎朝の番組確定後にレースページを自動生成 → 開催時間帯は5分ごとに直前情報を反映 → レース確定後の夜に競走成績で結果を照合し、同じURLに追記します。並行して、過去分の競走成績を毎晩さかのぼって取得し、<a href="${statsBase}stats/">統計ページ</a>の母数を拡充しています(目標: 過去3年分)。</p></section>
 <section><h2>AI評価の中身</h2><p>事前評価は級別・全国勝率・当地勝率・全国2連率・モーター2連率・ボート2連率の6ファクターをレース内で相対化し、会場ごとのコース別基準値に重ねたものです。展示航走後は展示タイムの偏差・進入変化に加え、部品交換・チルト角度・体重の変化(<a href="${statsBase}stats/methodology/#adjust">扱いの詳細</a>)で評価を更新し、直前オッズとの乖離を検出します。詳細は<a href="${statsBase}guide/ai-yosou/">競艇のAI予想とは</a>へ。</p></section>
 <section id="adjust"><h2>直前の調整情報(部品交換・チルト・体重)の扱い</h2><p>2026年10月9日から、公式の直前情報に掲載される次の3項目を、展示航走のデータと合わせてAI勝率に反映しています。いずれも選手コメントで語られることの多い「調整の中身」を、文章ではなく事実データとして読み取るものです。</p><p>①<strong>部品交換</strong>: リング・ピストン・キャブレターなどの主要部品を交換した艇は「足に不満があって手を入れた」サインとして、わずかにマイナス。新しいプロペラへの交換も、まだ合っていない可能性としてわずかにマイナス。<br>②<strong>チルト角度</strong>: +0.5以上は伸びを重視した調整。4〜6コースではまくり狙いとしてプラス、1〜2コースでは出足が落ちやすいとしてマイナス。<br>③<strong>体重</strong>: 番組表に記載の体重と当日の体重を比べ、1kg以上の減少はプラス、1kg以上の増加はマイナス。</p><p>補正の大きさは1項目あたり数%程度にとどめています。効果は検証中で、確定したレースの結果と照合しながら見直します(検証結果はまとまり次第、このサイトで公開します)。どの艇にどの補正が入ったかは、各レースページの「展示前→展示後で、予想はどう変わったか」に表示しています。</p></section>
+<section id="wind"><h2>風の扱い(2026年11月28日から)</h2><p>当日の風速(公式の直前情報)が3m以上のレースでは、展示反映後のAI勝率で1号艇の勝率に倍率をかけ(風3〜5mで×0.97、6m以上で×0.89)、差分を残りの艇に比例して配り直しています。</p><p>倍率は、当サイトに記録のある風速付きの確定レースのうち、7〜9月分(12,861レース)で決め、10〜11月分(8,574レース)で効果を確かめました。補正前は、風6m以上のときにAIの1号艇勝率(平均52.3%)が実際の1着率(47.7%)を上回っていました。補正後は10〜11月分でAI本命の1着率が55.61%→55.68%、単勝回収率が91.5%→91.7%、確率の当たり具合(ログ損失)が1.2311→1.2299と、いずれもわずかに改善しました(風6m以上に限るとAI本命の1着率51.4%→52.2%。件数が少ないため参考値)。</p><p>イン逃げ確率への風の補正も同じ方法で検証しましたが、10〜11月分で改善がほとんど見られなかったため、現在は入れていません。その代わり、風3m以上のレースでは、レースページの「イン逃げ確率」の下に、その場(データが少ない場は全場合算)の風速別のイン1着率を表示しています。</p></section>
 <section id="bets"><h2>買い目の段階表示(本命・対抗・穴)について</h2><p>各レースページの「買い目の目安」は、AI勝率(各艇が1着になる推定確率)から3連単120通りそれぞれの推定確率を計算し(Harville式: 1着の確率×残りの艇の中で2着になる確率×残りの艇の中で3着になる確率)、次のルールで機械的に選んでいます。</p><p><strong>本命(3点)</strong>: 推定確率の上位3点。<strong>対抗(3点)</strong>: AI評価2位の艇が1着になる組み合わせの上位3点。<strong>穴(2点)</strong>: AI評価1・2位以外の艇が1着になる組み合わせの上位2点。<strong>絞るなら2点</strong>: AI本命の勝率が70%以上のレースに限り、本命の上位2点を表示します。</p><p>各段の「過去」の的中率・回収率は、当サイトに記録された確定レースすべてに同じ選び方を当てはめて毎回のビルドで再集計した実測値です(100円ずつ購入した場合の払戻合計÷購入額)。回収率が100%を下回る段は、長期的には購入額を下回ることを意味します。点数を増やすほど的中率は上がりますが、回収率が上がるとは限りません。</p><p><strong>2連単(3点)</strong>: 1着・2着の組み合わせの推定確率(1着の確率×残りの艇の中で2着になる確率)の上位3点です。2連単の払戻は2026年11月7日から記録を始めたため、回収率はデータがたまり次第表示します。なお、AI上位3艇・4艇の3連単BOXも同じ方法で検証しましたが、回収率が本命3点を下回った(BOX6点・24点ともに約70%、本命3点は約77%)ため、おすすめとしての掲載は見送っています。</p></section>
 <section><h2>数値の限界と免責</h2><p>払戻の一部が取得できないレースや、中止・不成立レースは集計から除外されます。回収率等は「過去の実測」であり将来の結果を保証しません。当サイトは的中保証・断定表現を行わず、舟券の販売・購入代行も行いません。</p></section>
 <section><h2>引用について</h2><p>当サイトのデータは出典明記(「競艇チョクゼン(kyotei-chokuzen.com)調べ」等)の上で引用いただけます。機械可読データは<a href="${statsBase}data/stats.json">stats.json</a>で公開しています。</p></section>`,

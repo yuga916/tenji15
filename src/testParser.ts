@@ -300,4 +300,12 @@ assert(biBad.exTimes.size === 0 && biBad.warnings.length > 0, `live: 不正HTML�
   assert(gradeOf("ボートレース下 関 11月 9日 スポーツ報知杯 第 3日") === undefined, "グレード: 一般戦はundefined");
 }
 
+/* ---------- 風の補正 ---------- */
+{
+  const { windLane1Factor } = await import("./signals.ts");
+  assert(windLane1Factor(undefined) === 1 && windLane1Factor(2) === 1, "風: 2m以下・不明は補正なし");
+  assert(windLane1Factor(3) === 0.97 && windLane1Factor(5) === 0.97, "風: 3〜5mは×0.97");
+  assert(windLane1Factor(6) === 0.89 && windLane1Factor(9) === 0.89, "風: 6m以上は×0.89");
+}
+
 console.log(process.exitCode ? "\nテスト失敗があります" : "\n全テスト通過");

@@ -7449,18 +7449,18 @@
     "status": "signal",
     "closeTime": "12:27",
     "windDir": "晴",
-    "windSpeed": 7,
-    "wave": 7,
+    "windSpeed": 5,
+    "wave": 5,
     "inEscapeProbPre": 35,
-    "inEscapeProb": 35,
-    "inNote": "展示タイム公開前のため、現在は事前評価ベースの35%です(展示公開後5分以内に更新)。",
+    "inEscapeProb": 16,
+    "inNote": "事前35%から展示反映で16%に更新。1号艇の展示偏差は+0.1σ。",
     "kimarite": {
-      "nige": 0.35,
-      "makuri": 0.29,
-      "sashi": 0.27,
-      "other": 0.08
+      "nige": 0.16,
+      "makuri": 0.38,
+      "sashi": 0.35,
+      "other": 0.11
     },
-    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
+    "kimariteNote": "進入変化を反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -7472,8 +7472,17 @@
         "motorRate": 31.03,
         "weight": 49,
         "preProb": 0.466,
-        "aiProb": 0.463,
-        "exWeight": 48.6
+        "aiProb": 0.049,
+        "exWeight": 48.6,
+        "exTime": 6.68,
+        "exDev": 0.1,
+        "course": 2,
+        "exCourse": 2,
+        "exSt": 0.24,
+        "tilt": 0.5,
+        "liveNotes": [
+          "チルト+0.5(伸び重視の調整)×2コース=出足が落ちやすくマイナス"
+        ]
       },
       {
         "lane": 2,
@@ -7485,11 +7494,17 @@
         "motorRate": 27.27,
         "weight": 53,
         "preProb": 0.294,
-        "aiProb": 0.301,
+        "aiProb": 0.858,
         "exWeight": 52,
         "liveNotes": [
           "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.61,
+        "exDev": 1.6,
+        "course": 1,
+        "exCourse": 1,
+        "exSt": 0.13,
+        "tilt": 0
       },
       {
         "lane": 3,
@@ -7501,8 +7516,14 @@
         "motorRate": 38.46,
         "weight": 54,
         "preProb": 0.09,
-        "aiProb": 0.089,
-        "exWeight": 53.1
+        "aiProb": 0.03,
+        "exWeight": 53.1,
+        "exTime": 6.71,
+        "exDev": -0.6,
+        "course": 3,
+        "exCourse": 3,
+        "exSt": 0.04,
+        "tilt": 0
       },
       {
         "lane": 4,
@@ -7514,8 +7535,14 @@
         "motorRate": 29.63,
         "weight": 56,
         "preProb": 0.025,
-        "aiProb": 0.025,
-        "exWeight": 55.4
+        "aiProb": 0.006,
+        "exWeight": 55.4,
+        "exTime": 6.76,
+        "exDev": -1.7,
+        "course": 4,
+        "exCourse": 4,
+        "exSt": 0.12,
+        "tilt": 0
       },
       {
         "lane": 5,
@@ -7527,11 +7554,17 @@
         "motorRate": 39.13,
         "weight": 50,
         "preProb": 0.083,
-        "aiProb": 0.08,
+        "aiProb": 0.04,
         "exWeight": 51,
         "liveNotes": [
           "体重が番組表より1.0kg増(50→51kg)でマイナス"
-        ]
+        ],
+        "exTime": 6.66,
+        "exDev": 0.5,
+        "course": 5,
+        "exCourse": 5,
+        "exSt": 0.08,
+        "tilt": 0
       },
       {
         "lane": 6,
@@ -7543,26 +7576,56 @@
         "motorRate": 29.63,
         "weight": 52,
         "preProb": 0.042,
-        "aiProb": 0.042,
-        "exWeight": 52
+        "aiProb": 0.018,
+        "exWeight": 52,
+        "exTime": 6.68,
+        "exDev": 0.1,
+        "course": 6,
+        "exCourse": 6,
+        "exSt": 0.21,
+        "tilt": 0
       }
     ],
     "signals": [
       {
-        "time": "12:10",
+        "time": "12:15",
+        "type": "extime",
+        "impact": "up",
+        "text": "2号艇・杉山裕也の展示タイムがレース内偏差+1.6σ。当日気配が上向きのサイン。"
+      },
+      {
+        "time": "12:15",
+        "type": "extime",
+        "impact": "down",
+        "text": "4号艇・吉岡誠の展示タイムがレース内偏差-1.7σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "12:15",
+        "type": "formation",
+        "impact": "neutral",
+        "text": "進入が枠なりから変化(1号艇→2コース、2号艇→1コース)。全艇の勝率をコース基準で再計算しました。"
+      },
+      {
+        "time": "12:15",
+        "type": "parts",
+        "impact": "down",
+        "text": "1号艇・高石梨菜: チルト+0.5(伸び重視の調整)×2コース=出足が落ちやすくマイナス"
+      },
+      {
+        "time": "12:15",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・杉山裕也: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "down",
         "text": "5号艇・渡邉翼: 体重が番組表より1.0kg増(50→51kg)でマイナス"
       }
     ],
-    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・高石梨菜(現時点のAI勝率46%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は35%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-28T03:10:42.190Z",
+    "verdict": "直前最終評価: 本命候補は2号艇・杉山裕也(展示反映後AI勝率86%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は16%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-28T03:15:43.823Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -11043,7 +11106,7 @@
         "exSt": 0.06,
         "exWeight": 54.2,
         "tilt": 0,
-        "marketProb": 0.386
+        "marketProb": 0.336
       },
       {
         "lane": 2,
@@ -11066,7 +11129,7 @@
         "liveNotes": [
           "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
         ],
-        "marketProb": 0.237
+        "marketProb": 0.295
       },
       {
         "lane": 3,
@@ -11086,7 +11149,7 @@
         "exSt": 0.07,
         "exWeight": 52.8,
         "tilt": 0,
-        "marketProb": 0.094
+        "marketProb": 0.082
       },
       {
         "lane": 4,
@@ -11109,7 +11172,7 @@
         "liveNotes": [
           "体重が番組表より1.0kg増(46→47kg)でマイナス"
         ],
-        "marketProb": 0.237
+        "marketProb": 0.205
       },
       {
         "lane": 5,
@@ -11131,7 +11194,8 @@
         "tilt": 0,
         "liveNotes": [
           "体重が番組表より1.1kg減(55→53.9kg)=軽量化でプラス"
-        ]
+        ],
+        "marketProb": 0.041
       },
       {
         "lane": 6,
@@ -11151,49 +11215,49 @@
         "exSt": -0.04,
         "exWeight": 51.5,
         "tilt": -0.5,
-        "marketProb": 0.047
+        "marketProb": 0.041
       }
     ],
     "signals": [
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "extime",
         "impact": "down",
         "text": "4号艇・伊藤玲奈の展示タイムがレース内偏差-1.9σ。当日気配が下向きのサイン。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "gap",
         "impact": "up",
-        "text": "1号艇・妻鳥晋也: AI評価53%に対し市場は39%。+14ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・妻鳥晋也: AI評価53%に対し市場は34%。+19ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "gap",
         "impact": "down",
-        "text": "4号艇・伊藤玲奈: 市場24%に対しAI評価は2%。過剰人気の可能性。"
+        "text": "4号艇・伊藤玲奈: 市場21%に対しAI評価は2%。過剰人気の可能性。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "up",
         "text": "2号艇・烏野賢太: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "down",
         "text": "4号艇・伊藤玲奈: 体重が番組表より1.0kg増(46→47kg)でマイナス"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "up",
         "text": "5号艇・新田智彰: 体重が番組表より1.1kg減(55→53.9kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・妻鳥晋也(展示反映後AI勝率53%)。妙味は1号艇・妻鳥晋也(歪み+14pt)。イン逃げ確率は36%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-28T03:10:45.814Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・妻鳥晋也(展示反映後AI勝率53%)。妙味は1号艇・妻鳥晋也(歪み+19pt)。イン逃げ確率は36%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-28T03:15:48.014Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -12372,18 +12436,18 @@
     "status": "signal",
     "closeTime": "12:24",
     "windDir": "曇",
-    "windSpeed": 3,
-    "wave": 0,
+    "windSpeed": 5,
+    "wave": 3,
     "inEscapeProbPre": 38,
-    "inEscapeProb": 38,
-    "inNote": "展示タイム公開前のため、現在は事前評価ベースの38%です(展示公開後5分以内に更新)。",
+    "inEscapeProb": 32,
+    "inNote": "事前38%から展示反映で32%に更新。1号艇の展示偏差は-1.4σ。",
     "kimarite": {
-      "nige": 0.38,
-      "makuri": 0.28,
-      "sashi": 0.26,
-      "other": 0.08
+      "nige": 0.32,
+      "makuri": 0.31,
+      "sashi": 0.29,
+      "other": 0.09
     },
-    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -12395,8 +12459,15 @@
         "motorRate": 28.3,
         "weight": 52,
         "preProb": 0.524,
-        "aiProb": 0.524,
-        "exWeight": 52
+        "aiProb": 0.38,
+        "exWeight": 52,
+        "exTime": 6.87,
+        "exDev": -1.4,
+        "course": 1,
+        "exCourse": 1,
+        "exSt": 0.16,
+        "tilt": -0.5,
+        "marketProb": 0.321
       },
       {
         "lane": 2,
@@ -12408,7 +12479,7 @@
         "motorRate": 36.53,
         "weight": 62,
         "preProb": 0.137,
-        "aiProb": 0.136,
+        "aiProb": 0.113,
         "exWeight": 58.2,
         "parts": [
           "リング×4",
@@ -12417,7 +12488,14 @@
         "liveNotes": [
           "部品交換(リング×4)=足に不満があり手を入れたサインでマイナス",
           "体重が番組表より3.8kg減(62→58.2kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.85,
+        "exDev": -1,
+        "course": 2,
+        "exCourse": 2,
+        "exSt": 0.16,
+        "tilt": -0.5,
+        "marketProb": 0.193
       },
       {
         "lane": 3,
@@ -12429,11 +12507,18 @@
         "motorRate": 30.99,
         "weight": 53,
         "preProb": 0.034,
-        "aiProb": 0.035,
+        "aiProb": 0.061,
         "exWeight": 52,
         "liveNotes": [
           "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.76,
+        "exDev": 1.1,
+        "course": 3,
+        "exCourse": 3,
+        "exSt": 0.29,
+        "tilt": -0.5,
+        "marketProb": 0.223
       },
       {
         "lane": 4,
@@ -12445,8 +12530,15 @@
         "motorRate": 44.51,
         "weight": 51,
         "preProb": 0.27,
-        "aiProb": 0.27,
-        "exWeight": 51.5
+        "aiProb": 0.394,
+        "exWeight": 51.5,
+        "exTime": 6.78,
+        "exDev": 0.6,
+        "course": 4,
+        "exCourse": 4,
+        "exSt": 0.38,
+        "tilt": -0.5,
+        "marketProb": 0.263
       },
       {
         "lane": 5,
@@ -12458,11 +12550,17 @@
         "motorRate": 34.34,
         "weight": 53,
         "preProb": 0.023,
-        "aiProb": 0.024,
+        "aiProb": 0.041,
         "exWeight": 52,
         "liveNotes": [
           "体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
-        ]
+        ],
+        "exTime": 6.76,
+        "exDev": 1.1,
+        "course": 5,
+        "exCourse": 5,
+        "exSt": 0.26,
+        "tilt": -0.5
       },
       {
         "lane": 6,
@@ -12475,31 +12573,61 @@
         "weight": 55,
         "preProb": 0.011,
         "aiProb": 0.011,
-        "exWeight": 54.8
+        "exWeight": 54.8,
+        "exTime": 6.83,
+        "exDev": -0.5,
+        "course": 6,
+        "exCourse": 6,
+        "exSt": 0.15,
+        "tilt": -0.5
       }
     ],
     "signals": [
       {
-        "time": "12:10",
+        "time": "12:15",
+        "type": "extime",
+        "impact": "down",
+        "text": "1号艇・仲口博崇の展示タイムがレース内偏差-1.4σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "12:15",
+        "type": "gap",
+        "impact": "down",
+        "text": "2号艇・植田太一: 市場19%に対しAI評価は11%。過剰人気の可能性。"
+      },
+      {
+        "time": "12:15",
+        "type": "gap",
+        "impact": "down",
+        "text": "3号艇・村松将平: 市場22%に対しAI評価は6%。過剰人気の可能性。"
+      },
+      {
+        "time": "12:15",
+        "type": "gap",
+        "impact": "up",
+        "text": "4号艇・藤岡俊介: AI評価39%に対し市場は26%。+13ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "12:15",
         "type": "parts",
         "impact": "neutral",
         "text": "2号艇・植田太一: 部品交換(リング×4)=足に不満があり手を入れたサインでマイナス／体重が番組表より3.8kg減(62→58.2kg)=軽量化でプラス"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "up",
         "text": "3号艇・村松将平: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "up",
         "text": "5号艇・伊倉光: 体重が番組表より1.0kg減(53→52kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前評価(展示タイム公開待ち): 本命候補は1号艇・仲口博崇(現時点のAI勝率52%)。展示タイムの公開後5分以内に最終評価へ更新します。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は38%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-28T03:10:34.924Z",
+    "verdict": "直前最終評価: 本命候補は4号艇・藤岡俊介(展示反映後AI勝率39%)。妙味は4号艇・藤岡俊介(歪み+13pt)。イン逃げ確率は32%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-28T03:15:36.801Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -14026,7 +14154,7 @@
         "preProb": 0.289,
         "aiProb": 0.449,
         "exWeight": 47.2,
-        "marketProb": 0.518,
+        "marketProb": 0.559,
         "exTime": 6.53,
         "exDev": 1.8,
         "course": 1,
@@ -14046,7 +14174,7 @@
         "preProb": 0.078,
         "aiProb": 0.049,
         "exWeight": 45.5,
-        "marketProb": 0.045,
+        "marketProb": 0.079,
         "exTime": 6.59,
         "exDev": -0.8,
         "course": 2,
@@ -14073,7 +14201,7 @@
           "部品交換(リング×1)=足に不満があり手を入れたサインでマイナス",
           "体重が番組表より1.0kg減(48→47kg)=軽量化でプラス"
         ],
-        "marketProb": 0.329,
+        "marketProb": 0.208,
         "exTime": 6.57,
         "exDev": 0.1,
         "course": 3,
@@ -14093,7 +14221,7 @@
         "preProb": 0.114,
         "aiProb": 0.082,
         "exWeight": 47,
-        "marketProb": 0.037,
+        "marketProb": 0.083,
         "exTime": 6.58,
         "exDev": -0.4,
         "course": 4,
@@ -14113,7 +14241,7 @@
         "preProb": 0.076,
         "aiProb": 0.041,
         "exWeight": 45,
-        "marketProb": 0.031,
+        "marketProb": 0.03,
         "exTime": 6.6,
         "exDev": -1.2,
         "course": 5,
@@ -14133,7 +14261,7 @@
         "preProb": 0.019,
         "aiProb": 0.019,
         "exWeight": 47.2,
-        "marketProb": 0.039,
+        "marketProb": 0.042,
         "exTime": 6.56,
         "exDev": 0.5,
         "course": 6,
@@ -14144,20 +14272,32 @@
     ],
     "signals": [
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "extime",
         "impact": "up",
         "text": "1号艇・渡邉優美の展示タイムがレース内偏差+1.8σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
+        "type": "gap",
+        "impact": "down",
+        "text": "1号艇・渡邉優美: 市場56%に対しAI評価は45%。過剰人気の可能性。"
+      },
+      {
+        "time": "12:15",
+        "type": "gap",
+        "impact": "up",
+        "text": "3号艇・米丸乃絵: AI評価36%に対し市場は21%。+15ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "12:15",
         "type": "parts",
         "impact": "neutral",
         "text": "3号艇・米丸乃絵: 部品交換(リング×1)=足に不満があり手を入れたサインでマイナス／体重が番組表より1.0kg減(48→47kg)=軽量化でプラス"
       }
     ],
-    "verdict": "直前最終評価: 本命候補は1号艇・渡邉優美(展示反映後AI勝率45%)。市場と AI の評価に大きな歪みは検出されていません。イン逃げ確率は39%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-28T03:10:27.837Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・渡邉優美(展示反映後AI勝率45%)。妙味は3号艇・米丸乃絵(歪み+15pt)。イン逃げ確率は39%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-28T03:15:29.875Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -17014,38 +17154,38 @@
     ],
     "signals": [
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "extime",
         "impact": "up",
         "text": "5号艇・山道諄也の展示タイムがレース内偏差+1.5σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "gap",
         "impact": "up",
         "text": "1号艇・原田雄次: AI評価61%に対し市場は11%。+50ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "gap",
         "impact": "up",
         "text": "2号艇・竹田吉行: AI評価12%に対し市場は2%。+11ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "gap",
         "impact": "down",
         "text": "3号艇・西川拓利: 市場86%に対しAI評価は17%。過剰人気の可能性。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "down",
         "text": "2号艇・竹田吉行: 新プロペラに交換=まだ合っていない可能性でマイナス"
       }
     ],
     "verdict": "直前最終評価: 本命候補は1号艇・原田雄次(展示反映後AI勝率61%)。妙味は1号艇・原田雄次(歪み+50pt)。イン逃げ確率は40%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-28T03:10:31.442Z",
+    "updatedAt": "2026-11-28T03:15:33.350Z",
     "modelVersion": "v0.4.0-live"
   },
   {
@@ -18471,18 +18611,18 @@
     "status": "signal",
     "closeTime": "12:25",
     "windDir": "曇",
-    "windSpeed": 0,
+    "windSpeed": 1,
     "wave": 5,
     "inEscapeProbPre": 28,
-    "inEscapeProb": 28,
-    "inNote": "展示タイム公開前のため、現在は事前評価ベースの28%です(展示公開後5分以内に更新)。",
+    "inEscapeProb": 33,
+    "inNote": "事前28%から展示反映で33%に更新。1号艇の展示偏差は+1.3σ。",
     "kimarite": {
-      "nige": 0.28,
-      "makuri": 0.32,
-      "sashi": 0.3,
+      "nige": 0.33,
+      "makuri": 0.3,
+      "sashi": 0.28,
       "other": 0.09
     },
-    "kimariteNote": "展示タイム公開前のため、事前評価ベースの展開確率です(展示公開後に更新)。",
+    "kimariteNote": "展示ST・展示タイムを反映した展開確率です。",
     "entries": [
       {
         "lane": 1,
@@ -18494,12 +18634,18 @@
         "motorRate": 43.75,
         "weight": 54,
         "preProb": 0.361,
-        "aiProb": 0.363,
+        "aiProb": 0.432,
         "exWeight": 54.4,
-        "marketProb": 0.462,
+        "marketProb": 0.335,
         "course": 1,
         "exCourse": 1,
-        "exSt": 0.28
+        "exSt": 0.28,
+        "exTime": 6.7,
+        "exDev": 1.3,
+        "tilt": 0.5,
+        "liveNotes": [
+          "チルト+0.5(伸び重視の調整)×1コース=出足が落ちやすくマイナス"
+        ]
       },
       {
         "lane": 2,
@@ -18511,14 +18657,19 @@
         "motorRate": 35.04,
         "weight": 51,
         "preProb": 0.387,
-        "aiProb": 0.378,
+        "aiProb": 0.364,
         "exWeight": 52,
         "liveNotes": [
+          "チルト+1.0(伸び重視の調整)×2コース=出足が落ちやすくマイナス",
           "体重が番組表より1.0kg増(51→52kg)でマイナス"
         ],
         "course": 2,
         "exCourse": 2,
-        "exSt": -0.01
+        "exSt": -0.01,
+        "exTime": 6.73,
+        "exDev": 0.7,
+        "tilt": 1,
+        "marketProb": 0.136
       },
       {
         "lane": 3,
@@ -18530,15 +18681,19 @@
         "motorRate": 46.36,
         "weight": 55,
         "preProb": 0.152,
-        "aiProb": 0.158,
+        "aiProb": 0.133,
         "exWeight": 53,
         "liveNotes": [
+          "チルト+1.0(伸び重視の調整)",
           "体重が番組表より2.0kg減(55→53kg)=軽量化でプラス"
         ],
-        "marketProb": 0.038,
+        "marketProb": 0.112,
         "course": 3,
         "exCourse": 3,
-        "exSt": 0.15
+        "exSt": 0.15,
+        "exTime": 6.76,
+        "exDev": 0.2,
+        "tilt": 1
       },
       {
         "lane": 4,
@@ -18550,11 +18705,17 @@
         "motorRate": 24.58,
         "weight": 57,
         "preProb": 0.063,
-        "aiProb": 0.063,
+        "aiProb": 0.051,
         "exWeight": 56.5,
         "course": 4,
         "exCourse": 4,
-        "exSt": 0.13
+        "exSt": 0.13,
+        "exTime": 6.78,
+        "exDev": -0.1,
+        "tilt": 1,
+        "liveNotes": [
+          "チルト+1.0(伸び重視の調整)×4コース=まくり狙いでプラス"
+        ]
       },
       {
         "lane": 5,
@@ -18566,12 +18727,18 @@
         "motorRate": 23.64,
         "weight": 50,
         "preProb": 0.011,
-        "aiProb": 0.011,
+        "aiProb": 0.009,
         "exWeight": 50,
-        "marketProb": 0.038,
+        "marketProb": 0.022,
         "course": 5,
         "exCourse": 5,
-        "exSt": 0.24
+        "exSt": 0.24,
+        "exTime": 6.78,
+        "exDev": -0.1,
+        "tilt": 1,
+        "liveNotes": [
+          "チルト+1.0(伸び重視の調整)×5コース=まくり狙いでプラス"
+        ]
       },
       {
         "lane": 6,
@@ -18583,48 +18750,90 @@
         "motorRate": 19.64,
         "weight": 57,
         "preProb": 0.027,
-        "aiProb": 0.027,
+        "aiProb": 0.012,
         "exWeight": 56.9,
-        "marketProb": 0.462,
+        "marketProb": 0.396,
         "course": 6,
         "exCourse": 6,
-        "exSt": 0.31
+        "exSt": 0.31,
+        "exTime": 6.88,
+        "exDev": -1.9,
+        "tilt": 0.5,
+        "liveNotes": [
+          "チルト+0.5(伸び重視の調整)×6コース=まくり狙いでプラス"
+        ]
       }
     ],
     "signals": [
       {
-        "time": "12:10",
-        "type": "gap",
-        "impact": "down",
-        "text": "1号艇・上村宏太: 市場46%に対しAI評価は36%。過剰人気の可能性。"
+        "time": "12:15",
+        "type": "extime",
+        "impact": "up",
+        "text": "1号艇・上村宏太の展示タイムがレース内偏差+1.3σ。当日気配が上向きのサイン。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
+        "type": "extime",
+        "impact": "down",
+        "text": "6号艇・廣瀬篤哉の展示タイムがレース内偏差-1.9σ。当日気配が下向きのサイン。"
+      },
+      {
+        "time": "12:15",
         "type": "gap",
         "impact": "up",
-        "text": "3号艇・尾崎雄二: AI評価16%に対し市場は4%。+12ptの歪み(市場が織り込んでいない可能性)。"
+        "text": "1号艇・上村宏太: AI評価43%に対し市場は34%。+10ptの歪み(市場が織り込んでいない可能性)。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
+        "type": "gap",
+        "impact": "up",
+        "text": "2号艇・山田丈: AI評価36%に対し市場は14%。+23ptの歪み(市場が織り込んでいない可能性)。"
+      },
+      {
+        "time": "12:15",
         "type": "gap",
         "impact": "down",
-        "text": "6号艇・廣瀬篤哉: 市場46%に対しAI評価は3%。過剰人気の可能性。"
+        "text": "6号艇・廣瀬篤哉: 市場40%に対しAI評価は1%。過剰人気の可能性。"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
         "type": "parts",
         "impact": "down",
-        "text": "2号艇・山田丈: 体重が番組表より1.0kg増(51→52kg)でマイナス"
+        "text": "1号艇・上村宏太: チルト+0.5(伸び重視の調整)×1コース=出足が落ちやすくマイナス"
       },
       {
-        "time": "12:10",
+        "time": "12:15",
+        "type": "parts",
+        "impact": "down",
+        "text": "2号艇・山田丈: チルト+1.0(伸び重視の調整)×2コース=出足が落ちやすくマイナス／体重が番組表より1.0kg増(51→52kg)でマイナス"
+      },
+      {
+        "time": "12:15",
         "type": "parts",
         "impact": "up",
-        "text": "3号艇・尾崎雄二: 体重が番組表より2.0kg減(55→53kg)=軽量化でプラス"
+        "text": "3号艇・尾崎雄二: チルト+1.0(伸び重視の調整)／体重が番組表より2.0kg減(55→53kg)=軽量化でプラス"
+      },
+      {
+        "time": "12:15",
+        "type": "parts",
+        "impact": "up",
+        "text": "4号艇・飯田庄吾: チルト+1.0(伸び重視の調整)×4コース=まくり狙いでプラス"
+      },
+      {
+        "time": "12:15",
+        "type": "parts",
+        "impact": "up",
+        "text": "5号艇・堀井涼平: チルト+1.0(伸び重視の調整)×5コース=まくり狙いでプラス"
+      },
+      {
+        "time": "12:15",
+        "type": "parts",
+        "impact": "up",
+        "text": "6号艇・廣瀬篤哉: チルト+0.5(伸び重視の調整)×6コース=まくり狙いでプラス"
       }
     ],
-    "verdict": "直前評価(展示タイム公開待ち): 本命候補は2号艇・山田丈(現時点のAI勝率38%)。展示タイムの公開後5分以内に最終評価へ更新します。妙味は3号艇・尾崎雄二(歪み+12pt)。イン逃げ確率は28%。オッズは締切まで変動します。",
-    "updatedAt": "2026-11-28T03:10:38.589Z",
+    "verdict": "直前最終評価: 本命候補は1号艇・上村宏太(展示反映後AI勝率43%)。妙味は2号艇・山田丈(歪み+23pt)。イン逃げ確率は33%。オッズは締切まで変動します。",
+    "updatedAt": "2026-11-28T03:15:40.286Z",
     "modelVersion": "v0.4.0-live"
   },
   {
